@@ -158,8 +158,21 @@ class Lexer {
         return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
     }
 
-    static private function isNumeric(token:String):Bool {
-        return Std.parseInt(token) != null;
+    public static function isNumeric(s:String):Bool {
+        if (s == null || s.length == 0) return false;
+        var hasDecimalPoint = false;
+        for (i in 0...s.length) {
+            var c = s.charAt(i);
+            if (c >= '0' && c <= '9') {
+                continue;
+            } else if (c == '.' && !hasDecimalPoint) {
+                hasDecimalPoint = true;
+            } else {
+                return false;
+            }
+        }
+        
+        return true;
     }
 }
 

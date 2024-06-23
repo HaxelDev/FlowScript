@@ -116,20 +116,20 @@ class Parser {
     }
 
     private function parseForStatement():Statement {
-        var variableToken:Token = consume(TokenType.IDENTIFIER, "Expected identifier after 'for'");
-        var variableName:String = variableToken.value;
-    
+        consume(TokenType.IDENTIFIER, "Expected identifier after 'for'");
+        var variableName:String = previous().value;
         consume(TokenType.IN, "Expected 'in' after identifier");
     
-        var iterableExpression:Expression = parseExpression();
-    
-        var body:Statement;
-        if (check(TokenType.LBRACE)) {
-            body = parseBlock();
+        var iterableExpression:Expression;
+        if (match([TokenType.NUMBER]) && match([TokenType.RANGE])) {
+            var startExpr:Expression = new LiteralExpression(Std.parseFloat(previous().value));
+            var endExpr:Expression = new LiteralExpression(Std.parseFloat(previous().value));
+            iterableExpression = new RangeExpression(startExpr, endExpr);
         } else {
-            body = parseStatement();
+            iterableExpression = parseExpression();
         }
-    
+
+        var body:Statement = parseBlock();
         return new ForStatement(variableName, iterableExpression, body);
     }
 

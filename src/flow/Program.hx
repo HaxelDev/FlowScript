@@ -275,25 +275,6 @@ class RangeExpression extends Expression {
     }
 }
 
-class RangeIterator {
-    private var current:Int;
-    private var end:Int;
-
-    public function new(start:Int, end:Int) {
-        this.current = start - 1;
-        this.end = end;
-    }
-
-    public function hasNext():Bool {
-        return current < end;
-    }
-
-    public function next():Int {
-        current++;
-        return current;
-    }
-}
-
 class ArrayLiteralExpression extends Expression {
     public var elements: Array<Expression>;
     
