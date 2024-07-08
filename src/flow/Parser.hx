@@ -193,7 +193,12 @@ class Parser {
     
     private function parseFactor():Expression {
         if (match([TokenType.NUMBER])) {
-            return new LiteralExpression(Std.parseFloat(previous().value));
+            var value:String = previous().value;
+            if (value.indexOf(".") != -1) {
+              return new LiteralExpression(Std.parseFloat(value));
+            } else {
+              return new LiteralExpression(Std.parseInt(value));
+            }
         } else if (match([TokenType.STRING])) {
             return new LiteralExpression(previous().value);
         } else if (match([TokenType.IDENTIFIER])) {

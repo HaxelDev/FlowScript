@@ -92,46 +92,80 @@ class LiteralExpression extends Expression {
 }
 
 class BinaryExpression extends Expression {
-    public var left:Expression;
-    public var opera:String;
-    public var right:Expression;
+	public var left:Expression;
+	public var opera:String;
+	public var right:Expression;
 
-    public function new(left:Expression, opera:String, right:Expression) {
-        this.left = left;
-        this.opera = opera;
-        this.right = right;
-    }
+	public function new(left:Expression, opera:String, right:Expression) {
+		this.left = left;
+		this.opera = opera;
+		this.right = right;
+	}
 
-    public override function evaluate():Dynamic {
-        var leftValue = left.evaluate();
-        var rightValue = right.evaluate();
-        
-        switch (opera) {
-            case "+":
-                return leftValue + rightValue;
-            case "-":
-                return leftValue - rightValue;
-            case "*":
-                return leftValue * rightValue;
-            case "/":
-                return leftValue / rightValue;
-            case "==":
-                return leftValue == rightValue;
-            case "!=":
-                return leftValue != rightValue;
-            case ">":
-                return leftValue > rightValue;
-            case ">=":
-                return leftValue >= rightValue;
-            case "<":
-                return leftValue < rightValue;
-            case "<=":
-                return leftValue <= rightValue;
-            default:
-                Flow.error.report("Unknown operator: " + opera);
-                return null;
-        }
-    }
+	public override function evaluate():Dynamic {
+		var leftValue = left.evaluate();
+		var rightValue = right.evaluate();
+
+		var leftIsFloat = Std.is(leftValue, Float);
+		var rightIsFloat = Std.is(rightValue, Float);
+
+		if (leftIsFloat || rightIsFloat) {
+			leftValue = leftIsFloat ? leftValue : cast(leftValue, Float);
+			rightValue = rightIsFloat ? rightValue : cast(rightValue, Float);
+
+			switch (opera) {
+				case "+":
+					return leftValue + rightValue;
+				case "-":
+					return leftValue - rightValue;
+				case "*":
+					return leftValue * rightValue;
+				case "/":
+					return leftValue / rightValue;
+				case "==":
+					return leftValue == rightValue;
+				case "!=":
+					return leftValue != rightValue;
+				case ">":
+					return leftValue > rightValue;
+				case "<":
+					return leftValue < rightValue;
+				case ">=":
+					return leftValue >= rightValue;
+				case "<=":
+					return leftValue <= rightValue;
+				default:
+					Flow.error.report("Unknown operator: " + opera);
+					return null;
+			}
+		} else {
+			switch (opera) {
+				case "+":
+					return leftValue + rightValue;
+				case "-":
+					return leftValue - rightValue;
+				case "*":
+					return leftValue * rightValue;
+				case "/":
+					return Math.floor(leftValue / rightValue);
+				case "==":
+					return leftValue == rightValue;
+				case "!=":
+					return leftValue != rightValue;
+				case ">":
+					return leftValue > rightValue;
+				case "<":
+					return leftValue < rightValue;
+				case ">=":
+					return leftValue >= rightValue;
+				case "<=":
+					return leftValue <= rightValue;
+				default:
+					Flow.error.report("Unknown operator: " + opera);
+					return null;
+			}
+		}
+	}
 }
 
 class UnaryExpression extends Expression {

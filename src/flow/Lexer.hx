@@ -158,8 +158,8 @@ class Lexer {
         return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
     }
 
-    static private function isNumeric(token:String):Bool {
-        return Std.parseInt(token) != null;
+    static private function isNumeric(char:String):Bool {
+        return Std.parseInt(char) != null || char == ".";
     }
 }
 
