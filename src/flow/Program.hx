@@ -315,28 +315,6 @@ class ForStatement extends Statement {
     }
 }
 
-class RangeExpression extends Expression {
-    public var start:Expression;
-    public var end:Expression;
-
-    public function new(start:Expression, end:Expression) {
-        this.start = start;
-        this.end = end;
-    }
-
-    public override function evaluate():Dynamic {
-        var startValue = start.evaluate();
-        var endValue = end.evaluate();
-        var result:Array<Int> = [];
-        var i = startValue;
-        while (i <= endValue) {
-            result.push(i);
-            i++;
-        }
-        return result;
-    }
-}
-
 class ArrayLiteralExpression extends Expression {
     public var elements: Array<Expression>;
     

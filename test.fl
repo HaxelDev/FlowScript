@@ -1,9 +1,0 @@
-let jaja = [1, 2, 3, 4]
-
-for x in jaja {
-    print(x)
-}
-
-for x in 0..10 {
-    print(x)
-}

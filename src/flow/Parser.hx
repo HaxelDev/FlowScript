@@ -235,16 +235,6 @@ class Parser {
         return expr;
     }
 
-    private function parseRange():Expression {
-        var expr:Expression = parseTerm();
-        while (match([TokenType.RANGE])) {
-            var opera:String = previous().value;
-            var endExpr:Expression = parseTerm();
-            expr = new RangeExpression(expr, endExpr);
-        }
-        return expr;
-    }
-
     private function parseFactor():Expression {
         if (match([TokenType.NUMBER])) {
             var value:String = previous().value;
@@ -269,8 +259,6 @@ class Parser {
             var expr:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return expr;
-        } else if (match([TokenType.RANGE])) {
-            return parseRange();
         } else {
             Flow.error.report("Unexpected token: " + peek().value);
             return null;

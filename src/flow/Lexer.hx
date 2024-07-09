@@ -41,10 +41,7 @@ class Lexer {
                     currentToken = "";
                 }
                 var symbol:String = char;
-                if (char == "." && i + 1 < code.length && code.charAt(i + 1) == ".") {
-                    i += 2;
-                    tokens.push(new Token(TokenType.RANGE, ".."));
-                } else if (char == "=") {
+                if (char == "=") {
                     if (i + 1 < code.length && (code.charAt(i + 1) == "=" || code.charAt(i + 1) == ">" || code.charAt(i + 1) == "<")) {
                         symbol += code.charAt(i + 1);
                         i++;
@@ -107,8 +104,6 @@ class Lexer {
                 return new Token(TokenType.LEFT_SHIFT, token);
             case ">>":
                 return new Token(TokenType.RIGHT_SHIFT, token);
-            case "..":
-                return new Token(TokenType.RANGE, token);
             case "=":
                 return new Token(TokenType.EQUAL, token);
             case "==":
@@ -180,8 +175,6 @@ class Lexer {
                 return TokenType.LESS_EQUAL;
             case ";":
                 return TokenType.SEMICOLON;
-            case "..":
-                return TokenType.RANGE;
             default:
                 return TokenType.SYMBOL;
         }
@@ -240,7 +233,6 @@ enum TokenType {
     AND;
     OR;
     IN;
-    RANGE;
     BITWISE_AND;
     BITWISE_OR;
     BITWISE_XOR;
