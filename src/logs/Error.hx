@@ -16,7 +16,7 @@ class Error {
   public function report(message:Dynamic, exitOnReport:Bool = true):Void {
     var errorMessage = '<red,u>Error! | $message</>';
     if (lastErrorMessage != errorMessage) {
-      Console.log(errorMessage);
+      Console.error(errorMessage);
       lastErrorMessage = errorMessage;
     }
     if (exitOnReport) {
