@@ -41,6 +41,8 @@ class Parser {
                 return parseFuncStatement();
             } else if (keyword == "call") {
                 return parseCallStatement();
+            } else if (keyword == "return") {
+                return parseReturnStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword);
                 return null;
@@ -176,6 +178,11 @@ class Parser {
         }
         consume(TokenType.RPAREN, "Expected ')' after arguments");
         return new CallStatement(name, arguments);
+    }
+
+    private function parseReturnStatement(): Statement {
+        var expression:Expression = parseExpression();
+        return new ReturnStatement(expression);
     }
 
     private function parseBlock(): BlockStatement {

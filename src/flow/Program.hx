@@ -460,10 +460,61 @@ class CallExpression extends Expression {
             Flow.error.report("Undefined function: " + name);
             return null;
         }
+
         var args:Array<Dynamic> = [];
         for (arg in arguments) {
             args.push(arg.evaluate());
         }
-        return Reflect.callMethod(null, func, args);
+
+        if (Std.isOfType(func, Function)) {
+            return executeFunction(func, args);
+        } else if (Std.isOfType(func, Dynamic -> Dynamic)) {
+            return executeDynamicFunction(func, args);
+        } else {
+            Flow.error.report("Attempting to call a non-function: " + name);
+            return null;
+        }
+    }
+
+    private function executeFunction(func:Function, args:Array<Dynamic>): Dynamic {
+        try {
+            func.execute(args);
+            return null;
+        } catch (e:ReturnValue) {
+            return e.value;
+        } catch (e:haxe.Exception) {
+            Flow.error.report("Error executing function '" + name + "': " + e.toString());
+            return null;
+        }
+    }
+
+    private function executeDynamicFunction(func:Dynamic -> Dynamic, args:Array<Dynamic>): Dynamic {
+        try {
+            return func(args);
+        } catch (e:haxe.Exception) {
+            Flow.error.report("Error executing function '" + name + "': " + e.toString());
+            return null;
+        }
+    }
+}
+
+class ReturnStatement extends Statement {
+    public var expression:Expression;
+
+    public function new(expression:Expression) {
+        this.expression = expression;
+    }
+
+    public override function execute():Void {
+        throw new ReturnValue(expression.evaluate());
+    }
+}
+
+class ReturnValue extends haxe.Exception {
+    public var value:Dynamic;
+
+    public function new(value:Dynamic) {
+        this.value = value;
+        super('');
     }
 }
