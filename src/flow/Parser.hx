@@ -271,7 +271,11 @@ class Parser {
         } else if (match([TokenType.STRING])) {
             return new LiteralExpression(previous().value);
         } else if (match([TokenType.IDENTIFIER])) {
-            return new VariableExpression(previous().value);
+            if (peek().type == TokenType.LPAREN) {
+                return parseCallExpression();
+            } else {
+                return new VariableExpression(previous().value);
+            }
         } else if (match([TokenType.TRUE])) {
             return new LiteralExpression(true);
         } else if (match([TokenType.FALSE])) {
@@ -284,6 +288,21 @@ class Parser {
             Flow.error.report("Unexpected token: " + peek().value);
             return null;
         }
+    }
+
+    private function parseCallExpression():Expression {
+        var nameToken:Token = previous();
+        var name:String = nameToken.value;
+        var arguments:Array<Expression> = [];
+        consume(TokenType.LPAREN, "Expected '(' after function name");
+        while (!check(TokenType.RPAREN)) {
+            arguments.push(parseExpression());
+            if (match([TokenType.COMMA])) {
+                // Consume comma
+            }
+        }
+        consume(TokenType.RPAREN, "Expected ')' after arguments");
+        return new CallExpression(name, arguments);
     }
 
     private function advance():Token {

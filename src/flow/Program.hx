@@ -444,3 +444,26 @@ class Function {
         body.execute();
     }
 }
+
+class CallExpression extends Expression {
+    public var name:String;
+    public var arguments:Array<Expression>;
+
+    public function new(name:String, arguments:Array<Expression>) {
+        this.name = name;
+        this.arguments = arguments;
+    }
+
+    public override function evaluate(): Dynamic {
+        var func:Dynamic = Environment.getFunction(name);
+        if (func == null) {
+            Flow.error.report("Undefined function: " + name);
+            return null;
+        }
+        var args:Array<Dynamic> = [];
+        for (arg in arguments) {
+            args.push(arg.evaluate());
+        }
+        return Reflect.callMethod(null, func, args);
+    }
+}
