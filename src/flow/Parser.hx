@@ -148,29 +148,63 @@ class Parser {
     }
 
     private function parseExpression():Expression {
-        return parseEquality();
+        return parseAssignment();
     }
     
+    private function parseAssignment():Expression {
+        var expr = parseEquality();
+
+        if (match([TokenType.EQUAL])) {
+            var equals = previous();
+            var value = parseAssignment();
+
+            if (Std.is(expr, VariableExpression)) {
+                var name = (cast expr : VariableExpression).name;
+                return new AssignExpression(name, value);
+            }
+
+            Flow.error.report("Invalid assignment target");
+        }
+
+        return expr;
+    }
+
     private function parseEquality():Expression {
-        var expr:Expression = parseComparison();
-        while (match([TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL, TokenType.AND, TokenType.OR])) {
-            var opera:String = previous().value;
-            var right:Expression = parseComparison();
+        var expr = parseComparison();
+
+        while (match([TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL])) {
+            var opera = previous().value;
+            var right = parseComparison();
             expr = new BinaryExpression(expr, opera, right);
         }
+
         return expr;
     }
     
     private function parseComparison():Expression {
-        var expr:Expression = parseRange();
+        var expr = parseTerm();
+
         while (match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])) {
-            var opera:String = previous().value;
-            var right:Expression = parseRange();
+            var opera = previous().value;
+            var right = parseTerm();
             expr = new BinaryExpression(expr, opera, right);
         }
+
         return expr;
     }
+
+    private function parseTerm():Expression {
+        var expr = parseFactor();
     
+        while (match([TokenType.PLUS, TokenType.MINUS])) {
+            var opera = previous().value;
+            var right = parseFactor();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+    
+        return expr;
+    }
+
     private function parseRange():Expression {
         var expr:Expression = parseTerm();
         while (match([TokenType.RANGE])) {
@@ -180,17 +214,7 @@ class Parser {
         }
         return expr;
     }
-    
-    private function parseTerm():Expression {
-        var expr:Expression = parseFactor();
-        while (match([TokenType.PLUS, TokenType.MINUS, TokenType.BITWISE_AND, TokenType.BITWISE_OR, TokenType.BITWISE_XOR])) {
-            var opera:String = previous().value;
-            var right:Expression = parseFactor();
-            expr = new BinaryExpression(expr, opera, right);
-        }
-        return expr;
-    }
-    
+
     private function parseFactor():Expression {
         if (match([TokenType.NUMBER])) {
             var value:String = previous().value;

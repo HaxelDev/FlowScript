@@ -343,3 +343,13 @@ class ArrayLiteralExpression extends Expression {
         return result;
     }
 }
+
+class AssignExpression extends Expression {
+    public var name:String;
+    public var value:Expression;
+
+    public function new(name:String, value:Expression) {
+        this.name = name;
+        this.value = value;
+    }
+}
