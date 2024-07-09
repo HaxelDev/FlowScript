@@ -1,4 +1,6 @@
-print('hello world')        print(x)
+func jaja(x) {
+    if x > 9 {
+        print(x)
     } else {
         print(x + x)
     }
