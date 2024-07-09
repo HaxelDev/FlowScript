@@ -269,6 +269,8 @@ class Parser {
             var expr:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return expr;
+        } else if (match([TokenType.RANGE])) {
+            return parseRange();
         } else {
             Flow.error.report("Unexpected token: " + peek().value);
             return null;

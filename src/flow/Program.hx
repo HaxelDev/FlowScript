@@ -302,21 +302,15 @@ class ForStatement extends Statement {
     }
 
     public override function execute(): Void {
-        var iterable:Dynamic = iterableExpression.evaluate();
-
-        if (iterable == null) {
-            Flow.error.report("Iterable expression evaluates to null");
-        }
-
-        if (Reflect.isObject(iterable) && Reflect.field(iterable, "iterator") != null) {
-            var iterator:Iterator<Dynamic> = Reflect.field(iterable, "iterator")();
-            while (iterator.hasNext()) {
-                var item:Dynamic = iterator.next();
+        var iterable:Iterable<Dynamic> = iterableExpression.evaluate();
+    
+        if (iterable != null) {
+            for (item in iterable) {
                 Environment.define(variableName, item);
                 body.execute();
             }
         } else {
-            Flow.error.report("Cannot iterate over non-iterable expression");
+            Flow.error.report("Iterable expression evaluates to null");
         }
     }
 }
@@ -334,29 +328,12 @@ class RangeExpression extends Expression {
         var startValue = start.evaluate();
         var endValue = end.evaluate();
         var result:Array<Int> = [];
-        for (i in startValue...endValue) {
+        var i = startValue;
+        while (i <= endValue) {
             result.push(i);
+            i++;
         }
         return result;
-    }
-}
-
-class RangeIterator {
-    private var current:Int;
-    private var end:Int;
-
-    public function new(start:Int, end:Int) {
-        this.current = start - 1;
-        this.end = end;
-    }
-
-    public function hasNext():Bool {
-        return current < end;
-    }
-
-    public function next():Int {
-        current++;
-        return current;
     }
 }
 

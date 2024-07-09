@@ -42,8 +42,8 @@ class Lexer {
                 }
                 var symbol:String = char;
                 if (char == "." && i + 1 < code.length && code.charAt(i + 1) == ".") {
-                    symbol += ".";
-                    i++;
+                    i += 2;
+                    tokens.push(new Token(TokenType.RANGE, ".."));
                 } else if (char == "=") {
                     if (i + 1 < code.length && (code.charAt(i + 1) == "=" || code.charAt(i + 1) == ">" || code.charAt(i + 1) == "<")) {
                         symbol += code.charAt(i + 1);
