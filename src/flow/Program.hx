@@ -376,16 +376,6 @@ class ArrayLiteralExpression extends Expression {
     }
 }
 
-class AssignExpression extends Expression {
-    public var name:String;
-    public var value:Expression;
-
-    public function new(name:String, value:Expression) {
-        this.name = name;
-        this.value = value;
-    }
-}
-
 class FuncStatement extends Statement {
     public var name:String;
     public var parameters:Array<String>;

@@ -68,10 +68,10 @@ class Parser {
         } else {
             initializer = parseExpression();
         }
-    
+
         return new LetStatement(name, initializer);
     }
-    
+
     private function parseArrayLiteral(): Expression {
         consume(TokenType.LBRACKET, "Expected '[' to start array literal");
     
@@ -200,25 +200,7 @@ class Parser {
     }
 
     private function parseExpression():Expression {
-        return parseAssignment();
-    }
-    
-    private function parseAssignment():Expression {
-        var expr = parseEquality();
-
-        if (match([TokenType.EQUAL])) {
-            var equals = previous();
-            var value = parseAssignment();
-
-            if (Std.is(expr, VariableExpression)) {
-                var name = (cast expr : VariableExpression).name;
-                return new AssignExpression(name, value);
-            }
-
-            Flow.error.report("Invalid assignment target");
-        }
-
-        return expr;
+        return parseEquality();
     }
 
     private function parseEquality():Expression {
@@ -232,28 +214,24 @@ class Parser {
 
         return expr;
     }
-    
-    private function parseComparison():Expression {
-        var expr = parseTerm();
 
+    private function parseComparison(): Expression {
+        var expr: Expression = parseTerm();
         while (match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])) {
-            var opera = previous().value;
-            var right = parseTerm();
+            var opera: String = previous().value;
+            var right: Expression = parseTerm();
             expr = new BinaryExpression(expr, opera, right);
         }
-
         return expr;
     }
-
-    private function parseTerm():Expression {
-        var expr = parseFactor();
     
-        while (match([TokenType.PLUS, TokenType.MINUS])) {
-            var opera = previous().value;
-            var right = parseFactor();
+    private function parseTerm(): Expression {
+        var expr: Expression = parseFactor();
+        while (match([TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.BITWISE_AND, TokenType.BITWISE_OR, TokenType.BITWISE_XOR])) {
+            var opera: String = previous().value;
+            var right: Expression = parseFactor();
             expr = new BinaryExpression(expr, opera, right);
         }
-    
         return expr;
     }
 

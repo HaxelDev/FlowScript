@@ -1,6 +1,5 @@
-func add(a, b) {
-    return a + b
-}
+let x = 0
 
-let x = add(10, 10)
-print(x)
+if x == 0 {
+    print('zero')
+}

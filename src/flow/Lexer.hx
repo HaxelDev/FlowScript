@@ -35,7 +35,7 @@ class Lexer {
                 char == "[" || char == "]" || char == "," || char == ":" ||
                 char == "+" || char == "-" || char == "*" || char == "/" ||
                 char == "=" || char == ">" || char == "<" || char == ";" ||
-                (char == "." && i + 1 < code.length && code.charAt(i + 1) == ".")) {
+                char == "." || char == "!") {
                 if (currentToken.length > 0) {
                     tokens.push(getToken(currentToken));
                     currentToken = "";
@@ -44,6 +44,11 @@ class Lexer {
                 if (char == "." && i + 1 < code.length && code.charAt(i + 1) == ".") {
                     symbol += ".";
                     i++;
+                } else if (char == "=") {
+                    if (i + 1 < code.length && (code.charAt(i + 1) == "=" || code.charAt(i + 1) == ">" || code.charAt(i + 1) == "<")) {
+                        symbol += code.charAt(i + 1);
+                        i++;
+                    }
                 }
                 tokens.push(new Token(getSymbolType(symbol), symbol));
             } else {
@@ -104,6 +109,26 @@ class Lexer {
                 return new Token(TokenType.RIGHT_SHIFT, token);
             case "..":
                 return new Token(TokenType.RANGE, token);
+            case "=":
+                return new Token(TokenType.EQUAL, token);
+            case "==":
+                return new Token(TokenType.EQUAL_EQUAL, token);
+            case "!=":
+                return new Token(TokenType.BANG_EQUAL, token);
+            case ">":
+                return new Token(TokenType.GREATER, token);
+            case ">=":
+                return new Token(TokenType.GREATER_EQUAL, token);
+            case "<":
+                return new Token(TokenType.LESS, token);
+            case "<=":
+                return new Token(TokenType.LESS_EQUAL, token);
+            case "*":
+                return new Token(TokenType.MULTIPLY, token);
+            case "/":
+                return new Token(TokenType.DIVIDE, token);
+            case ";":
+                return new Token(TokenType.SEMICOLON, token);
             default:
                 if (isNumeric(token)) {
                     return new Token(TokenType.NUMBER, token);
