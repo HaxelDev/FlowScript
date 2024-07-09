@@ -106,7 +106,12 @@ class Parser {
         if (match([TokenType.KEYWORD])) {
             var keyword:String = previous().value;
             if (keyword == "else") {
-                elseBranch = parseBlock();
+                if (peek().type == TokenType.KEYWORD && peek().value == "if") {
+                    advance();
+                    elseBranch = parseIfStatement();
+                } else {
+                    elseBranch = parseBlock();
+                }
             }
         }
 

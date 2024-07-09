@@ -239,7 +239,11 @@ class IfStatement extends Statement {
         if (condition.evaluate()) {
             thenBranch.execute();
         } else if (elseBranch != null) {
-            elseBranch.execute();
+            if (Std.is(elseBranch, IfStatement)) {
+                cast(elseBranch, IfStatement).execute();
+            } else {
+                elseBranch.execute();
+            }
         }
     }
 }
