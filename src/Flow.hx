@@ -60,8 +60,6 @@ class Flow {
         runInteractive();
       case "version":
         runVersion();
-      case "help":
-        printHelp();
       default:
         printHelp();
     }
@@ -77,6 +75,5 @@ class Flow {
     Logger.log('Usage: flow run [file]');
     Logger.log('       flow interactive');
     Logger.log('       flow version');
-    Logger.log('       flow help');
   }
 }

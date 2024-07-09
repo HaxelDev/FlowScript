@@ -20,9 +20,12 @@ class Lexer {
                 }
                 i++;
                 continue;
-            }
-
-            if (inString) {
+            } else if (char == "/" && i + 1 < code.length && code.charAt(i + 1) == "/") {
+                while (i < code.length && code.charAt(i) != "\n") {
+                    i++;
+                }
+                continue;
+            } else if (inString) {
                 currentToken += char;
             } else if (isAlpha(char) || char == "_") {
                 currentToken += char;
