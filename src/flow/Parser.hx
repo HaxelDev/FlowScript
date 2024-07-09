@@ -37,6 +37,10 @@ class Parser {
                 return parseWhileStatement();
             } else if (keyword == "for") {
                 return parseForStatement();
+            } else if (keyword == "func") {
+                return parseFuncStatement();
+            } else if (keyword == "call") {
+                return parseCallStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword);
                 return null;
@@ -131,6 +135,42 @@ class Parser {
         }
     
         return new ForStatement(variableName, iterableExpression, body);
+    }
+
+    private function parseFuncStatement():FuncStatement {
+        var nameToken:Token = consume(TokenType.IDENTIFIER, "Expected function name after 'func'");
+        var name:String = nameToken.value;
+
+        consume(TokenType.LPAREN, "Expected '(' after function name");
+
+        var parameters:Array<String> = [];
+        while (!check(TokenType.RPAREN)) {
+            var parameterToken:Token = consume(TokenType.IDENTIFIER, "Expected parameter name");
+            parameters.push(parameterToken.value);
+            if (match([TokenType.COMMA])) {
+                // Consume comma
+            }
+        }
+        consume(TokenType.RPAREN, "Expected ')' after parameters");
+
+        var body:BlockStatement = parseBlock();
+
+        return new FuncStatement(name, parameters, body);
+    }
+
+    private function parseCallStatement():Statement {
+        var nameToken:Token = consume(TokenType.IDENTIFIER, "Expected function name after 'call'");
+        var name:String = nameToken.value;
+        var arguments:Array<Expression> = [];
+        consume(TokenType.LPAREN, "Expected '(' after function name");
+        while (!check(TokenType.RPAREN)) {
+            arguments.push(parseExpression());
+            if (match([TokenType.COMMA])) {
+                // Consume comma
+            }
+        }
+        consume(TokenType.RPAREN, "Expected ')' after arguments");
+        return new CallStatement(name, arguments);
     }
 
     private function parseBlock(): BlockStatement {

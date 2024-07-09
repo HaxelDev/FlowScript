@@ -60,6 +60,7 @@ class VariableExpression extends Expression {
 
 class Environment {
     static var values:Map<String, Dynamic> = new Map();
+    static var functions:Map<String, Function> = new Map();
 
     static public function define(name:String, value:Dynamic):Void {
         values.set(name, value);
@@ -70,6 +71,33 @@ class Environment {
             Flow.error.report("Undefined variable: " + name);
         }
         return values.get(name);
+    }
+
+    static public function defineFunction(name:String, value:Function):Void {
+        functions.set(name, value);
+    }
+
+    static public function getFunction(name:String):Function {
+        if (!functions.exists(name)) {
+            Flow.error.report("Undefined function: " + name);
+        }
+        return functions.get(name);
+    }
+
+    static public function callFunction(name:String, arguments:Array<Dynamic>):Void {
+        if (!functions.exists(name)) {
+            Flow.error.report("Undefined function: " + name);
+        }
+        var func = functions.get(name);
+        if (func.parameters.length != arguments.length) {
+            Flow.error.report("Incorrect number of arguments for function: " + name);
+        }
+        var oldValues:Map<String, Dynamic> = values.copy();
+        for (i in 0...func.parameters.length) {
+            values.set(func.parameters[i], arguments[i]);
+        }
+        func.body.execute();
+        values = oldValues;
     }
 }
 
@@ -351,5 +379,64 @@ class AssignExpression extends Expression {
     public function new(name:String, value:Expression) {
         this.name = name;
         this.value = value;
+    }
+}
+
+class FuncStatement extends Statement {
+    public var name:String;
+    public var parameters:Array<String>;
+    public var body:BlockStatement;
+
+    public function new(name:String, parameters:Array<String>, body:BlockStatement) {
+        this.name = name;
+        this.parameters = parameters;
+        this.body = body;
+    }
+
+    public override function execute():Void {
+        var func = new Function(name, parameters, body);
+        Environment.defineFunction(name, func);
+    }
+}
+
+class CallStatement extends Statement {
+    public var name:String;
+    public var arguments:Array<Expression>;
+
+    public function new(name:String, arguments:Array<Expression>) {
+        this.name = name;
+        this.arguments = arguments;
+    }
+
+    public override function execute():Void {
+        var func:Function = Environment.getFunction(name);
+        if (func == null) {
+            Flow.error.report("Unknown function: " + name);
+            return;
+        }
+        var args:Array<Dynamic> = [];
+        for (arg in arguments) {
+            args.push(arg.evaluate());
+        }
+        func.execute(args);
+    }
+}
+
+class Function {
+    public var name:String;
+    public var parameters:Array<String>;
+    public var body:BlockStatement;
+
+    public function new(name:String, parameters:Array<String>, body:BlockStatement) {
+        this.name = name;
+        this.parameters = parameters;
+        this.body = body;
+    }
+
+    public function execute(args:Array<Dynamic>):Void {
+        for (i in 0...parameters.length) {
+            Environment.define(parameters[i], args[i]);
+        }
+        body.execute();
     }
 }

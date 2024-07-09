@@ -1,1 +1,7 @@
-print('hello world')
+print('hello world')        print(x)
+    } else {
+        print(x + x)
+    }
+}
+
+call jaja(10)

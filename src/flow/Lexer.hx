@@ -77,6 +77,10 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token);
             case "for":
                 return new Token(TokenType.KEYWORD, token);
+            case "func":
+                return new Token(TokenType.KEYWORD, token);
+            case "call":
+                return new Token(TokenType.KEYWORD, token);
             case "in":
                 return new Token(TokenType.IN, token);
             case "&&":
