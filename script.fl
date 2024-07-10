@@ -1,1 +1,29 @@
-print('hello world')
+print("Hello, World!")
+
+let x = 5
+print(x)
+
+if x > 10 {
+  print("x is greater than 10")
+} else {
+  print("x is less than or equal to 10")
+}
+
+let i = 0
+while i < 5 {
+  i = i + 1
+  print(i)
+}
+
+func add(a, b) {
+  return a + b
+}
+
+let result = add(5, 5)
+print(result)
+
+let arr = [1, 2, 3, 4, 5]
+print(arr)
+
+let person = { name: "John", age: 30 }
+print(person.name)
