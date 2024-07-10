@@ -28,7 +28,7 @@ class Flow {
     var parser:Parser = new Parser([]);
 
     while (true) {
-      Sys.print(">>> ");
+      Sys.print("flow> ");
       input = Sys.stdin().readLine().trim();
 
       if (input == "exit" || input == "quit") {
