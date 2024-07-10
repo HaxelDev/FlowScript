@@ -65,6 +65,8 @@ class Parser {
 
         if (check(TokenType.LBRACKET)) {
             initializer = parseArrayLiteral();
+        } else if (check(TokenType.LBRACE)) {
+            initializer = parseObjectLiteral();
         } else {
             initializer = parseExpression();
         }
@@ -91,6 +93,22 @@ class Parser {
         consume(TokenType.RBRACKET, "Expected ']' after array literal");
     
         return new ArrayLiteralExpression(elements);
+    }
+
+    private function parseObjectLiteral():Expression {
+        var properties:Map<String, Expression> = new Map();
+        consume(TokenType.LBRACE, "Expected '{' to start object literal");
+        while (!check(TokenType.RBRACE)) {
+            var key:Token = consume(TokenType.IDENTIFIER, "Expected property name");
+            consume(TokenType.COLON, "Expected ':' after property name");
+            var value:Expression = parseExpression();
+            properties[key.value] = value;
+            if (match([TokenType.COMMA])) {
+                // Consume comma
+            }
+        }
+        consume(TokenType.RBRACE, "Expected '}' after object literal");
+        return new ObjectExpression(properties);
     }
 
     private function parsePrintStatement():PrintStatement {
@@ -249,7 +267,7 @@ class Parser {
             if (peek().type == TokenType.LPAREN) {
                 return parseCallExpression();
             } else {
-                return new VariableExpression(previous().value);
+                return parsePropertyAccess();
             }
         } else if (match([TokenType.TRUE])) {
             return new LiteralExpression(true);
@@ -278,6 +296,15 @@ class Parser {
         }
         consume(TokenType.RPAREN, "Expected ')' after arguments");
         return new CallExpression(name, arguments);
+    }
+
+    private function parsePropertyAccess():Expression {
+        var obj:Expression = new VariableExpression(previous().value);
+        while (match([TokenType.DOT])) {
+            var property:Token = consume(TokenType.IDENTIFIER, "Expected property name");
+            obj = new PropertyAccessExpression(obj, property.value);
+        }
+        return obj;
     }
 
     private function advance():Token {

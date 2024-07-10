@@ -72,10 +72,19 @@ class Environment {
     }
 
     static public function get(name:String):Dynamic {
-        if (!values.exists(name)) {
-            Flow.error.report("Undefined variable: " + name);
+        var parts:Array<String> = name.split(".");
+        var obj:Dynamic = values.get(parts[0]);
+        if (obj == null) {
+            Flow.error.report("Undefined variable: " + parts[0]);
         }
-        return values.get(name);
+        for (i in 1...parts.length) {
+            if (Reflect.hasField(obj, parts[i])) {
+                obj = Reflect.field(obj, parts[i]);
+            } else {
+                Flow.error.report("Undefined property: " + parts[i]);
+            }
+        }
+        return obj;
     }
 
     static public function defineFunction(name:String, value:Function):Void {
@@ -477,5 +486,41 @@ class ReturnValue extends haxe.Exception {
     public function new(value:Dynamic) {
         this.value = value;
         super('');
+    }
+}
+
+class ObjectExpression extends Expression {
+    public var properties:Map<String, Expression>;
+
+    public function new(properties:Map<String, Expression>) {
+        this.properties = properties;
+    }
+
+    public override function evaluate():Dynamic {
+        var obj:Dynamic = {};
+        for (key in properties.keys()) {
+            Reflect.setField(obj, key, properties[key].evaluate());
+        }
+        return obj;
+    }
+}
+
+class PropertyAccessExpression extends Expression {
+    public var obj:Expression;
+    public var property:String;
+
+    public function new(obj:Expression, property:String) {
+        this.obj = obj;
+        this.property = property;
+    }
+
+    public override function evaluate():Dynamic {
+        var objValue:Dynamic = obj.evaluate();
+        if (objValue != null && Reflect.hasField(objValue, property)) {
+            return Reflect.field(objValue, property);
+        } else {
+            Flow.error.report("Property '" + property + "' does not exist on object");
+            return null;
+        }
     }
 }
