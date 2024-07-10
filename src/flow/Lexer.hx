@@ -98,6 +98,8 @@ class Lexer {
                 return new Token(TokenType.IN, token);
             case "IO":
                 return new Token(TokenType.IO, token);
+            case "Random":
+                return new Token(TokenType.RANDOM, token);
             case "&&":
                 return new Token(TokenType.AND, token);
             case "||":
@@ -247,4 +249,5 @@ enum TokenType {
     LEFT_SHIFT;
     RIGHT_SHIFT;
     IO;
+    RANDOM;
 }

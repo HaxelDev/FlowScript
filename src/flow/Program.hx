@@ -2,6 +2,7 @@ package flow;
 
 import logs.*;
 import modules.IO;
+import modules.Random;
 
 class Program {
     public var statements:Array<Statement>;
@@ -593,5 +594,37 @@ class IOCallStatement extends Statement {
             case "readLine":
                 IO.readLine();
         }
+    }
+}
+
+class RandomExpression extends Expression {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments;
+    }
+
+    public override function evaluate():Int {
+        var min:Int = arguments[0].evaluate();
+        var max:Int = arguments[1].evaluate();
+        return Random.nextInt(min, max);
+    }
+}
+
+class RandomStatement extends Statement {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments;
+    }
+
+    public override function execute():Void {
+        var min:Int = arguments[0].evaluate();
+        var max:Int = arguments[1].evaluate();
+        Random.nextInt(min, max);
     }
 }

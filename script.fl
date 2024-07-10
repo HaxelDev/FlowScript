@@ -1,8 +1,2 @@
-func main() {
-  while true {
-    let input = IO().readLine()
-    print(input)
-  }
-}
-
-call main()
+let random = Random().nextInt(1, 10)
+print(random)
