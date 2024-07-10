@@ -47,6 +47,8 @@ class Parser {
                 Flow.error.report("Unknown keyword: " + keyword);
                 return null;
             }
+        } else if (firstTokenType == TokenType.IO) {
+            return parseIOStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
             return parseLetStatement();
         } else {
@@ -67,6 +69,8 @@ class Parser {
             initializer = parseArrayLiteral();
         } else if (check(TokenType.LBRACE)) {
             initializer = parseObjectLiteral();
+        } else if (check(TokenType.IO)) {
+            initializer = parseIOExpression();
         } else {
             initializer = parseExpression();
         }
@@ -203,6 +207,44 @@ class Parser {
         return new ReturnStatement(expression);
     }
 
+    private function parseIOStatement():Statement {
+        var ioToken:Token = advance();
+        if (ioToken.type != TokenType.IO) {
+            Flow.error.report("Expected 'IO' keyword");
+            return null;
+        }
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('");
+            return null;
+        }
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'");
+            return null;
+        }
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+        if (methodName == ".readLine") {
+            consume(TokenType.LPAREN, "Expected '(' after 'readLine'");
+            consume(TokenType.RPAREN, "Expected ')' after 'readLine'");
+            return new IOCallStatement("readLine");
+        } else if (methodName == ".print") {
+            consume(TokenType.LPAREN, "Expected '(' after 'print'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOCallStatement("print", [expression]);
+        } else if (methodName == ".println") {
+            consume(TokenType.LPAREN, "Expected '(' after 'println'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOCallStatement("println", [expression]);
+        } else {
+            Flow.error.report("Unknown IO method: " + methodName);
+            return null;
+        }
+    }
+
     private function parseBlock(): BlockStatement {
         if (match([TokenType.LBRACE])) {
             var statements:Array<Statement> = [];
@@ -264,10 +306,15 @@ class Parser {
         } else if (match([TokenType.STRING])) {
             return new LiteralExpression(previous().value);
         } else if (match([TokenType.IDENTIFIER])) {
-            if (peek().type == TokenType.LPAREN) {
-                return parseCallExpression();
+            var identifier = previous().type;
+            if (identifier == TokenType.IO) {
+                return parseIOExpression();
             } else {
-                return parsePropertyAccess();
+                if (peek().type == TokenType.LPAREN) {
+                    return parseCallExpression();
+                } else {
+                    return parsePropertyAccess();
+                }
             }
         } else if (match([TokenType.TRUE])) {
             return new LiteralExpression(true);
@@ -279,6 +326,44 @@ class Parser {
             return expr;
         } else {
             Flow.error.report("Unexpected token: " + peek().value);
+            return null;
+        }
+    }
+
+    private function parseIOExpression():Expression {
+        var ioToken:Token = advance();
+        if (ioToken.type != TokenType.IO) {
+            Flow.error.report("Expected 'IO' keyword");
+            return null;
+        }
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('");
+            return null;
+        }
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'");
+            return null;
+        }
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+        if (methodName == ".readLine") {
+            consume(TokenType.LPAREN, "Expected '(' after 'readLine'");
+            consume(TokenType.RPAREN, "Expected ')' after 'readLine'");
+            return new IOCallExpression("readLine");
+        } else if (methodName == ".print") {
+            consume(TokenType.LPAREN, "Expected '(' after 'print'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOCallExpression("print", [expression]);
+        } else if (methodName == ".println") {
+            consume(TokenType.LPAREN, "Expected '(' after 'println'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOCallExpression("println", [expression]);
+        } else {
+            Flow.error.report("Unknown IO method: " + methodName);
             return null;
         }
     }

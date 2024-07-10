@@ -1,11 +1,18 @@
 package modules;
 
+using StringTools;
+
 class IO {
-    public static function print(value:Dynamic):Void {
-        Sys.println(value);
+    public static function readLine():String {
+        Sys.stdout().writeString(">>> ");
+        return Sys.stdin().readLine().trim();
     }
 
-    public static function readline():String {
-        return Sys.stdin().readLine();
+    public static function print(value:String):Void {
+        Sys.stdout().writeString(value);
+    }
+
+    public static function println(value:String):Void {
+        Sys.stdout().writeString(value + "\n");
     }
 }

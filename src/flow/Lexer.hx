@@ -96,6 +96,8 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token);
             case "in":
                 return new Token(TokenType.IN, token);
+            case "IO":
+                return new Token(TokenType.IO, token);
             case "&&":
                 return new Token(TokenType.AND, token);
             case "||":
@@ -244,4 +246,5 @@ enum TokenType {
     BITWISE_XOR;
     LEFT_SHIFT;
     RIGHT_SHIFT;
+    IO;
 }

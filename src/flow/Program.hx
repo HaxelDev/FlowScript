@@ -1,6 +1,7 @@
 package flow;
 
 import logs.*;
+import modules.IO;
 
 class Program {
     public var statements:Array<Statement>;
@@ -76,12 +77,18 @@ class Environment {
         var obj:Dynamic = values.get(parts[0]);
         if (obj == null) {
             Flow.error.report("Undefined variable: " + parts[0]);
+            return null;
         }
         for (i in 1...parts.length) {
+            if (obj == null) {
+                Flow.error.report("Undefined property: " + parts[i - 1]);
+                return null;
+            }
             if (Reflect.hasField(obj, parts[i])) {
                 obj = Reflect.field(obj, parts[i]);
             } else {
                 Flow.error.report("Undefined property: " + parts[i]);
+                return null;
             }
         }
         return obj;
@@ -521,6 +528,70 @@ class PropertyAccessExpression extends Expression {
         } else {
             Flow.error.report("Property '" + property + "' does not exist on object");
             return null;
+        }
+    }
+}
+
+class IOCallExpression extends Expression {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression> = null) {
+        this.methodName = methodName;
+        if (arguments == null) {
+            this.arguments = [];
+        } else {
+            this.arguments = arguments;
+        }
+    }
+
+    public override function evaluate():Dynamic {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "print":
+                IO.print(evaluatedArguments.join(" "));
+                return null;
+            case "println":
+                IO.println(evaluatedArguments.join(" "));
+                return null;
+            case "readLine":
+                return IO.readLine();
+        }
+
+        return null;
+    }
+}
+
+class IOCallStatement extends Statement {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression> = null) {
+        this.methodName = methodName;
+        if (arguments == null) {
+            this.arguments = [];
+        } else {
+            this.arguments = arguments;
+        }
+    }
+
+    public override function execute():Void {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "print":
+                IO.print(evaluatedArguments.join(" "));
+            case "println":
+                IO.println(evaluatedArguments.join(" "));
+            case "readLine":
+                IO.readLine();
         }
     }
 }
