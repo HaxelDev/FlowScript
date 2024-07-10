@@ -28,7 +28,11 @@ class PrintStatement extends Statement {
     }
 
     public override function execute():Void {
-        Logger.log(expression.evaluate());
+        var value:String = expression.evaluate();
+        var lines:Array<String> = value.split("\n");
+        for (line in lines) {
+            Logger.log(line);
+        }
     }
 }
 

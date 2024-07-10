@@ -12,12 +12,20 @@ class Lexer {
 
             if (char == "\"" || char == "'") {
                 if (inString) {
-                    tokens.push(new Token(TokenType.STRING, currentToken));
-                    currentToken = "";
+                    if (currentToken.length > 0 && currentToken.charAt(currentToken.length - 1) == '\\') {
+                        currentToken = currentToken.substring(0, currentToken.length - 1) + char;
+                    } else {
+                        tokens.push(new Token(TokenType.STRING, currentToken));
+                        currentToken = "";
+                    }
                     inString = false;
                 } else {
                     inString = true;
                 }
+                i++;
+                continue;
+            } else if (inString) {
+                currentToken += char;
                 i++;
                 continue;
             } else if (char == "/" && i + 1 < code.length && code.charAt(i + 1) == "/") {
@@ -25,8 +33,6 @@ class Lexer {
                     i++;
                 }
                 continue;
-            } else if (inString) {
-                currentToken += char;
             } else if (isAlpha(char) || char == "_") {
                 currentToken += char;
             } else if (isNumeric(char)) {
