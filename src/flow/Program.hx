@@ -65,6 +65,7 @@ class VariableExpression extends Expression {
 class Environment {
     static var values:Map<String, Dynamic> = new Map();
     static var functions:Map<String, Function> = new Map();
+    static var modules:Map<String, Dynamic> = new Map();
 
     static public function define(name:String, value:Dynamic):Void {
         values.set(name, value);
@@ -102,6 +103,17 @@ class Environment {
         }
         func.body.execute();
         values = oldValues;
+    }
+
+    static public function defineModule(name:String, module:Dynamic):Void {
+        modules.set(name, module);
+    }
+
+    static public function getModule(name:String):Dynamic {
+        if (!modules.exists(name)) {
+            Flow.error.report("Undefined module: " + name);
+        }
+        return modules.get(name);
     }
 }
 
