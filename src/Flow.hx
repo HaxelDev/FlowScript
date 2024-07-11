@@ -66,11 +66,6 @@ class Flow {
   }
 
   static function runVersion() {
-    var input:String = '{"name":"John","age":30," occupation":["programmer","teacher"]}';
-    var lexer:modules.json.Lexer = new modules.json.Lexer(input);
-    var parser:modules.json.Parser = new modules.json.Parser(lexer);
-    var json:Dynamic = parser.parse();
-    trace(json);
     Logger.log('Flow Script version 0.1.0');
   }
 
