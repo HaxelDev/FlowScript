@@ -56,7 +56,8 @@ class Lexer {
                     } else if (this.isAlpha(this.currentChar)) {
                         return this.readIdentifier();
                     } else {
-                        throw "Unexpected character: " + this.currentChar;
+                        Flow.error.report("Unexpected character: " + this.currentChar);
+                        return new Token(TokenType.EOF, "");
                     }
             }
         }
@@ -64,32 +65,47 @@ class Lexer {
     }
 
     private function readString():Token {
-        var result:String = "";
-        this.readNextChar();
-        while (this.currentChar != null && this.currentChar != '"') {
-            result += this.currentChar;
+        try {
+            var result:String = "";
             this.readNextChar();
+            while (this.currentChar != null && this.currentChar != '"') {
+                result += this.currentChar;
+                this.readNextChar();
+            }
+            this.readNextChar();
+            return new Token(TokenType.STRING, result);
+        } catch (e:Dynamic) {
+            Flow.error.report("Error reading string: " + e.toString());
+            return new Token(TokenType.EOF, "");
         }
-        this.readNextChar();
-        return new Token(TokenType.STRING, result);
     }
 
     private function readNumber():Token {
-        var result:String = "";
-        while (this.currentChar != null && (this.isDigit(this.currentChar) || this.currentChar == '.')) {
-            result += this.currentChar;
-            this.readNextChar();
+        try {
+            var result:String = "";
+            while (this.currentChar != null && (this.isDigit(this.currentChar) || this.currentChar == '.')) {
+                result += this.currentChar;
+                this.readNextChar();
+            }
+            return new Token(TokenType.NUMBER, result);
+        } catch (e:Dynamic) {
+            Flow.error.report("Error reading number: " + e.toString());
+            return new Token(TokenType.EOF, "");
         }
-        return new Token(TokenType.NUMBER, result);
     }
 
     private function readIdentifier():Token {
-        var result:String = "";
-        while (this.currentChar != null && (this.isAlphaNumeric(this.currentChar))) {
-            result += this.currentChar;
-            this.readNextChar();
+        try {
+            var result:String = "";
+            while (this.currentChar != null && (this.isAlphaNumeric(this.currentChar))) {
+                result += this.currentChar;
+                this.readNextChar();
+            }
+            return new Token(TokenType.IDENTIFIER, result);
+        } catch (e:Dynamic) {
+            Flow.error.report("Error reading identifier: " + e.toString());
+            return new Token(TokenType.EOF, "");
         }
-        return new Token(TokenType.IDENTIFIER, result);
     }
 
     private function isDigit(char:String):Bool {

@@ -12,7 +12,12 @@ class Parser {
     }
 
     public function parse():Dynamic {
-        return this.parseValue();
+        try {
+            return this.parseValue();
+        } catch (e:Dynamic) {
+            Flow.error.report("Error parsing JSON: " + e.toString());
+            return null;
+        }
     }
 
     private function parseValue():Dynamic {
@@ -34,52 +39,74 @@ class Parser {
             case TokenType.LEFT_BRACKET:
                 return this.parseArray();
             default:
-                throw "Unexpected token: " + this.currentToken.type;
+                Flow.error.report("Unexpected token: " + this.currentToken.type);
+                return null;
         }
     }
 
     private function parseObject():Dynamic {
-        var obj:Dynamic = {};
-        this.currentToken = this.lexer.getNextToken();
-        while (this.currentToken.type != TokenType.RIGHT_BRACE) {
-            var key = this.parseString();
-            this.expect(TokenType.COLON);
-            var value = this.parseValue();
-            Reflect.setField(obj, key, value);
-            if (this.currentToken.type == TokenType.COMMA) {
-                this.currentToken = this.lexer.getNextToken();
+        try {
+            var obj:Dynamic = {};
+            this.currentToken = this.lexer.getNextToken();
+            while (this.currentToken.type != TokenType.RIGHT_BRACE) {
+                var key = this.parseString();
+                this.expect(TokenType.COLON);
+                var value = this.parseValue();
+                Reflect.setField(obj, key, value);
+                if (this.currentToken.type == TokenType.COMMA) {
+                    this.currentToken = this.lexer.getNextToken();
+                }
             }
+            this.currentToken = this.lexer.getNextToken();
+            return obj;
+        } catch (e:Dynamic) {
+            Flow.error.report("Error parsing object: " + e.toString());
+            return null;
         }
-        this.currentToken = this.lexer.getNextToken();
-        return obj;
     }
 
     private function parseArray():Dynamic {
-        var arr:Array<Dynamic> = [];
-        this.currentToken = this.lexer.getNextToken();
-        while (this.currentToken.type != TokenType.RIGHT_BRACKET) {
-            arr.push(this.parseValue());
-            if (this.currentToken.type == TokenType.COMMA) {
-                this.currentToken = this.lexer.getNextToken();
+        try {
+            var arr:Array<Dynamic> = [];
+            this.currentToken = this.lexer.getNextToken();
+            while (this.currentToken.type != TokenType.RIGHT_BRACKET) {
+                arr.push(this.parseValue());
+                if (this.currentToken.type == TokenType.COMMA) {
+                    this.currentToken = this.lexer.getNextToken();
+                }
             }
+            this.currentToken = this.lexer.getNextToken();
+            return arr;
+        } catch (e:Dynamic) {
+            Flow.error.report("Error parsing array: " + e.toString());
+            return null;
         }
-        this.currentToken = this.lexer.getNextToken();
-        return arr;
     }
 
     private function parseString():String {
-        if (this.currentToken.type != TokenType.STRING) {
-            throw "Expected string, got " + this.currentToken.type;
+        try {
+            if (this.currentToken.type != TokenType.STRING) {
+                Flow.error.report("Expected string, got " + this.currentToken.type);
+                return null;
+            }
+            var str = this.currentToken.value;
+            this.currentToken = this.lexer.getNextToken();
+            return str;
+        } catch (e:Dynamic) {
+            Flow.error.report("Error parsing string: " + e.toString());
+            return null;
         }
-        var str = this.currentToken.value;
-        this.currentToken = this.lexer.getNextToken();
-        return str;
     }
 
     private function expect(type:TokenType):Void {
-        if (this.currentToken.type != type) {
-            throw "Expected " + type + ", got " + this.currentToken.type;
+        try {
+            if (this.currentToken.type != type) {
+                Flow.error.report("Expected " + type + ", got " + this.currentToken.type);
+                return;
+            }
+            this.currentToken = this.lexer.getNextToken();
+        } catch (e:Dynamic) {
+            Flow.error.report("Error expecting token: " + e.toString());
         }
-        this.currentToken = this.lexer.getNextToken();
     }
 }
