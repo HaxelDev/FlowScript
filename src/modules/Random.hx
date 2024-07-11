@@ -1,14 +1,12 @@
 package modules;
 
-class Random {
-    private static var _seed:Int;
+import Math;
 
-    public function new(seed:Int = 0) {
-        _seed = seed;
-    }
+class Random {
+    private static var _seed:Float = Math.random();
 
     public static function nextInt(min:Int, max:Int):Int {
-        _seed = (_seed * 1103515245 + 12345) & 0x7fffffff;
-        return min + (_seed % (max - min + 1));
+        _seed = (_seed * 1103515245.0 + 12345.0) % 0x7fffffff;
+        return min + Math.floor(_seed / 0x7fffffff * (max - min + 1));
     }
 }
