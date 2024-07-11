@@ -53,6 +53,10 @@ class Parser {
             return parseRandomStatement();
         } else if (firstTokenType == TokenType.SYSTEM) {
             return parseSystemStatement();
+        } else if (firstTokenType == TokenType.FILE) {
+            return parseFileStatement();
+        } else if (firstTokenType == TokenType.JSON) {
+            return parseJsonStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
             return parseLetStatement();
         } else {
@@ -292,14 +296,14 @@ class Parser {
 
             return new RandomStatement(methodName, [minExpr, maxExpr]);
         } else {
-            Flow.error.report("Unknown random method: " + methodName);
+            Flow.error.report("Unknown Random method: " + methodName);
             return null;
         }
     }
 
     private function parseSystemStatement():Statement {
-        var randomToken:Token = advance();
-        if (randomToken.type != TokenType.SYSTEM) {
+        var systemToken:Token = advance();
+        if (systemToken.type != TokenType.SYSTEM) {
             Flow.error.report("Expected 'System' keyword");
             return null;
         }
@@ -333,7 +337,95 @@ class Parser {
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new SystemStatement("println", [expression]);
         } else {
-            Flow.error.report("Unknown system method: " + methodName);
+            Flow.error.report("Unknown System method: " + methodName);
+            return null;
+        }
+    }
+
+    private function parseFileStatement():Statement {
+        var fileToken:Token = advance();
+        if (fileToken.type != TokenType.FILE) {
+            Flow.error.report("Expected 'File' keyword");
+            return null;
+        }
+
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('");
+            return null;
+        }
+
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'");
+            return null;
+        }
+
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".readFile") {
+            consume(TokenType.LPAREN, "Expected '(' after 'readFile'");
+            var filePath:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after file path expression");
+            return new FileStatement("readFile", [filePath]);
+        } else if (methodName == ".writeFile") {
+            consume(TokenType.LPAREN, "Expected '(' after 'writeFile'");
+            var filePath:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after file path expression");
+            var content:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after content expression");
+            return new FileStatement("writeFile", [filePath, content]);
+        } else if (methodName == ".exists") {
+            consume(TokenType.LPAREN, "Expected '(' after 'exists'");
+            var filePath:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after file path expression");
+            return new FileStatement("exists", [filePath]);
+        } else {
+            Flow.error.report("Unknown File method: " + methodName);
+            return null;
+        }
+    }
+
+    private function parseJsonStatement():Statement {
+        var jsonToken:Token = advance();
+        if (jsonToken.type != TokenType.JSON) {
+            Flow.error.report("Expected 'Json' keyword");
+            return null;
+        }
+
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('");
+            return null;
+        }
+
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'");
+            return null;
+        }
+
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".parse") {
+            consume(TokenType.LPAREN, "Expected '(' after 'parse'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new JsonStatement("parse", [expression]);
+        } else if (methodName == ".stringify") {
+            consume(TokenType.LPAREN, "Expected '(' after 'stringify'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new JsonStatement("stringify", [expression]);
+        } else if (methodName == ".isValid") {
+            consume(TokenType.LPAREN, "Expected '(' after 'isValid'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new JsonStatement("isValid", [expression]);
+        } else {
+            Flow.error.report("Unknown Json method: " + methodName);
             return null;
         }
     }
@@ -410,6 +502,14 @@ class Parser {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
             return parseSystemExpression();
+        } else if (match([TokenType.FILE])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseFileExpression();
+        } else if (match([TokenType.JSON])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseJsonExpression();
         } else if (match([TokenType.IDENTIFIER])) {
             if (peek().type == TokenType.LPAREN) {
                 return parseCallExpression();
@@ -480,7 +580,7 @@ class Parser {
 
             return new RandomExpression(methodName, [minExpr, maxExpr]);
         } else {
-            Flow.error.report("Unknown random method: " + methodName);
+            Flow.error.report("Unknown Random method: " + methodName);
             return null;
         }
     }
@@ -503,7 +603,59 @@ class Parser {
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new SystemExpression("println", [expression]);
         } else {
-            Flow.error.report("Unknown system method: " + methodName);
+            Flow.error.report("Unknown System method: " + methodName);
+            return null;
+        }
+    }
+
+    private function parseFileExpression():Expression {
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".readFile") {
+            consume(TokenType.LPAREN, "Expected '(' after 'readFile'");
+            var filePath:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after file path expression");
+            return new FileExpression("readFile", [filePath]);
+        } else if (methodName == ".writeFile") {
+            consume(TokenType.LPAREN, "Expected '(' after 'writeFile'");
+            var filePath:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after file path expression");
+            var content:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after content expression");
+            return new FileExpression("writeFile", [filePath, content]);
+        } else if (methodName == ".exists") {
+            consume(TokenType.LPAREN, "Expected '(' after 'exists'");
+            var filePath:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after file path expression");
+            return new FileExpression("exists", [filePath]);
+        } else {
+            Flow.error.report("Unknown File method: " + methodName);
+            return null;
+        }
+    }
+
+    private function parseJsonExpression():Expression {
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".parse") {
+            consume(TokenType.LPAREN, "Expected '(' after 'parse'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new JsonExpression("parse", [expression]);
+        } else if (methodName == ".stringify") {
+            consume(TokenType.LPAREN, "Expected '(' after 'stringify'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new JsonExpression("stringify", [expression]);
+        } else if (methodName == ".isValid") {
+            consume(TokenType.LPAREN, "Expected '(' after 'isValid'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new JsonExpression("isValid", [expression]);
+        } else {
+            Flow.error.report("Unknown Json method: " + methodName);
             return null;
         }
     }

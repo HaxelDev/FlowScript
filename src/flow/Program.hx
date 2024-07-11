@@ -4,6 +4,8 @@ import logs.*;
 import modules.IO;
 import modules.Random;
 import modules.System;
+import modules.File;
+import modules.Json;
 
 class Program {
     public var statements:Array<Statement>;
@@ -674,6 +676,115 @@ class SystemStatement extends Statement {
                 System.exit();
             case "currentDate":
                 System.currentDate();
+        }
+    }
+}
+
+class FileExpression extends Expression {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, ?arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments;
+    }
+
+    public override function evaluate():Dynamic {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "readFile":
+                return File.readFile(evaluatedArguments[0]);
+            case "writeFile":
+                File.writeFile(evaluatedArguments[0], evaluatedArguments[1]);
+                return null;
+            case "exists":
+                return File.exists(evaluatedArguments[0]);
+        }
+
+        return null;
+    }
+}
+
+class FileStatement extends Statement {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments;
+    }
+
+    public override function execute():Void {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "readFile":
+                File.readFile(evaluatedArguments[0]);
+            case "writeFile":
+                File.writeFile(evaluatedArguments[0], evaluatedArguments[1]);
+            case "exists":
+                File.exists(evaluatedArguments[0]);
+        }
+    }
+}
+
+class JsonExpression extends Expression {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments;
+    }
+
+    public override function evaluate():Dynamic {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "parse":
+                return Json.parse(evaluatedArguments[0]);
+            case "stringify":
+                return Json.stringify(evaluatedArguments[0]);
+            case "isValid":
+                return Json.isValid(evaluatedArguments[0]);
+        }
+
+        return null;
+    }
+}
+
+class JsonStatement extends Statement {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments;
+    }
+
+    public override function execute():Void {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "parse":
+                Json.parse(evaluatedArguments[0]);
+            case "stringify":
+                Json.stringify(evaluatedArguments[0]);
+            case "isValid":
+                Json.isValid(evaluatedArguments[0]);
         }
     }
 }

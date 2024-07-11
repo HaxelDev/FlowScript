@@ -102,6 +102,10 @@ class Lexer {
                 return new Token(TokenType.RANDOM, token);
             case "System":
                 return new Token(TokenType.SYSTEM, token);
+            case "File":
+                return new Token(TokenType.FILE, token);
+            case "Json":
+                return new Token(TokenType.JSON, token);
             case "&&":
                 return new Token(TokenType.AND, token);
             case "||":
@@ -253,4 +257,6 @@ enum TokenType {
     IO;
     RANDOM;
     SYSTEM;
+    FILE;
+    JSON;
 }
