@@ -2,17 +2,17 @@ let running = true
 let random = Random().nextInt(1, 100)
 
 func main() {
-  while running {
-    let input = IO().readLine()
-    if input > random {
-      print("The number is too high")
-    } else if input < random {
-      print("The number is too low")
-    } else {
-      print("You guessed it!")
-      running = false
+    while running {
+        let input = IO().readLine()
+        if input > random {
+            print("The number is too high")
+        } else if input < random {
+            print("The number is too low")
+        } else {
+            print("You guessed it!")
+            running = false
+        }
     }
-  }
 }
 
 call main()
