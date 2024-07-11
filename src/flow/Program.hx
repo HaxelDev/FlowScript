@@ -68,9 +68,9 @@ class VariableExpression extends Expression {
 }
 
 class Environment {
-    static var values:Map<String, Dynamic> = new Map();
-    static var functions:Map<String, Function> = new Map();
-    static var modules:Map<String, Dynamic> = new Map();
+    static public var values:Map<String, Dynamic> = new Map();
+    static public var functions:Map<String, Function> = new Map();
+    static public var modules:Map<String, Dynamic> = new Map();
 
     static public function define(name:String, value:Dynamic):Void {
         values.set(name, value);
