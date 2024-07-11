@@ -1,9 +1,9 @@
 package flow;
 
-import modules.System;
 import logs.*;
 import modules.IO;
 import modules.Random;
+import modules.System;
 
 class Program {
     public var statements:Array<Statement>;
