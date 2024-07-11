@@ -73,12 +73,6 @@ class Parser {
             initializer = parseArrayLiteral();
         } else if (check(TokenType.LBRACE)) {
             initializer = parseObjectLiteral();
-        } else if (check(TokenType.IO)) {
-            initializer = parseIOExpression();
-        } else if (check(TokenType.RANDOM)) {
-            initializer = parseRandomExpression();
-        } else if (check(TokenType.SYSTEM)) {
-            initializer = parseSystemExpression();
         } else {
             initializer = parseExpression();
         }
@@ -404,20 +398,23 @@ class Parser {
             }
         } else if (match([TokenType.STRING])) {
             return new LiteralExpression(previous().value);
+        } else if (match([TokenType.IO])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseIOExpression();
+        } else if (match([TokenType.RANDOM])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseRandomExpression();
+        } else if (match([TokenType.SYSTEM])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseSystemExpression();
         } else if (match([TokenType.IDENTIFIER])) {
-            var identifier = previous().type;
-            if (identifier == TokenType.IO) {
-                return parseIOExpression();
-            } else if (identifier == TokenType.RANDOM) {
-                return parseRandomExpression();
-            } else if (identifier == TokenType.SYSTEM) {
-                return parseSystemExpression();
+            if (peek().type == TokenType.LPAREN) {
+                return parseCallExpression();
             } else {
-                if (peek().type == TokenType.LPAREN) {
-                    return parseCallExpression();
-                } else {
-                    return parsePropertyAccess();
-                }
+                return parsePropertyAccess();
             }
         } else if (match([TokenType.TRUE])) {
             return new LiteralExpression(true);
@@ -434,21 +431,6 @@ class Parser {
     }
 
     private function parseIOExpression():Expression {
-        var ioToken:Token = advance();
-        if (ioToken.type != TokenType.IO) {
-            Flow.error.report("Expected 'IO' keyword");
-            return null;
-        }
-        var lparenToken:Token = advance();
-        if (lparenToken.type != TokenType.LPAREN) {
-            Flow.error.report("Expected '('");
-            return null;
-        }
-        var rparenToken:Token = advance();
-        if (rparenToken.type != TokenType.RPAREN) {
-            Flow.error.report("Expected ')'");
-            return null;
-        }
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
         if (methodName == ".readLine") {
@@ -472,24 +454,6 @@ class Parser {
     }
 
     private function parseRandomExpression():Expression {
-        var randomToken:Token = advance();
-        if (randomToken.type != TokenType.RANDOM) {
-            Flow.error.report("Expected 'Random' keyword");
-            return null;
-        }
-
-        var lparenToken:Token = advance();
-        if (lparenToken.type != TokenType.LPAREN) {
-            Flow.error.report("Expected '('");
-            return null;
-        }
-
-        var rparenToken:Token = advance();
-        if (rparenToken.type != TokenType.RPAREN) {
-            Flow.error.report("Expected ')'");
-            return null;
-        }
-
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
 
@@ -522,24 +486,6 @@ class Parser {
     }
 
     private function parseSystemExpression():Expression {
-        var randomToken:Token = advance();
-        if (randomToken.type != TokenType.SYSTEM) {
-            Flow.error.report("Expected 'System' keyword");
-            return null;
-        }
-
-        var lparenToken:Token = advance();
-        if (lparenToken.type != TokenType.LPAREN) {
-            Flow.error.report("Expected '('");
-            return null;
-        }
-
-        var rparenToken:Token = advance();
-        if (rparenToken.type != TokenType.RPAREN) {
-            Flow.error.report("Expected ')'");
-            return null;
-        }
-
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
 
