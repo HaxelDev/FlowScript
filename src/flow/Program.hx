@@ -1,5 +1,6 @@
 package flow;
 
+import modules.System;
 import logs.*;
 import modules.IO;
 import modules.Random;
@@ -533,17 +534,13 @@ class PropertyAccessExpression extends Expression {
     }
 }
 
-class IOCallExpression extends Expression {
+class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
 
     public function new(methodName:String, arguments:Array<Expression> = null) {
         this.methodName = methodName;
-        if (arguments == null) {
-            this.arguments = [];
-        } else {
-            this.arguments = arguments;
-        }
+        this.arguments = arguments != null ? arguments : [];
     }
 
     public override function evaluate():Dynamic {
@@ -567,17 +564,13 @@ class IOCallExpression extends Expression {
     }
 }
 
-class IOCallStatement extends Statement {
+class IOStatement extends Statement {
     public var methodName:String;
     public var arguments:Array<Expression>;
 
     public function new(methodName:String, arguments:Array<Expression> = null) {
         this.methodName = methodName;
-        if (arguments == null) {
-            this.arguments = [];
-        } else {
-            this.arguments = arguments;
-        }
+        this.arguments = arguments != null ? arguments : [];
     }
 
     public override function execute():Void {
@@ -626,5 +619,61 @@ class RandomStatement extends Statement {
         var min:Int = arguments[0].evaluate();
         var max:Int = arguments[1].evaluate();
         Random.nextInt(min, max);
+    }
+}
+
+class SystemExpression extends Expression {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, ?arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments != null ? arguments : [];
+    }
+
+    public override function evaluate():Dynamic {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "println":
+                System.println(evaluatedArguments.join(" "));
+                return null;
+            case "exit":
+                System.exit();
+                return null;
+            case "currentDate":
+                return System.currentDate();
+        }
+
+        return null;
+    }
+}
+
+class SystemStatement extends Statement {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, ?arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments != null ? arguments : [];
+    }
+
+    public override function execute():Void {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "println":
+                System.println(evaluatedArguments.join(" "));
+            case "exit":
+                System.exit();
+            case "currentDate":
+                System.currentDate();
+        }
     }
 }

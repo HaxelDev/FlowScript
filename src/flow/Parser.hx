@@ -51,6 +51,8 @@ class Parser {
             return parseIOStatement();
         } else if (firstTokenType == TokenType.RANDOM) {
             return parseRandomStatement();
+        } else if (firstTokenType == TokenType.SYSTEM) {
+            return parseSystemStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
             return parseLetStatement();
         } else {
@@ -75,6 +77,8 @@ class Parser {
             initializer = parseIOExpression();
         } else if (check(TokenType.RANDOM)) {
             initializer = parseRandomExpression();
+        } else if (check(TokenType.SYSTEM)) {
+            initializer = parseSystemExpression();
         } else {
             initializer = parseExpression();
         }
@@ -232,17 +236,17 @@ class Parser {
         if (methodName == ".readLine") {
             consume(TokenType.LPAREN, "Expected '(' after 'readLine'");
             consume(TokenType.RPAREN, "Expected ')' after 'readLine'");
-            return new IOCallStatement("readLine");
+            return new IOStatement("readLine");
         } else if (methodName == ".print") {
             consume(TokenType.LPAREN, "Expected '(' after 'print'");
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new IOCallStatement("print", [expression]);
+            return new IOStatement("print", [expression]);
         } else if (methodName == ".println") {
             consume(TokenType.LPAREN, "Expected '(' after 'println'");
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new IOCallStatement("println", [expression]);
+            return new IOStatement("println", [expression]);
         } else {
             Flow.error.report("Unknown IO method: " + methodName);
             return null;
@@ -295,6 +299,47 @@ class Parser {
             return new RandomStatement(methodName, [minExpr, maxExpr]);
         } else {
             Flow.error.report("Unknown random method: " + methodName);
+            return null;
+        }
+    }
+
+    private function parseSystemStatement():Statement {
+        var randomToken:Token = advance();
+        if (randomToken.type != TokenType.SYSTEM) {
+            Flow.error.report("Expected 'System' keyword");
+            return null;
+        }
+
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('");
+            return null;
+        }
+
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'");
+            return null;
+        }
+
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".currentDate") {
+            consume(TokenType.LPAREN, "Expected '(' after 'Date'");
+            consume(TokenType.RPAREN, "Expected ')' after 'Date'");
+            return new SystemStatement("currentDate");
+        } else if (methodName == ".exit") {
+            consume(TokenType.LPAREN, "Expected '(' after 'exit'");
+            consume(TokenType.RPAREN, "Expected ')' after 'exit'");
+            return new SystemStatement("exit");
+        } else if (methodName == ".println") {
+            consume(TokenType.LPAREN, "Expected '(' after 'println'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new SystemStatement("println", [expression]);
+        } else {
+            Flow.error.report("Unknown system method: " + methodName);
             return null;
         }
     }
@@ -365,6 +410,8 @@ class Parser {
                 return parseIOExpression();
             } else if (identifier == TokenType.RANDOM) {
                 return parseRandomExpression();
+            } else if (identifier == TokenType.SYSTEM) {
+                return parseSystemExpression();
             } else {
                 if (peek().type == TokenType.LPAREN) {
                     return parseCallExpression();
@@ -407,17 +454,17 @@ class Parser {
         if (methodName == ".readLine") {
             consume(TokenType.LPAREN, "Expected '(' after 'readLine'");
             consume(TokenType.RPAREN, "Expected ')' after 'readLine'");
-            return new IOCallExpression("readLine");
+            return new IOExpression("readLine");
         } else if (methodName == ".print") {
             consume(TokenType.LPAREN, "Expected '(' after 'print'");
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new IOCallExpression("print", [expression]);
+            return new IOExpression("print", [expression]);
         } else if (methodName == ".println") {
             consume(TokenType.LPAREN, "Expected '(' after 'println'");
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new IOCallExpression("println", [expression]);
+            return new IOExpression("println", [expression]);
         } else {
             Flow.error.report("Unknown IO method: " + methodName);
             return null;
@@ -470,6 +517,47 @@ class Parser {
             return new RandomExpression(methodName, [minExpr, maxExpr]);
         } else {
             Flow.error.report("Unknown random method: " + methodName);
+            return null;
+        }
+    }
+
+    private function parseSystemExpression():Expression {
+        var randomToken:Token = advance();
+        if (randomToken.type != TokenType.SYSTEM) {
+            Flow.error.report("Expected 'System' keyword");
+            return null;
+        }
+
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('");
+            return null;
+        }
+
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'");
+            return null;
+        }
+
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".currentDate") {
+            consume(TokenType.LPAREN, "Expected '(' after 'Date'");
+            consume(TokenType.RPAREN, "Expected ')' after 'Date'");
+            return new SystemExpression("currentDate");
+        } else if (methodName == ".exit") {
+            consume(TokenType.LPAREN, "Expected '(' after 'exit'");
+            consume(TokenType.RPAREN, "Expected ')' after 'exit'");
+            return new SystemExpression("exit");
+        } else if (methodName == ".println") {
+            consume(TokenType.LPAREN, "Expected '(' after 'println'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new SystemExpression("println", [expression]);
+        } else {
+            Flow.error.report("Unknown system method: " + methodName);
             return null;
         }
     }
