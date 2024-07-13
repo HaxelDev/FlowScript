@@ -6,6 +6,7 @@ import modules.Random;
 import modules.System;
 import modules.File;
 import modules.Json;
+import modules.Http;
 
 class Program {
     public var statements:Array<Statement>;
