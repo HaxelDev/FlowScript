@@ -156,80 +156,52 @@ class LiteralExpression extends Expression {
 }
 
 class BinaryExpression extends Expression {
-	public var left:Expression;
-	public var opera:String;
-	public var right:Expression;
+    public var left:Expression;
+    public var opera:String;
+    public var right:Expression;
 
-	public function new(left:Expression, opera:String, right:Expression) {
-		this.left = left;
-		this.opera = opera;
-		this.right = right;
-	}
+    public function new(left:Expression, opera:String, right:Expression) {
+        this.left = left;
+        this.opera = opera;
+        this.right = right;
+    }
 
-	public override function evaluate():Dynamic {
-		var leftValue = left.evaluate();
-		var rightValue = right.evaluate();
+    public override function evaluate():Dynamic {
+        var leftValue = left.evaluate();
+        var rightValue = right.evaluate();
 
 		var leftIsFloat = Std.is(leftValue, Float);
 		var rightIsFloat = Std.is(rightValue, Float);
 
-		if (leftIsFloat || rightIsFloat) {
-			leftValue = leftIsFloat ? leftValue : cast(leftValue, Float);
-			rightValue = rightIsFloat ? rightValue : cast(rightValue, Float);
+		leftValue = leftIsFloat ? leftValue : cast(leftValue, Float);
+		rightValue = rightIsFloat ? rightValue : cast(rightValue, Float);
 
-			switch (opera) {
-				case "+":
-					return leftValue + rightValue;
-				case "-":
-					return leftValue - rightValue;
-				case "*":
-					return leftValue * rightValue;
-				case "/":
-					return leftValue / rightValue;
-				case "==":
-					return leftValue == rightValue;
-				case "!=":
-					return leftValue != rightValue;
-				case ">":
-					return leftValue > rightValue;
-				case "<":
-					return leftValue < rightValue;
-				case ">=":
-					return leftValue >= rightValue;
-				case "<=":
-					return leftValue <= rightValue;
-				default:
-					Flow.error.report("Unknown operator: " + opera);
-					return null;
-			}
-		} else {
-			switch (opera) {
-				case "+":
-					return leftValue + rightValue;
-				case "-":
-					return leftValue - rightValue;
-				case "*":
-					return leftValue * rightValue;
-				case "/":
-					return Math.floor(leftValue / rightValue);
-				case "==":
-					return leftValue == rightValue;
-				case "!=":
-					return leftValue != rightValue;
-				case ">":
-					return leftValue > rightValue;
-				case "<":
-					return leftValue < rightValue;
-				case ">=":
-					return leftValue >= rightValue;
-				case "<=":
-					return leftValue <= rightValue;
-				default:
-					Flow.error.report("Unknown operator: " + opera);
-					return null;
-			}
-		}
-	}
+        switch (opera) {
+            case "+":
+                return leftValue + rightValue;
+            case "-":
+                return leftValue - rightValue;
+            case "*":
+                return leftValue * rightValue;
+            case "/":
+                return Math.floor(leftValue / rightValue);
+            case "==":
+                return leftValue == rightValue;
+            case "!=":
+                return leftValue != rightValue;
+            case "<":
+                return leftValue < rightValue;
+            case "<=":
+                return leftValue <= rightValue;
+            case ">":
+                return leftValue > rightValue;
+            case ">=":
+                return leftValue >= rightValue;
+            default:
+                Flow.error.report("Unknown operator: " + opera);
+                return null;
+        }
+    }
 }
 
 class UnaryExpression extends Expression {
@@ -415,11 +387,19 @@ class Function {
     }
 
     public function execute(args:Array<Dynamic>):Dynamic {
+        var oldValues:Map<String, Dynamic> = Environment.values.copy();
         for (i in 0...parameters.length) {
             Environment.define(parameters[i], args[i]);
         }
-        body.execute();
-        return null;
+
+        try {
+            body.execute();
+            Environment.values = oldValues;
+            return null;
+        } catch (e:ReturnValue) {
+            Environment.values = oldValues;
+            return e.value;
+        }
     }
 }
 
