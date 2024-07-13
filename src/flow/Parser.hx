@@ -105,14 +105,30 @@ class Parser {
         return new ArrayLiteralExpression(elements);
     }
 
-    private function parseObjectLiteral():Expression {
-        var properties:Map<String, Expression> = new Map();
+    private function parseObjectLiteral(): Expression {
+        var properties: Map<String, Expression> = new Map();
         consume(TokenType.LBRACE, "Expected '{' to start object literal");
         while (!check(TokenType.RBRACE)) {
-            var key:Token = consume(TokenType.IDENTIFIER, "Expected property name");
+            var key: Token = consume(TokenType.IDENTIFIER, "Expected property name");
             consume(TokenType.COLON, "Expected ':' after property name");
-            var value:Expression = parseExpression();
-            properties[key.value] = value;
+            if (check(TokenType.LBRACKET)) {
+                var elements: Array<Expression> = [];
+                consume(TokenType.LBRACKET, "Expected '[' for array property");
+                while (!check(TokenType.RBRACKET) &&!isAtEnd()) {
+                    var element: Expression = parseExpression();
+                    elements.push(element);
+                    if (match([TokenType.COMMA])) {
+                        if (check(TokenType.RBRACKET)) {
+                            break;
+                        }
+                    }
+                }
+                consume(TokenType.RBRACKET, "Expected ']' after array property");
+                properties[key.value] = new ArrayLiteralExpression(elements);
+            } else {
+                var value: Expression = parseExpression();
+                properties[key.value] = value;
+            }
             if (match([TokenType.COMMA])) {
                 // Consume comma
             }
