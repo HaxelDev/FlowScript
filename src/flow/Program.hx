@@ -275,11 +275,7 @@ class IfStatement extends Statement {
         if (condition.evaluate()) {
             thenBranch.execute();
         } else if (elseBranch != null) {
-            if (Std.is(elseBranch, IfStatement)) {
-                cast(elseBranch, IfStatement).execute();
-            } else {
-                elseBranch.execute();
-            }
+            elseBranch.execute();
         }
     }
 }
@@ -418,11 +414,12 @@ class Function {
         this.body = body;
     }
 
-    public function execute(args:Array<Dynamic>):Void {
+    public function execute(args:Array<Dynamic>):Dynamic {
         for (i in 0...parameters.length) {
             Environment.define(parameters[i], args[i]);
         }
         body.execute();
+        return null;
     }
 }
 
@@ -435,8 +432,8 @@ class CallExpression extends Expression {
         this.arguments = arguments;
     }
 
-    public override function evaluate(): Dynamic {
-        var func:Dynamic = Environment.getFunction(name);
+    public override function evaluate():Dynamic {
+        var func:Function = Environment.getFunction(name);
         if (func == null) {
             Flow.error.report("Undefined function: " + name);
             return null;
@@ -447,34 +444,10 @@ class CallExpression extends Expression {
             args.push(arg.evaluate());
         }
 
-        if (Std.isOfType(func, Function)) {
-            return executeFunction(func, args);
-        } else if (Std.isOfType(func, Dynamic -> Dynamic)) {
-            return executeDynamicFunction(func, args);
-        } else {
-            Flow.error.report("Attempting to call a non-function: " + name);
-            return null;
-        }
-    }
-
-    private function executeFunction(func:Function, args:Array<Dynamic>): Dynamic {
         try {
-            func.execute(args);
-            return null;
+            return func.execute(args);
         } catch (e:ReturnValue) {
             return e.value;
-        } catch (e:haxe.Exception) {
-            Flow.error.report("Error executing function '" + name + "': " + e.toString());
-            return null;
-        }
-    }
-
-    private function executeDynamicFunction(func:Dynamic -> Dynamic, args:Array<Dynamic>): Dynamic {
-        try {
-            return func(args);
-        } catch (e:haxe.Exception) {
-            Flow.error.report("Error executing function '" + name + "': " + e.toString());
-            return null;
         }
     }
 }
