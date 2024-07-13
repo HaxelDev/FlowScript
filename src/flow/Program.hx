@@ -170,11 +170,11 @@ class BinaryExpression extends Expression {
         var leftValue = left.evaluate();
         var rightValue = right.evaluate();
 
-		var leftIsFloat = Std.is(leftValue, Float);
-		var rightIsFloat = Std.is(rightValue, Float);
+        var leftIsFloat = Std.is(leftValue, Float);
+        var rightIsFloat = Std.is(rightValue, Float);
 
-		leftValue = leftIsFloat ? leftValue : cast(leftValue, Float);
-		rightValue = rightIsFloat ? rightValue : cast(rightValue, Float);
+        leftValue = leftIsFloat ? leftValue : cast(leftValue, Float);
+        rightValue = rightIsFloat ? rightValue : cast(rightValue, Float);
 
         switch (opera) {
             case "+":
