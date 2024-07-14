@@ -51,10 +51,10 @@ class Flow {
 
     switch (command) {
       case "run":
-        if (scriptFile != null && scriptFile.endsWith(".fl") && scriptFile.endsWith(".flow")) {
+        if (scriptFile != null) {
           runScript(scriptFile);
         } else {
-          error.report('Invalid script file or format. Use.fl files');
+          error.report('Invalid script file.');
         }
       case "interactive":
         runInteractive();
