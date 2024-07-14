@@ -1,11 +1,12 @@
 # FlowScript
 
+<p align="center">
+
 [![License: MIT](https://img.shields.io/github/license/Souvic/createmypypackage)](https://opensource.org/licenses/MIT)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/HaxelDev/FlowScript)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/HaxelDev/FlowScript/pulls)
 ![GitHub stars](https://img.shields.io/github/stars/HaxelDev/FlowScript)
 
-<p align="center">
     <img src="image.png" alt="Flow Script Logo" width="500"  height="300">
 </p>
 
