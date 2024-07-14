@@ -6,7 +6,6 @@ import modules.Random;
 import modules.System;
 import modules.File;
 import modules.Json;
-import modules.Http;
 
 class Program {
     public var statements:Array<Statement>;
@@ -640,7 +639,7 @@ class FileExpression extends Expression {
 
     public function new(methodName:String, ?arguments:Array<Expression>) {
         this.methodName = methodName;
-        this.arguments = arguments;
+        this.arguments = arguments != null ? arguments : [];
     }
 
     public override function evaluate():Dynamic {
@@ -669,7 +668,7 @@ class FileStatement extends Statement {
 
     public function new(methodName:String, arguments:Array<Expression>) {
         this.methodName = methodName;
-        this.arguments = arguments;
+        this.arguments = arguments != null ? arguments : [];
     }
 
     public override function execute():Void {
@@ -695,7 +694,7 @@ class JsonExpression extends Expression {
 
     public function new(methodName:String, arguments:Array<Expression>) {
         this.methodName = methodName;
-        this.arguments = arguments;
+        this.arguments = arguments != null ? arguments : [];
     }
 
     public override function evaluate():Dynamic {
@@ -723,7 +722,7 @@ class JsonStatement extends Statement {
 
     public function new(methodName:String, arguments:Array<Expression>) {
         this.methodName = methodName;
-        this.arguments = arguments;
+        this.arguments = arguments != null ? arguments : [];
     }
 
     public override function execute():Void {
