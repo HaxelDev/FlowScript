@@ -1,14 +1,11 @@
 # FlowScript
 
-<p align="center">
-
 [![License: MIT](https://img.shields.io/github/license/Souvic/createmypypackage)](https://opensource.org/licenses/MIT)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/HaxelDev/FlowScript)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/HaxelDev/FlowScript/pulls)
 ![GitHub stars](https://img.shields.io/github/stars/HaxelDev/FlowScript)
 
-    <img src="image.png" alt="Flow Script Logo" width="500"  height="300">
-</p>
+<img src="image.png" alt="Flow Script Logo" width="500"  height="300">
 
 FlowScript is a simple, lightweight scripting language designed to be easy to learn and use. It is built using Haxe and provides an intuitive syntax and powerful features for script-based programming.
 
