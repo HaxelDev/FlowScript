@@ -538,6 +538,8 @@ class Parser {
         } else if (match([TokenType.IDENTIFIER])) {
             if (peek().type == TokenType.LPAREN) {
                 return parseCallExpression();
+            } else if (peek().type == TokenType.LBRACKET) {
+                return parseArrayAccess();
             } else {
                 return parsePropertyAccess();
             }
@@ -707,6 +709,14 @@ class Parser {
             obj = new PropertyAccessExpression(obj, property.value);
         }
         return obj;
+    }
+
+    private function parseArrayAccess():Expression {
+        var expr:Expression = new VariableExpression(previous().value);
+        consume(TokenType.LBRACKET, "Expected '[' after array name");
+        var index:Expression = parseExpression();
+        consume(TokenType.RBRACKET, "Expected ']' after array index");
+        return new ArrayAccessExpression(expr, index);
     }
 
     private function advance():Token {

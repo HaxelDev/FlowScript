@@ -451,10 +451,10 @@ class Function {
 
         try {
             body.execute();
-            Environment.values = oldValues;
+            Environment.values = oldValues.copy();
             return null;
         } catch (e:ReturnValue) {
-            Environment.values = oldValues;
+            Environment.values = oldValues.copy();
             return e.value;
         }
     }
@@ -543,6 +543,33 @@ class PropertyAccessExpression extends Expression {
             Flow.error.report("Property '" + property + "' does not exist on object");
             return null;
         }
+    }
+}
+
+class ArrayAccessExpression extends Expression {
+    public var array:Expression;
+    public var index:Expression;
+
+    public function new(array:Expression, index:Expression) {
+        this.array = array;
+        this.index = index;
+    }
+
+    public override function evaluate():Dynamic {
+        var arrayValue:Array<Dynamic> = array.evaluate();
+        var indexValue:Int = index.evaluate();
+
+        if (arrayValue == null) {
+            Flow.error.report("Cannot access element of null array");
+            return null;
+        }
+
+        if (indexValue < 0 || indexValue >= arrayValue.length) {
+            Flow.error.report("Index out of bounds: " + indexValue);
+            return null;
+        }
+
+        return arrayValue[indexValue];
     }
 }
 
