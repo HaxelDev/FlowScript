@@ -176,14 +176,23 @@ class Parser {
     
         consume(TokenType.IN, "Expected 'in' after identifier");
     
-        var iterableExpression:Expression = parseExpression();
+        var iterableExpression:Expression;
+
+        if (match([TokenType.RANGE])) {
+            consume(TokenType.LPAREN, "Expected '(' after 'range'");
+            var startExpr:Expression = parseExpression();
+            if (match([TokenType.COMMA])) {
+                // Consume comma
+            }
+            var endExpr:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after range expression");
     
-        var body:Statement;
-        if (check(TokenType.LBRACE)) {
-            body = parseBlock();
+            iterableExpression = new RangeExpression(startExpr, endExpr);
         } else {
-            body = parseStatement();
+            iterableExpression = parseExpression();
         }
+
+        var body:Statement = parseBlock();
     
         return new ForStatement(variableName, iterableExpression, body);
     }
@@ -500,9 +509,9 @@ class Parser {
         if (match([TokenType.NUMBER])) {
             var value:String = previous().value;
             if (value.indexOf(".") != -1) {
-              return new LiteralExpression(Std.parseFloat(value));
+                return new LiteralExpression(Std.parseFloat(value));
             } else {
-              return new LiteralExpression(Std.parseInt(value));
+                return new LiteralExpression(Std.parseInt(value));
             }
         } else if (match([TokenType.STRING])) {
             return new LiteralExpression(previous().value);

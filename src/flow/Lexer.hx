@@ -96,6 +96,8 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token);
             case "in":
                 return new Token(TokenType.IN, token);
+            case "range":
+                return new Token(TokenType.RANGE, token);
             case "IO":
                 return new Token(TokenType.IO, token);
             case "Random":
@@ -249,6 +251,7 @@ enum TokenType {
     AND;
     OR;
     IN;
+    RANGE;
     BITWISE_AND;
     BITWISE_OR;
     BITWISE_XOR;

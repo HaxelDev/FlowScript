@@ -318,15 +318,61 @@ class ForStatement extends Statement {
 
     public override function execute(): Void {
         var iterable:Iterable<Dynamic> = iterableExpression.evaluate();
-    
-        if (iterable != null) {
-            for (item in iterable) {
-                Environment.define(variableName, item);
-                body.execute();
-            }
-        } else {
+
+        if (iterable == null) {
             Flow.error.report("Iterable expression evaluates to null");
+            return;
         }
+
+        for (item in iterable) {
+            Environment.define(variableName, item);
+            body.execute();
+        }
+    }
+}
+
+class RangeExpression extends Expression {
+    public var start:Expression;
+    public var end:Expression;
+
+    public function new(start:Expression, end:Expression) {
+        this.start = start;
+        this.end = end;
+    }
+
+    public override function evaluate():Iterable<Int> {
+        var startValue:Dynamic = start.evaluate();
+        var endValue:Dynamic = end.evaluate();
+
+        if (!Std.is(startValue, Int) || !Std.is(endValue, Int)) {
+            Flow.error.report("Range start or end value is not a valid integer");
+            return null;
+        }
+
+        return new RangeIterable(cast(startValue, Int), cast(endValue, Int));
+    }    
+}
+
+class RangeIterable {
+    public var start:Int;
+    public var end:Int;
+
+    public function new(start:Int, end:Int) {
+        this.start = start;
+        this.end = end;
+    }
+
+    public function iterator():Iterator<Int> {
+        var current:Int = start;
+
+        return {
+            hasNext: function():Bool {
+                return current <= end;
+            },
+            next: function():Int {
+                return current++;
+            }
+        };
     }
 }
 
