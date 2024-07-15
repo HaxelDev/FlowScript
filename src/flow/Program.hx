@@ -109,13 +109,24 @@ class Environment {
         return functions.get(name);
     }
 
-    static public function callFunction(name:String, arguments:Array<Dynamic>):Void {
-        if (!functions.exists(name)) {
-            Flow.error.report("Undefined function: " + name);
+    static public function callFunction(name:String, arguments:Array<Dynamic>, context:Dynamic = null):Void {
+        var func:Function;
+        if (context != null) {
+            func = Reflect.field(context, name);
+            if (func == null) {
+                Flow.error.report("Undefined method: " + name);
+                return;
+            }
+        } else {
+            func = functions.get(name);
+            if (!functions.exists(name)) {
+                Flow.error.report("Undefined function: " + name);
+                return;
+            }
         }
-        var func = functions.get(name);
         if (func.parameters.length != arguments.length) {
             Flow.error.report("Incorrect number of arguments for function: " + name);
+            return;
         }
         var oldValues:Map<String, Dynamic> = values.copy();
         for (i in 0...func.parameters.length) {
