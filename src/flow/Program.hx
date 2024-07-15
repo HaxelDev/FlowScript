@@ -183,35 +183,103 @@ class BinaryExpression extends Expression {
 
         var leftIsFloat = Std.is(leftValue, Float);
         var rightIsFloat = Std.is(rightValue, Float);
+        var leftIsString = Std.is(leftValue, String);
+        var rightIsString = Std.is(rightValue, String);
 
-        leftValue = leftIsFloat ? leftValue : cast(leftValue, Float);
-        rightValue = rightIsFloat ? rightValue : cast(rightValue, Float);
+        if (!leftIsFloat && !leftIsString) {
+            Flow.error.report("Unsupported left operand type for operator: " + opera);
+            return null;
+        }
+        if (!rightIsFloat && !rightIsString) {
+            Flow.error.report("Unsupported right operand type for operator: " + opera);
+            return null;
+        }
+
+        if (leftIsFloat) leftValue = cast(leftValue, Float);
+        if (rightIsFloat) rightValue = cast(rightValue, Float);
 
         switch (opera) {
             case "+":
-                return leftValue + rightValue;
+                if (leftIsString || rightIsString) {
+                    return Std.string(leftValue) + Std.string(rightValue);
+                } else {
+                    return leftValue + rightValue;
+                }
             case "-":
-                return leftValue - rightValue;
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    return null;
+                } else {
+                    return leftValue - rightValue;
+                }
             case "*":
-                return leftValue * rightValue;
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    return null;
+                } else {
+                    return leftValue * rightValue;
+                }
             case "/":
-                return Math.floor(leftValue / rightValue);
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    return null;
+                } else {
+                    return Math.floor(leftValue / rightValue);
+                }
             case "==":
-                return leftValue == rightValue;
+                if (leftIsString || rightIsString) {
+                    return leftValue == rightValue;
+                } else {
+                    return leftValue == rightValue;
+                }
             case "!=":
-                return leftValue != rightValue;
+                if (leftIsString || rightIsString) {
+                    return leftValue != rightValue;
+                } else {
+                    return leftValue != rightValue;
+                }
             case "<":
-                return leftValue < rightValue;
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    return null;
+                } else {
+                    return leftValue < rightValue;
+                }
             case "<=":
-                return leftValue <= rightValue;
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    return null;
+                } else {
+                    return leftValue <= rightValue;
+                }
             case ">":
-                return leftValue > rightValue;
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    return null;
+                } else {
+                    return leftValue > rightValue;
+                }
             case ">=":
-                return leftValue >= rightValue;
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    return null;
+                } else {
+                    return leftValue >= rightValue;
+                }
             case "and":
-                return (leftValue != 0) && (rightValue != 0);
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported operator 'and' for strings");
+                    return null;
+                } else {
+                    return (leftValue != 0) && (rightValue != 0);
+                }
             case "or":
-                return (leftValue != 0) || (rightValue != 0);
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported operator 'or' for strings");
+                    return null;
+                } else {
+                    return (leftValue != 0) || (rightValue != 0);
+                }
             default:
                 Flow.error.report("Unknown operator: " + opera);
                 return null;
