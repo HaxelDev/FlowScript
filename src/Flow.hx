@@ -5,6 +5,7 @@ import flow.Parser;
 import flow.Program;
 import sys.FileSystem;
 import sys.io.File;
+import haxe.Json;
 import logs.*;
 
 using StringTools;
@@ -44,18 +45,71 @@ class Flow {
     }
   }
 
+  static function createProject(projectName:String) {
+    var projectDir = projectName;
+    if (FileSystem.exists(projectDir)) {
+      error.report('Project "$projectName" already exists.');
+      return;
+    }
+
+    FileSystem.createDirectory(projectDir);
+    var srcDir = projectDir + "/src";
+    FileSystem.createDirectory(srcDir);
+
+    var projectData = {
+      name: projectName,
+      version: "0.1.0",
+      main: "main.flow",
+      src: "src",
+      dependencies: {}
+    };
+    var jsonData = Json.stringify(projectData, null, "  ");
+    File.saveContent(projectDir + "/project.json", jsonData);
+
+    var mainFlowContent = 'print("Hello, this is the main script!")\n';
+    File.saveContent(srcDir + "/main.flow", mainFlowContent);
+
+    Logger.log('Project "$projectName" created.');
+  }
+
+  static function buildProject() {
+    if (!FileSystem.exists("project.json")) {
+      error.report('No project.json file found in the current directory.');
+      return;
+    }
+
+    var jsonData = File.getContent("project.json");
+    var projectData:Dynamic = Json.parse(jsonData);
+    var mainScriptPath = projectData.src + "/" + projectData.main;
+
+    if (!FileSystem.exists(mainScriptPath)) {
+      error.report('Main script "${mainScriptPath}" does not exist.');
+      return;
+    }
+
+    runScript(mainScriptPath);
+  }
+
   static function main() {
     var args = Sys.args();
     var command = args.length > 0? args[0] : null;
-    var scriptFile = args.length > 1? args[1] : null;
+    var param = args.length > 1 ? args[1] : null;
 
     switch (command) {
       case "run":
-        if (scriptFile != null) {
-          runScript(scriptFile);
+        if (param != null) {
+          runScript(param);
         } else {
           error.report('Invalid script file.');
         }
+      case "create":
+        if (param != null) {
+          createProject(param);
+        } else {
+          error.report('Invalid project name.');
+        }
+      case "build":
+        buildProject();
       case "interactive":
         runInteractive();
       case "version":
@@ -73,6 +127,8 @@ class Flow {
     Logger.log('Flow Scripting Language');
     Logger.log('---------------------');
     Logger.log('Usage: flow run [file]');
+    Logger.log('       flow create [project name]');
+    Logger.log('       flow build');
     Logger.log('       flow interactive');
     Logger.log('       flow version');
   }
