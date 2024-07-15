@@ -208,6 +208,10 @@ class BinaryExpression extends Expression {
                 return leftValue > rightValue;
             case ">=":
                 return leftValue >= rightValue;
+            case "and":
+                return (leftValue != 0) && (rightValue != 0);
+            case "or":
+                return (leftValue != 0) || (rightValue != 0);
             default:
                 Flow.error.report("Unknown operator: " + opera);
                 return null;

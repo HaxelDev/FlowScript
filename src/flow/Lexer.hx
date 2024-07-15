@@ -108,16 +108,10 @@ class Lexer {
                 return new Token(TokenType.FILE, token);
             case "Json":
                 return new Token(TokenType.JSON, token);
-            case "&&":
+            case "and":
                 return new Token(TokenType.AND, token);
-            case "||":
+            case "or":
                 return new Token(TokenType.OR, token);
-            case "&":
-                return new Token(TokenType.BITWISE_AND, token);
-            case "|":
-                return new Token(TokenType.BITWISE_OR, token);
-            case "^":
-                return new Token(TokenType.BITWISE_XOR, token);
             case "<<":
                 return new Token(TokenType.LEFT_SHIFT, token);
             case ">>":
@@ -252,9 +246,6 @@ enum TokenType {
     OR;
     IN;
     RANGE;
-    BITWISE_AND;
-    BITWISE_OR;
-    BITWISE_XOR;
     LEFT_SHIFT;
     RIGHT_SHIFT;
     IO;

@@ -470,21 +470,45 @@ class Parser {
     }
 
     private function parseExpression():Expression {
-        return parseEquality();
+        return parseLogicalAnd();
     }
 
+    private function parseLogicalAnd():Expression {
+        var expr = parseEquality();
+    
+        while (match([TokenType.AND])) {
+            var opera = previous().value;
+            var right = parseEquality();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+    
+        return expr;
+    }
+    
+    private function parseLogicalOr():Expression {
+        var expr = parseLogicalAnd();
+    
+        while (match([TokenType.OR])) {
+            var opera = previous().value;
+            var right = parseLogicalAnd();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+    
+        return expr;
+    }
+    
     private function parseEquality():Expression {
         var expr = parseComparison();
-
+    
         while (match([TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL])) {
             var opera = previous().value;
             var right = parseComparison();
             expr = new BinaryExpression(expr, opera, right);
         }
-
+    
         return expr;
     }
-
+    
     private function parseComparison(): Expression {
         var expr: Expression = parseTerm();
         while (match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])) {
@@ -497,7 +521,7 @@ class Parser {
     
     private function parseTerm(): Expression {
         var expr: Expression = parseFactor();
-        while (match([TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.BITWISE_AND, TokenType.BITWISE_OR, TokenType.BITWISE_XOR])) {
+        while (match([TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE])) {
             var opera: String = previous().value;
             var right: Expression = parseFactor();
             expr = new BinaryExpression(expr, opera, right);
