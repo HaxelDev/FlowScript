@@ -84,24 +84,32 @@ class Parser {
         return new LetStatement(name, initializer);
     }
 
-    private function parseArrayLiteral(): Expression {
+    private function parseArrayLiteral():Expression {
         consume(TokenType.LBRACKET, "Expected '[' to start array literal");
-    
-        var elements: Array<Expression> = [];
-    
-        while (!check(TokenType.RBRACKET) && !isAtEnd()) {
-            var element: Expression = parseExpression();
-            elements.push(element);
-    
-            if (match([TokenType.COMMA])) {
-                if (check(TokenType.RBRACKET)) {
-                    break;
+
+        var elements:Array<Expression> = [];
+        while (!check(TokenType.RBRACKET) &&!isAtEnd()) {
+            if (match([TokenType.LBRACKET])) {
+                var innerElements:Array<Expression> = [];
+                while (!check(TokenType.RBRACKET) &&!isAtEnd()) {
+                    var element:Expression = parseExpression();
+                    innerElements.push(element);
+                    if (match([TokenType.COMMA])) {
+                        // Consume comma
+                    }
                 }
+                consume(TokenType.RBRACKET, "Expected ']' after inner array");
+                elements.push(new ArrayLiteralExpression(innerElements));
+            } else {
+                var element:Expression = parseExpression();
+                elements.push(element);
+            }
+            if (match([TokenType.COMMA])) {
+                // Consume comma
             }
         }
-    
         consume(TokenType.RBRACKET, "Expected ']' after array literal");
-    
+
         return new ArrayLiteralExpression(elements);
     }
 
@@ -728,9 +736,16 @@ class Parser {
 
     private function parsePropertyAccess():Expression {
         var obj:Expression = new VariableExpression(previous().value);
-        while (match([TokenType.DOT])) {
-            var property:Token = consume(TokenType.IDENTIFIER, "Expected property name");
-            obj = new PropertyAccessExpression(obj, property.value);
+        while (match([TokenType.DOT, TokenType.LBRACKET])) {
+            if (peek().type == TokenType.DOT) {
+                var property:Token = consume(TokenType.IDENTIFIER, "Expected property name");
+                obj = new PropertyAccessExpression(obj, property.value);
+            } else {
+                consume(TokenType.LBRACKET, "Expected '[' after array name");
+                var index:Expression = parseExpression();
+                consume(TokenType.RBRACKET, "Expected ']' after array index");
+                obj = new ArrayAccessExpression(obj, index);
+            }
         }
         return obj;
     }
