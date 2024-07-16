@@ -41,7 +41,7 @@ class Lexer {
                 char == "[" || char == "]" || char == "," || char == ":" ||
                 char == "+" || char == "-" || char == "*" || char == "/" ||
                 char == "=" || char == ">" || char == "<" || char == ";" ||
-                char == "." || char == "!") {
+                char == "." || char == "!" || char == "%") {
                 if (currentToken.length > 0) {
                     tokens.push(getToken(currentToken));
                     currentToken = "";
@@ -112,6 +112,8 @@ class Lexer {
                 return new Token(TokenType.AND, token);
             case "or":
                 return new Token(TokenType.OR, token);
+            case "%":
+                return new Token(TokenType.MODULO, token);
             case "<<":
                 return new Token(TokenType.LEFT_SHIFT, token);
             case ">>":
@@ -187,6 +189,8 @@ class Lexer {
                 return TokenType.LESS_EQUAL;
             case ";":
                 return TokenType.SEMICOLON;
+            case "%":
+                return TokenType.MODULO;
             default:
                 return TokenType.SYMBOL;
         }
@@ -245,6 +249,7 @@ enum TokenType {
     AND;
     OR;
     IN;
+    MODULO;
     RANGE;
     LEFT_SHIFT;
     RIGHT_SHIFT;

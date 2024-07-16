@@ -226,6 +226,13 @@ class BinaryExpression extends Expression {
                 } else {
                     return Math.floor(leftValue / rightValue);
                 }
+            case "%":
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    return null;
+                } else {
+                    return leftValue % rightValue;
+                }
             case "==":
                 if (leftIsString || rightIsString) {
                     return leftValue == rightValue;

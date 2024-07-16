@@ -529,7 +529,7 @@ class Parser {
     
     private function parseTerm(): Expression {
         var expr: Expression = parseFactor();
-        while (match([TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE])) {
+        while (match([TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MODULO])) {
             var opera: String = previous().value;
             var right: Expression = parseFactor();
             expr = new BinaryExpression(expr, opera, right);
