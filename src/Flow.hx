@@ -77,10 +77,10 @@ class Flow {
       error.report('No project.json file found in the current directory.');
       return;
     }
-
+  
     var jsonData = File.getContent("project.json");
     var projectData:Dynamic = Json.parse(jsonData);
-
+  
     var mainScriptPath = projectData.src + "/" + projectData.main;
     if (!FileSystem.exists(mainScriptPath)) {
       error.report('Main script "${mainScriptPath}" does not exist.');
