@@ -204,7 +204,7 @@ class Lexer {
     }
 
     static private function isNumeric(char:String):Bool {
-        return Std.parseInt(char) != null || char == "." || char == "-";
+        return Std.parseInt(char) != null || char == ".";
     }
 }
 

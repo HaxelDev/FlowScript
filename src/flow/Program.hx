@@ -502,10 +502,10 @@ class Function {
 
         try {
             body.execute();
-            Environment.values = oldValues.copy();
+            Environment.values = oldValues;
             return null;
         } catch (e:ReturnValue) {
-            Environment.values = oldValues.copy();
+            Environment.values = oldValues;
             return e.value;
         }
     }

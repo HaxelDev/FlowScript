@@ -1,18 +1,11 @@
-let running = true
-let random = Random().nextInt(1, 100)
-
-func main() {
-    while running {
-        let input = IO().readLine()
-        if input > random {
-            print("The number is too high")
-        } else if input < random {
-            print("The number is too low")
-        } else {
-            print("You guessed it!")
-            running = false
-        }
+func fibonacci(n) {
+    if n == 0 {
+        return 0
+    } else if n == 1 {
+        return 1
+    } else {
+        return fibonacci(n - 1) + fibonacci(n - 2)
     }
 }
 
-call main()
+print(fibonacci(10))
