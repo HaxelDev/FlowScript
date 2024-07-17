@@ -540,7 +540,7 @@ class Parser {
     private function parseFactor():Expression {
         if (match([TokenType.NUMBER])) {
             var value:String = previous().value;
-            if (value.indexOf(".") != -1) {
+            if (value.indexOf(".") != -1 || (value.charAt(0) == '-' && value.indexOf(".") > 0)) {
                 return new LiteralExpression(Std.parseFloat(value));
             } else {
                 return new LiteralExpression(Std.parseInt(value));

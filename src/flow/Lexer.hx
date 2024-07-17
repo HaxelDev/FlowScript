@@ -138,6 +138,8 @@ class Lexer {
                 return new Token(TokenType.DIVIDE, token);
             case ";":
                 return new Token(TokenType.SEMICOLON, token);
+            case "!":
+                return new Token(TokenType.BANG, token);
             default:
                 if (isNumeric(token)) {
                     return new Token(TokenType.NUMBER, token);
@@ -202,7 +204,7 @@ class Lexer {
     }
 
     static private function isNumeric(char:String):Bool {
-        return Std.parseInt(char) != null || char == ".";
+        return Std.parseInt(char) != null || char == "." || char == "-";
     }
 }
 

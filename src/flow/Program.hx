@@ -180,7 +180,7 @@ class BinaryExpression extends Expression {
     public override function evaluate():Dynamic {
         var leftValue = left.evaluate();
         var rightValue = right.evaluate();
-
+    
         var leftIsFloat = Std.is(leftValue, Float);
         var rightIsFloat = Std.is(rightValue, Float);
         var leftIsString = Std.is(leftValue, String);
@@ -289,34 +289,6 @@ class BinaryExpression extends Expression {
                 }
             default:
                 Flow.error.report("Unknown operator: " + opera);
-                return null;
-        }
-    }
-}
-
-class UnaryExpression extends Expression {
-    public var opera:String;
-    public var right:Expression;
-
-    public function new(opera:String, right:Expression) {
-        this.opera = opera;
-        this.right = right;
-    }
-
-    public override function evaluate():Dynamic {
-        var value = right.evaluate();
-        switch (opera) {
-            case "-":
-                return -value;
-            case "!":
-                if (Std.is(value, Bool)) {
-                    return !cast(value);
-                } else {
-                    Flow.error.report("Logical NOT (!) operator can only be applied to boolean values.");
-                    return null;
-                }
-            default:
-                Flow.error.report("Unknown unary operator: " + opera);
                 return null;
         }
     }
