@@ -5,6 +5,8 @@ class Lexer {
         var tokens:Array<Token> = [];
         var currentToken:String = "";
         var inString:Bool = false;
+        var stringDelimiter:String = "";
+        var escapeSequence:Bool = false;
         var i:Int = 0;
 
         while (i < code.length) {
@@ -14,18 +16,30 @@ class Lexer {
                 if (inString) {
                     if (currentToken.length > 0 && currentToken.charAt(currentToken.length - 1) == '\\') {
                         currentToken = currentToken.substring(0, currentToken.length - 1) + char;
-                    } else {
+                        escapeSequence = true;
+                    } else if (char == stringDelimiter) {
                         tokens.push(new Token(TokenType.STRING, currentToken));
                         currentToken = "";
+                        inString = false;
+                        stringDelimiter = "";
+                    } else {
+                        currentToken += char;
                     }
-                    inString = false;
                 } else {
                     inString = true;
+                    stringDelimiter = char;
                 }
                 i++;
                 continue;
             } else if (inString) {
-                currentToken += char;
+                if (escapeSequence) {
+                    currentToken += char;
+                    escapeSequence = false;
+                } else if (char == '\\') {
+                    escapeSequence = true;
+                } else {
+                    currentToken += char;
+                }
                 i++;
                 continue;
             } else if (char == "/" && i + 1 < code.length && code.charAt(i + 1) == "/") {

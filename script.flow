@@ -1,17 +1,50 @@
-let running = true
-let random = Random().nextInt(1, 100)
-
 func main() {
-    while running {
-        let input = IO().readLine()
-        if input > random {
-            print("The number is too high")
-        } else if input < random {
-            print("The number is too low")
+    print("Welcome to Rock, Paper, Scissors!")
+
+    let playerChoice = getPlayerChoice()
+    print(getChoiceName(playerChoice))
+
+    let choices = [0, 1, 2]
+    let random = Random().nextInt(0, 2)
+    let computerChoice = choices[random]
+    print(getChoiceName(computerChoice))
+
+    if playerChoice == computerChoice {
+        System().println("It's a tie!")
+    } else if playerChoice == 1 and computerChoice == 2 {
+        System().println("You win!")
+    } else if playerChoice == 0 and computerChoice == 1 {
+        System().println("You win!")
+    } else if playerChoice == 2 and computerChoice == 0 {
+        System().println("You win!")
+    } else {
+        System().println("Computer wins!")
+    }
+}
+
+func getPlayerChoice() {
+    while true {
+        print("Choose one of the options: 0 - paper, 1 - rock, 2 - scissors")
+        let choice = IO().readLine()
+        if choice == 0 {
+            return choice
+        } else if choice == 1 {
+            return choice
+        } else if choice == 2 {
+            return choice
         } else {
-            print("You guessed it!")
-            running = false
+            print("Invalid choice. Try again.")
         }
+    }
+}
+
+func getChoiceName(choice) {
+    if choice == 0 {
+        return "paper"
+    } else if choice == 1 {
+        return "rock"
+    } else {
+        return "scissors"
     }
 }
 
