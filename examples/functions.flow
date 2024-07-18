@@ -1,0 +1,12 @@
+func log(x) {
+    System().println(x)
+}
+
+call log("it's only test!")
+
+func add(a, b) {
+    return a + b
+}
+
+let x = add(10, 10)
+print(x)

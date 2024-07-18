@@ -1,0 +1,12 @@
+func exists(file) {
+    return File().exists(file)
+}
+
+File().writeFile("text.txt", "this is TXT test file")
+
+if exists("text.txt") {
+    let file = File().readFile("text.txt")
+    print(file)
+} else {
+    print("false")
+}

@@ -1,0 +1,19 @@
+let object = {
+    number: 1.2,
+    string: "Hello, world!",
+    array: [
+        true,
+        false
+    ]
+}
+
+let json = Json().stringify(object)
+let parse = Json().parse(json)
+print(parse)
+
+print(parse.number)
+print(parse.string)
+print(parse.array)
+
+print(parse.array[0])
+print(parse.array[1])

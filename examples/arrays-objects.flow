@@ -1,0 +1,14 @@
+// arrays
+let cars = ["Ford", "Volvo", "BMW"]
+print(cars)
+
+print(cars[0])
+print(cars[1])
+print(cars[2])
+
+// objects
+let person = { name: "John", age: 30 }
+print(person)
+
+print(person.name)
+print(person.age)

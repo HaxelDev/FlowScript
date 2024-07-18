@@ -1,0 +1,9 @@
+func modInv(a, b) {
+    for i in range(0, b) {
+        if (a * i) % b == 1 {
+            return i
+        }
+    }
+}
+
+print(modInv(42, 2017))
