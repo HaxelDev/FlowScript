@@ -736,6 +736,9 @@ class SystemExpression extends Expression {
                 return null;
             case "currentDate":
                 return System.currentDate();
+            case "sleep":
+                System.sleep(evaluatedArguments[0]);
+                return null;
         }
 
         return null;
@@ -764,6 +767,8 @@ class SystemStatement extends Statement {
                 System.exit();
             case "currentDate":
                 System.currentDate();
+            case "sleep":
+                System.sleep(evaluatedArguments[0]);
         }
     }
 }

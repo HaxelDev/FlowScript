@@ -23,4 +23,8 @@ class System {
     public static function println(message: String): Void {
         Sys.println(message);
     }
+
+    public static function sleep(milliseconds: Int): Void {
+        Sys.sleep(milliseconds / 1000);
+    }
 }

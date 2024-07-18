@@ -365,6 +365,11 @@ class Parser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new SystemStatement("println", [expression]);
+        } else if (methodName == ".sleep") {
+            consume(TokenType.LPAREN, "Expected '(' after 'sleep'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new SystemStatement("sleep", [expression]);
         } else {
             Flow.error.report("Unknown System method: " + methodName);
             return null;
@@ -657,6 +662,11 @@ class Parser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new SystemExpression("println", [expression]);
+        } else if (methodName == ".sleep") {
+            consume(TokenType.LPAREN, "Expected '(' after 'sleep'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new SystemExpression("sleep", [expression]);
         } else {
             Flow.error.report("Unknown System method: " + methodName);
             return null;
