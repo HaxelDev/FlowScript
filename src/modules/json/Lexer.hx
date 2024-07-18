@@ -19,6 +19,9 @@ class Lexer {
         } else {
             this.currentChar = null;
         }
+        if (this.currentChar == ' ' || this.currentChar == '\t' || this.currentChar == '\n' || this.currentChar == '\r') {
+            this.readNextChar();
+        }
     }
 
     public function getNextToken():Token {
@@ -68,9 +71,32 @@ class Lexer {
         try {
             var result:String = "";
             this.readNextChar();
-            while (this.currentChar != null && this.currentChar != '"') {
-                result += this.currentChar;
+            while (this.currentChar!= null && this.currentChar!= '"') {
+                if (this.currentChar == '\\') {
+                    this.readNextChar();
+                    switch (this.currentChar) {
+                        case 'n':
+                            result += '\n';
+                        case 't':
+                            result += '\t';
+                        case 'r':
+                            result += '\r';
+                        case '"':
+                            result += '"';
+                        case '\\':
+                            result += '\\';
+                        default:
+                            Flow.error.report("Invalid escape sequence: \\" + this.currentChar);
+                            return new Token(TokenType.EOF, "");
+                    }
+                } else {
+                    result += this.currentChar;
+                }
                 this.readNextChar();
+            }
+            if (this.currentChar!= '"') {
+                Flow.error.report("Unclosed string");
+                return new Token(TokenType.EOF, "");
             }
             this.readNextChar();
             return new Token(TokenType.STRING, result);

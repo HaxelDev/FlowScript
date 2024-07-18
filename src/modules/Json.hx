@@ -35,6 +35,8 @@ class Json {
                 return "null";
             case TInt, TFloat:
                 return Std.string(value);
+            case TBool:
+                return value ? "true" : "false";
             case TClass(String):
                 return quoteString(value);
             case TClass(Array):

@@ -50,6 +50,10 @@ class Parser {
             this.currentToken = this.lexer.getNextToken();
             while (this.currentToken.type != TokenType.RIGHT_BRACE) {
                 var key = this.parseString();
+                if (key == null) {
+                    Flow.error.report("Expected string key, got null");
+                    return null;
+                }
                 this.expect(TokenType.COLON);
                 var value = this.parseValue();
                 Reflect.setField(obj, key, value);
@@ -64,13 +68,17 @@ class Parser {
             return null;
         }
     }
-
+    
     private function parseArray():Dynamic {
         try {
             var arr:Array<Dynamic> = [];
             this.currentToken = this.lexer.getNextToken();
             while (this.currentToken.type != TokenType.RIGHT_BRACKET) {
-                arr.push(this.parseValue());
+                var value = this.parseValue();
+                if (value == null) {
+                    continue;
+                }
+                arr.push(value);
                 if (this.currentToken.type == TokenType.COMMA) {
                     this.currentToken = this.lexer.getNextToken();
                 }
