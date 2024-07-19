@@ -1,0 +1,14 @@
+let x = 0
+let text = ""
+
+switch x {
+    case 0: {
+        text = "Off"
+    } case 1: {
+        text = "On"
+    } default: {
+        text = "No value found"
+    }
+}
+
+print(text)

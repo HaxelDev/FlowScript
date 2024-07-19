@@ -47,6 +47,8 @@ class Parser {
                 return parseBreakStatement();
             } else if (keyword == "continue") {
                 return parseContinueStatement();
+            } else if (keyword == "switch") {
+                return parseSwitchStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword);
                 return null;
@@ -252,6 +254,36 @@ class Parser {
 
     private function parseContinueStatement():Statement {
         return new ContinueStatement();
+    }
+
+    private function parseSwitchStatement():Statement {
+        var expression = parseExpression();
+
+        consume(TokenType.LBRACE, "Expected '{' before switch cases.");
+
+        var cases:Array<CaseClause> = [];
+        var defaultClause:DefaultClause = null;
+
+        while (!check(TokenType.RBRACE) && !isAtEnd()) {
+            if (match([TokenType.CASE])) {
+                var caseValue = parseExpression();
+                consume(TokenType.COLON, "Expected ':' after case value.");
+                var caseBody = parseBlock();
+                var fallsThrough = check(TokenType.CASE) || check(TokenType.DEFAULT);
+                cases.push(new CaseClause(caseValue, caseBody, fallsThrough));
+            } else if (match([TokenType.DEFAULT])) {
+                consume(TokenType.COLON, "Expected ':' after 'default'.");
+                var defaultBody = parseBlock();
+                defaultClause = new DefaultClause(defaultBody);
+            } else {
+                Flow.error.report("Expected 'case' or 'default' in switch statement.");
+                break;
+            }
+        }
+
+        consume(TokenType.RBRACE, "Expected '}' after switch cases.");
+
+        return new SwitchStatement(expression, cases, defaultClause);
     }
 
     private function parseIOStatement():Statement {

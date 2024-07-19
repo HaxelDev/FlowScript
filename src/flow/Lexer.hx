@@ -112,8 +112,14 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token);
             case "continue":
                 return new Token(TokenType.KEYWORD, token);
+            case "switch":
+                return new Token(TokenType.KEYWORD, token);
             case "in":
                 return new Token(TokenType.IN, token);
+            case "case":
+                return new Token(TokenType.CASE, token);
+            case "default":
+                return new Token(TokenType.DEFAULT, token);
             case "range":
                 return new Token(TokenType.RANGE, token);
             case "IO":
@@ -154,6 +160,8 @@ class Lexer {
                 return new Token(TokenType.MULTIPLY, token);
             case "/":
                 return new Token(TokenType.DIVIDE, token);
+            case ":":
+                return new Token(TokenType.COLON, token);
             case ";":
                 return new Token(TokenType.SEMICOLON, token);
             case "!":
@@ -278,4 +286,6 @@ enum TokenType {
     SYSTEM;
     FILE;
     JSON;
+    DEFAULT;
+    CASE;
 }

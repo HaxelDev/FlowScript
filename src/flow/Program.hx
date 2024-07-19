@@ -663,6 +663,55 @@ class ContinueException extends haxe.Exception {
     }
 }
 
+class SwitchStatement extends Statement {
+    public var expression:Expression;
+    public var cases:Array<CaseClause>;
+    public var defaultClause:DefaultClause;
+
+    public function new(expression:Expression, cases:Array<CaseClause>, defaultClause:DefaultClause) {
+        this.expression = expression;
+        this.cases = cases;
+        this.defaultClause = defaultClause;
+    }
+
+    public override function execute():Void {
+        var switchValue = expression.evaluate();
+        var executed = false;
+
+        for (caseClause in cases) {
+            if (caseClause.caseValue.evaluate() == switchValue) {
+                caseClause.caseBody.execute();
+                executed = true;
+                if (!caseClause.fallsThrough) break;
+            }
+        }
+
+        if (!executed && defaultClause != null) {
+            defaultClause.defaultBody.execute();
+        }
+    }
+}
+
+class CaseClause {
+    public var caseValue:Expression;
+    public var caseBody:BlockStatement;
+    public var fallsThrough:Bool;
+
+    public function new(caseValue:Expression, caseBody:BlockStatement, fallsThrough:Bool) {
+        this.caseValue = caseValue;
+        this.caseBody = caseBody;
+        this.fallsThrough = fallsThrough;
+    }
+}
+
+class DefaultClause {
+    public var defaultBody:BlockStatement;
+
+    public function new(defaultBody:BlockStatement) {
+        this.defaultBody = defaultBody;
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
