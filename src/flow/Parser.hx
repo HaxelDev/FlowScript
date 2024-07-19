@@ -250,7 +250,7 @@ class Parser {
         return new BreakStatement();
     }
 
-    private function parseContinueStatement():ContinueStatement {
+    private function parseContinueStatement():Statement {
         return new ContinueStatement();
     }
 
