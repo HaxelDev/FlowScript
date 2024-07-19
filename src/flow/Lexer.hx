@@ -108,6 +108,10 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token);
             case "return":
                 return new Token(TokenType.KEYWORD, token);
+            case "break":
+                return new Token(TokenType.KEYWORD, token);
+            case "continue":
+                return new Token(TokenType.KEYWORD, token);
             case "in":
                 return new Token(TokenType.IN, token);
             case "range":

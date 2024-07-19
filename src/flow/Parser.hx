@@ -43,6 +43,10 @@ class Parser {
                 return parseCallStatement();
             } else if (keyword == "return") {
                 return parseReturnStatement();
+            } else if (keyword == "break") {
+                return parseBreakStatement();
+            } else if (keyword == "continue") {
+                return parseContinueStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword);
                 return null;
@@ -240,6 +244,14 @@ class Parser {
     private function parseReturnStatement(): Statement {
         var expression:Expression = parseExpression();
         return new ReturnStatement(expression);
+    }
+
+    private function parseBreakStatement():Statement {
+        return new BreakStatement();
+    }
+
+    private function parseContinueStatement():ContinueStatement {
+        return new ContinueStatement();
     }
 
     private function parseIOStatement():Statement {

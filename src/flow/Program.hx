@@ -351,7 +351,13 @@ class WhileStatement extends Statement {
 
     public override function execute():Void {
         while (condition.evaluate()) {
-            body.execute();
+            try {
+                body.execute();
+            } catch (e:BreakException) {
+                break;
+            } catch (e:ContinueException) {
+                continue;
+            }
         }
     }
 }
@@ -367,17 +373,22 @@ class ForStatement extends Statement {
         this.body = body;
     }
 
-    public override function execute(): Void {
+    public override function execute():Void {
         var iterable:Iterable<Dynamic> = iterableExpression.evaluate();
 
-        if (iterable == null) {
+        if (iterable != null) {
+            for (item in iterable) {
+                Environment.define(variableName, item);
+                try {
+                    body.execute();
+                } catch (e:BreakException) {
+                    break;
+                } catch (e:ContinueException) {
+                    continue;
+                }
+            }
+        } else {
             Flow.error.report("Iterable expression evaluates to null");
-            return;
-        }
-
-        for (item in iterable) {
-            Environment.define(variableName, item);
-            body.execute();
         }
     }
 }
@@ -621,6 +632,34 @@ class ArrayAccessExpression extends Expression {
         }
 
         return arrayValue[indexValue];
+    }
+}
+
+class BreakStatement extends Statement {
+    public function new() {}
+
+    public override function execute():Void {
+        throw new BreakException();
+    }
+}
+
+class BreakException extends haxe.Exception {
+    public function new() {
+        super('Break');
+    }
+}
+
+class ContinueStatement extends Statement {
+    public function new() {}
+
+    public override function execute():Void {
+        throw new ContinueException();
+    }
+}
+
+class ContinueException extends haxe.Exception {
+    public function new() {
+        super('Continue');
     }
 }
 
