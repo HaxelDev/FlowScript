@@ -789,7 +789,11 @@ class Parser {
         while (match([TokenType.DOT, TokenType.LBRACKET])) {
             if (peek().type == TokenType.DOT) {
                 var property:Token = consume(TokenType.IDENTIFIER, "Expected property name");
-                obj = new PropertyAccessExpression(obj, property.value);
+                if (property.value == "length") {
+                    obj = new PropertyAccessExpression(obj, "length");
+                } else {
+                    obj = new PropertyAccessExpression(obj, property.value);
+                }
             } else {
                 consume(TokenType.LBRACKET, "Expected '[' after array name");
                 var index:Expression = parseExpression();

@@ -79,22 +79,35 @@ class Environment {
     static public function get(name:String):Dynamic {
         var parts:Array<String> = name.split(".");
         var obj:Dynamic = values.get(parts[0]);
+
         if (obj == null) {
             Flow.error.report("Undefined variable: " + parts[0]);
             return null;
         }
+
         for (i in 1...parts.length) {
             if (obj == null) {
                 Flow.error.report("Undefined property: " + parts[i - 1]);
                 return null;
             }
-            if (Reflect.hasField(obj, parts[i])) {
-                obj = Reflect.field(obj, parts[i]);
+
+            if (parts[i] == "length") {
+                if (Std.is(obj, String) || Std.is(obj, Array)) {
+                    obj = obj.length;
+                } else {
+                    Flow.error.report("Cannot access 'length' property on non-array/non-string.");
+                    return null;
+                }
             } else {
-                Flow.error.report("Undefined property: " + parts[i]);
-                return null;
+                if (Reflect.hasField(obj, parts[i])) {
+                    obj = Reflect.field(obj, parts[i]);
+                } else {
+                    Flow.error.report("Undefined property: " + parts[i]);
+                    return null;
+                }
             }
         }
+
         return obj;
     }
 
@@ -599,10 +612,20 @@ class PropertyAccessExpression extends Expression {
 
     public override function evaluate():Dynamic {
         var objValue:Dynamic = obj.evaluate();
+
+        if (property == "length") {
+            if (Std.is(objValue, String) || Std.is(objValue, Array)) {
+                return objValue.length;
+            } else {
+                Flow.error.report("Cannot access 'length' property on non-array/non-string.");
+                return null;
+            }
+        }
+
         if (objValue != null && Reflect.hasField(objValue, property)) {
             return Reflect.field(objValue, property);
         } else {
-            Flow.error.report("Property '" + property + "' does not exist on object");
+            Flow.error.report("Property '" + property + "' does not exist on object.");
             return null;
         }
     }
