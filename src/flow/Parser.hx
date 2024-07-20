@@ -523,42 +523,36 @@ class Parser {
     }
 
     private function parseExpression():Expression {
-        return parseLogicalAnd();
+        return parseLogicalOr();
     }
 
-    private function parseLogicalAnd():Expression {
-        var expr = parseEquality();
-    
-        while (match([TokenType.AND])) {
-            var opera = previous().value;
-            var right = parseEquality();
-            expr = new BinaryExpression(expr, opera, right);
-        }
-    
-        return expr;
-    }
-    
     private function parseLogicalOr():Expression {
         var expr = parseLogicalAnd();
-    
         while (match([TokenType.OR])) {
             var opera = previous().value;
             var right = parseLogicalAnd();
             expr = new BinaryExpression(expr, opera, right);
         }
-    
         return expr;
     }
-    
+
+    private function parseLogicalAnd():Expression {
+        var expr = parseEquality();
+        while (match([TokenType.AND])) {
+            var opera = previous().value;
+            var right = parseEquality();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+        return expr;
+    }    
+
     private function parseEquality():Expression {
         var expr = parseComparison();
-    
         while (match([TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL])) {
             var opera = previous().value;
             var right = parseComparison();
             expr = new BinaryExpression(expr, opera, right);
         }
-    
         return expr;
     }
     
@@ -773,6 +767,14 @@ class Parser {
         var nameToken:Token = previous();
         var name:String = nameToken.value;
         var arguments:Array<Expression> = [];
+
+        if (name == "chr") {
+            consume(TokenType.LPAREN, "Expected '(' after 'chr'");
+            var argument:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ChrFunctionCall(argument);
+        }
+
         consume(TokenType.LPAREN, "Expected '(' after function name");
         while (!check(TokenType.RPAREN)) {
             arguments.push(parseExpression());

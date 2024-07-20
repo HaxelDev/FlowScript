@@ -70,7 +70,7 @@ class VariableExpression extends Expression {
 class Environment {
     static public var values:Map<String, Dynamic> = new Map();
     static public var functions:Map<String, Function> = new Map();
-    static public var modules:Map<String, Dynamic> = new Map();
+    static public var currentScope:Scope = new Scope();
 
     static public function define(name:String, value:Dynamic):Void {
         values.set(name, value);
@@ -79,6 +79,14 @@ class Environment {
     static public function get(name:String):Dynamic {
         var parts:Array<String> = name.split(".");
         var obj:Dynamic = values.get(parts[0]);
+
+        if (obj == null && currentScope != null) {
+            for (letStatement in currentScope.letStatements) {
+                if (letStatement.name == parts[0]) {
+                    return null;
+                }
+            }
+        }
 
         if (obj == null) {
             Flow.error.report("Undefined variable: " + parts[0]);
@@ -149,15 +157,17 @@ class Environment {
         values = oldValues;
     }
 
-    static public function defineModule(name:String, module:Dynamic):Void {
-        modules.set(name, module);
+    static public function chr(code:Int):String {
+        return String.fromCharCode(code);
     }
+}
 
-    static public function getModule(name:String):Dynamic {
-        if (!modules.exists(name)) {
-            Flow.error.report("Undefined module: " + name);
-        }
-        return modules.get(name);
+class Scope {
+    public var letStatements:Array<LetStatement> = new Array();
+    public var parentScope:Scope;
+
+    public function new(parentScope:Scope = null) {
+        this.parentScope = parentScope;
     }
 }
 
@@ -732,6 +742,19 @@ class DefaultClause {
 
     public function new(defaultBody:BlockStatement) {
         this.defaultBody = defaultBody;
+    }
+}
+
+class ChrFunctionCall extends Expression {
+    public var argument:Expression;
+
+    public function new(argument:Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate():Dynamic {
+        var code:Int = cast(argument.evaluate(), Int);
+        return Environment.chr(code);
     }
 }
 
