@@ -74,9 +74,9 @@ class Parser {
     private function parseLetStatement(): LetStatement {
         var nameToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name after 'let'");
         var name: String = nameToken.value;
-    
+
         consume(TokenType.EQUAL, "Expected '=' after variable name");
-    
+
         var initializer: Expression;
 
         if (check(TokenType.LBRACKET)) {
@@ -773,6 +773,20 @@ class Parser {
             var argument:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new ChrFunctionCall(argument);
+        } else if (name == "fill") {
+            consume(TokenType.LPAREN, "Expected '(' after 'fill'");
+            var size:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after size argument in 'fill'");
+            var value:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new FillFunctionCall(size, value);
+        } else if (name == "charAt") {
+            consume(TokenType.LPAREN, "Expected '(' after 'charAt'");
+            var stringExpr:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'charAt'");
+            var indexExpr:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CharAtFunctionCall(stringExpr, indexExpr);
         }
 
         consume(TokenType.LPAREN, "Expected '(' after function name");

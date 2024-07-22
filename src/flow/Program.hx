@@ -76,9 +76,9 @@ class Environment {
         values.set(name, value);
     }
 
-    static public function get(name:String):Dynamic {
-        var parts:Array<String> = name.split(".");
-        var obj:Dynamic = values.get(parts[0]);
+    static public function get(name: String): Dynamic {
+        var parts: Array<String> = name.split(".");
+        var obj: Dynamic = values.get(parts[0]);
 
         if (obj == null && currentScope != null) {
             for (letStatement in currentScope.letStatements) {
@@ -642,17 +642,17 @@ class PropertyAccessExpression extends Expression {
 }
 
 class ArrayAccessExpression extends Expression {
-    public var array:Expression;
-    public var index:Expression;
+    public var array: Expression;
+    public var index: Expression;
 
-    public function new(array:Expression, index:Expression) {
+    public function new(array: Expression, index: Expression) {
         this.array = array;
         this.index = index;
     }
 
-    public override function evaluate():Dynamic {
-        var arrayValue:Array<Dynamic> = array.evaluate();
-        var indexValue:Int = index.evaluate();
+    public override function evaluate(): Dynamic {
+        var arrayValue: Array<Dynamic> = array.evaluate();
+        var indexValue: Int = index.evaluate();
 
         if (arrayValue == null) {
             Flow.error.report("Cannot access element of null array");
@@ -755,6 +755,70 @@ class ChrFunctionCall extends Expression {
     public override function evaluate():Dynamic {
         var code:Int = cast(argument.evaluate(), Int);
         return Environment.chr(code);
+    }
+}
+
+class FillFunctionCall extends Expression {
+    public var size:Expression;
+    public var value:Expression;
+
+    public function new(size:Expression, value:Expression) {
+        this.size = size;
+        this.value = value;
+    }
+
+    public override function evaluate():Dynamic {
+        var sizeValue = size.evaluate();
+        var valueValue = value.evaluate();
+
+        if (Std.is(sizeValue, Int) && Std.is(valueValue, Int)) {
+            var intSize = cast(sizeValue, Int);
+            var intValue = cast(valueValue, Int);
+
+            if (intSize < 0) {
+                Flow.error.report("Size cannot be negative.");
+                return [];
+            }
+
+            var result:Array<Dynamic> = [];
+            for (i in 0...intSize) {
+                result.push(intValue);
+            }
+            return result;
+        } else {
+            Flow.error.report("Arguments to 'fill' must be integers.");
+            return [];
+        }
+    }
+}
+
+class CharAtFunctionCall extends Expression {
+    public var stringExpr:Expression;
+    public var indexExpr:Expression;
+
+    public function new(stringExpr:Expression, indexExpr:Expression) {
+        this.stringExpr = stringExpr;
+        this.indexExpr = indexExpr;
+    }
+
+    public override function evaluate():Dynamic {
+        var strValue = stringExpr.evaluate();
+        var indexValue = indexExpr.evaluate();
+
+        if (Std.is(strValue, String) && Std.is(indexValue, Int)) {
+            var str:String = cast(strValue, String);
+            var index:Int = cast(indexValue, Int);            
+
+            if (index < 0 || index >= str.length) {
+                Flow.error.report("Index out of bounds: " + index);
+                return "";
+            }
+
+            return str.charAt(index);
+        } else {
+            Flow.error.report("Arguments to 'charAt' must be a string and an integer.");
+            return "";
+        }
     }
 }
 

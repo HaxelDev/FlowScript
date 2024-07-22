@@ -75,6 +75,12 @@ class Lexer {
                 } else if (char == "!" && i + 1 < code.length && code.charAt(i + 1) == "=") {
                     symbol += "=";
                     i++;
+                } else if (char == ">" && i + 1 < code.length && code.charAt(i + 1) == "=") {
+                    symbol += "=";
+                    i++;
+                } else if (char == "<" && i + 1 < code.length && code.charAt(i + 1) == "=") {
+                    symbol += "=";
+                    i++;
                 }
                 tokens.push(new Token(getSymbolType(symbol), symbol));
             } else {
