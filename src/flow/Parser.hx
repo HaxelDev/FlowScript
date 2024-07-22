@@ -232,6 +232,11 @@ class Parser {
         var nameToken:Token = consume(TokenType.IDENTIFIER, "Expected function name after 'call'");
         var name:String = nameToken.value;
         var arguments:Array<Expression> = [];
+        if (name == "push") {
+            return parsePushStatement();
+        } else if (name == "pop") {
+            return parsePopStatement();
+        }
         consume(TokenType.LPAREN, "Expected '(' after function name");
         while (!check(TokenType.RPAREN)) {
             arguments.push(parseExpression());
@@ -286,6 +291,25 @@ class Parser {
         return new SwitchStatement(expression, cases, defaultClause);
     }
 
+    private function parsePushStatement(): Statement {
+        consume(TokenType.LPAREN, "Expected '(' after 'push'");
+        var array: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after array argument in 'push'");
+        var value: Expression = parseExpression();
+        consume(TokenType.RPAREN, "Expected ')' after arguments in 'push'");
+        return new PushStatement(array, value);
+    }
+
+    private function parsePopStatement(): Statement {
+        consume(TokenType.LPAREN, "Expected '(' after 'pop'");
+        var array: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after array argument in 'pop'");
+        var variableToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name after ','");
+        consume(TokenType.RPAREN, "Expected ')' after arguments in 'pop'");
+        var variable: String = variableToken.value;
+        return new PopStatement(array, variable);
+    }
+
     private function parseIOStatement():Statement {
         var ioToken:Token = advance();
         if (ioToken.type != TokenType.IO) {
@@ -306,8 +330,9 @@ class Parser {
         var methodName:String = methodNameToken.value;
         if (methodName == ".readLine") {
             consume(TokenType.LPAREN, "Expected '(' after 'readLine'");
-            consume(TokenType.RPAREN, "Expected ')' after 'readLine'");
-            return new IOStatement("readLine");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOStatement("readLine", [expression]);
         } else if (methodName == ".print") {
             consume(TokenType.LPAREN, "Expected '(' after 'print'");
             var expression:Expression = parseExpression();
@@ -318,6 +343,11 @@ class Parser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new IOStatement("println", [expression]);
+        } else if (methodName == ".writeByte") {
+            consume(TokenType.LPAREN, "Expected '(' after 'writeByte'");
+            var expression: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOStatement("writeByte", [expression]);
         } else {
             Flow.error.report("Unknown IO method: " + methodName);
             return null;
@@ -633,8 +663,9 @@ class Parser {
         var methodName:String = methodNameToken.value;
         if (methodName == ".readLine") {
             consume(TokenType.LPAREN, "Expected '(' after 'readLine'");
-            consume(TokenType.RPAREN, "Expected ')' after 'readLine'");
-            return new IOExpression("readLine");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOExpression("readLine", [expression]);
         } else if (methodName == ".print") {
             consume(TokenType.LPAREN, "Expected '(' after 'print'");
             var expression:Expression = parseExpression();
@@ -645,6 +676,11 @@ class Parser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new IOExpression("println", [expression]);
+        } else if (methodName == ".writeByte") {
+            consume(TokenType.LPAREN, "Expected '(' after 'writeByte'");
+            var expression: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOExpression("writeByte", [expression]);
         } else {
             Flow.error.report("Unknown IO method: " + methodName);
             return null;
@@ -787,6 +823,26 @@ class Parser {
             var indexExpr:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after arguments");
             return new CharAtFunctionCall(stringExpr, indexExpr);
+        } else if (name == "push") {
+            consume(TokenType.LPAREN, "Expected '(' after 'push'");
+            var array: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after array argument in 'push'");
+            var value: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments in 'push'");
+            return new PushFunctionCall(array, value);
+        } else if (name == "pop") {
+            consume(TokenType.LPAREN, "Expected '(' after 'pop'");
+            var array: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after array argument in 'pop'");
+            var variableToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name after ','");
+            consume(TokenType.RPAREN, "Expected ')' after arguments in 'pop'");
+            var variable: String = variableToken.value;
+            return new PopFunctionCall(array, variable);
+        } else if (name == "str") {
+            consume(TokenType.LPAREN, "Expected '(' after 'str'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new StrFunctionCall(argument);
         }
 
         consume(TokenType.LPAREN, "Expected '(' after function name");

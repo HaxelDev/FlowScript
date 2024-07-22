@@ -1,0 +1,7 @@
+let cars = ["Ford", "Volvo", "BMW"]
+call push(cars, "Toyota")
+print(cars)
+
+call pop(cars, lastCar)
+print(lastCar)
+print(cars)

@@ -157,8 +157,24 @@ class Environment {
         values = oldValues;
     }
 
-    static public function chr(code:Int):String {
-        return String.fromCharCode(code);
+    static public function push(array:Array<Dynamic>, value:Dynamic):Void {
+        if (array == null) {
+            Flow.error.report("Cannot push to null array");
+            return;
+        }
+        array.push(value);
+    }
+
+    static public function pop(array:Array<Dynamic>):Dynamic {
+        if (array == null) {
+            Flow.error.report("Cannot pop from null array");
+            return null;
+        }
+        if (array.length == 0) {
+            Flow.error.report("Cannot pop from empty array");
+            return null;
+        }
+        return array.pop();
     }
 }
 
@@ -746,15 +762,15 @@ class DefaultClause {
 }
 
 class ChrFunctionCall extends Expression {
-    public var argument:Expression;
+    public var argument: Expression;
 
-    public function new(argument:Expression) {
+    public function new(argument: Expression) {
         this.argument = argument;
     }
 
-    public override function evaluate():Dynamic {
-        var code:Int = cast(argument.evaluate(), Int);
-        return Environment.chr(code);
+    public override function evaluate(): Dynamic {
+        var code = Std.int(argument.evaluate());
+        return String.fromCharCode(code);
     }
 }
 
@@ -793,32 +809,141 @@ class FillFunctionCall extends Expression {
 }
 
 class CharAtFunctionCall extends Expression {
-    public var stringExpr:Expression;
-    public var indexExpr:Expression;
+    public var stringExpr: Expression;
+    public var indexExpr: Expression;
 
-    public function new(stringExpr:Expression, indexExpr:Expression) {
+    public function new(stringExpr: Expression, indexExpr: Expression) {
         this.stringExpr = stringExpr;
         this.indexExpr = indexExpr;
     }
 
-    public override function evaluate():Dynamic {
+    public override function evaluate(): Dynamic {
         var strValue = stringExpr.evaluate();
         var indexValue = indexExpr.evaluate();
 
-        if (Std.is(strValue, String) && Std.is(indexValue, Int)) {
-            var str:String = cast(strValue, String);
-            var index:Int = cast(indexValue, Int);            
+        var index = Std.int(indexValue);
+        var str = cast(strValue, String);
 
-            if (index < 0 || index >= str.length) {
-                Flow.error.report("Index out of bounds: " + index);
-                return "";
-            }
-
-            return str.charAt(index);
-        } else {
-            Flow.error.report("Arguments to 'charAt' must be a string and an integer.");
+        if (index < 0 || index >= str.length) {
+            Flow.error.report("Index out of bounds: " + index);
             return "";
         }
+
+        return str.charAt(index);
+    }
+}
+
+class PushStatement extends Statement {
+    public var array: Expression;
+    public var value: Expression;
+
+    public function new(array: Expression, value: Expression) {
+        this.array = array;
+        this.value = value;
+    }
+
+    public override function execute(): Void {
+        var arrayValue: Array<Dynamic> = array.evaluate();
+        var valueEvaluated: Dynamic = value.evaluate();
+
+        if (arrayValue == null) {
+            Flow.error.report("Cannot push to null array");
+            return;
+        }
+
+        arrayValue.push(valueEvaluated);
+    }
+}
+
+class PopStatement extends Statement {
+    public var array: Expression;
+    public var variable: String;
+
+    public function new(array: Expression, variable: String) {
+        this.array = array;
+        this.variable = variable;
+    }
+
+    public override function execute(): Void {
+        var arrayValue: Array<Dynamic> = array.evaluate();
+
+        if (arrayValue == null) {
+            Flow.error.report("Cannot pop from null array");
+            return;
+        }
+
+        if (arrayValue.length == 0) {
+            Flow.error.report("Cannot pop from empty array");
+            return;
+        }
+
+        var poppedValue: Dynamic = arrayValue.pop();
+        Environment.define(variable, poppedValue);
+    }
+}
+
+class PushFunctionCall extends Expression {
+    public var array: Expression;
+    public var value: Expression;
+
+    public function new(array: Expression, value: Expression) {
+        this.array = array;
+        this.value = value;
+    }
+
+    public override function evaluate(): Dynamic {
+        var arrayValue: Array<Dynamic> = array.evaluate();
+        var valueEvaluated: Dynamic = value.evaluate();
+
+        if (arrayValue == null) {
+            Flow.error.report("Cannot push to null array");
+            return null;
+        }
+
+        arrayValue.push(valueEvaluated);
+        return valueEvaluated;
+    }
+}
+
+class PopFunctionCall extends Expression {
+    public var array: Expression;
+    public var value: String;
+
+    public function new(array: Expression, value: String) {
+        this.array = array;
+        this.value = value;
+    }
+
+    public override function evaluate(): Dynamic {
+        var arrayValue: Array<Dynamic> = array.evaluate();
+
+        if (arrayValue == null) {
+            Flow.error.report("Cannot pop from null array");
+            return null;
+        }
+
+        if (arrayValue.length == 0) {
+            Flow.error.report("Cannot pop from empty array");
+            return null;
+        }
+
+        var poppedValue: Dynamic = arrayValue.pop();
+        Environment.define(value, poppedValue);
+
+        return poppedValue;
+    }
+}
+
+class StrFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var value = argument.evaluate();
+        return Std.string(value);
     }
 }
 
@@ -845,7 +970,19 @@ class IOExpression extends Expression {
                 IO.println(evaluatedArguments.join(" "));
                 return null;
             case "readLine":
-                return IO.readLine();
+                return IO.readLine(evaluatedArguments.join(" "));
+            case "writeByte":
+                if (evaluatedArguments.length == 1) {
+                    var byteValue = evaluatedArguments[0];
+                    if (Std.is(byteValue, Int) && byteValue >= 0 && byteValue <= 255) {
+                        IO.writeByte(byteValue);
+                    } else {
+                        Flow.error.report("Invalid byte value: " + byteValue);
+                    }
+                } else {
+                    Flow.error.report("writeByte requires exactly one argument.");
+                }
+                return null;
         }
 
         return null;
@@ -873,7 +1010,18 @@ class IOStatement extends Statement {
             case "println":
                 IO.println(evaluatedArguments.join(" "));
             case "readLine":
-                IO.readLine();
+                IO.readLine(evaluatedArguments.join(" "));
+            case "writeByte":
+                if (evaluatedArguments.length == 1) {
+                    var byteValue = evaluatedArguments[0];
+                    if (Std.is(byteValue, Int) && byteValue >= 0 && byteValue <= 255) {
+                        IO.writeByte(byteValue);
+                    } else {
+                        Flow.error.report("Invalid byte value: " + byteValue);
+                    }
+                } else {
+                    Flow.error.report("writeByte requires exactly one argument.");
+                }
         }
     }
 }

@@ -1,2 +1,2 @@
-let input = IO().readLine()
+let input = IO().readLine(">>> ")
 print(input)
