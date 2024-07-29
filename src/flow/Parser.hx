@@ -969,6 +969,13 @@ class Parser {
             var indexExpr:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after arguments");
             return new CharAtFunctionCall(stringExpr, indexExpr);
+        } else if (name == "charCodeAt") {
+            consume(TokenType.LPAREN, "Expected '(' after 'charCodeAt'");
+            var stringExpr:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'charCodeAt'");
+            var indexExpr:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CharCodeAtFunctionCall(stringExpr, indexExpr);
         } else if (name == "push") {
             consume(TokenType.LPAREN, "Expected '(' after 'push'");
             var array: Expression = parseExpression();

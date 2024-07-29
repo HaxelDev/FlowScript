@@ -829,6 +829,25 @@ class CharAtFunctionCall extends Expression {
     }
 }
 
+class CharCodeAtFunctionCall extends Expression {
+    public var stringExpr:Expression;
+    public var indexExpr:Expression;
+
+    public function new(stringExpr:Expression, indexExpr:Expression) {
+        this.stringExpr = stringExpr;
+        this.indexExpr = indexExpr;
+    }
+
+    public override function evaluate():Dynamic {
+        var str = stringExpr.evaluate();
+        var index = indexExpr.evaluate();
+        if (Std.is(str, String) && Std.is(index, Int)) {
+            return str.charCodeAt(index);
+        }
+        return null;
+    }
+}
+
 class PushStatement extends Statement {
     public var array: Expression;
     public var value: Expression;
