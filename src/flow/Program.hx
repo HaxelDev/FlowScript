@@ -1227,3 +1227,97 @@ class JsonStatement extends Statement {
         }
     }
 }
+
+class MathExpression extends Expression {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression> = null) {
+        this.methodName = methodName;
+        this.arguments = arguments != null ? arguments : [];
+    }
+
+    public override function evaluate():Dynamic {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "getPI":
+                return modules.Math.getPI();
+            case "abs":
+                if (evaluatedArguments.length == 1) return Math.abs(evaluatedArguments[0]);
+            case "max":
+                if (evaluatedArguments.length == 2) return Math.max(evaluatedArguments[0], evaluatedArguments[1]);
+            case "min":
+                if (evaluatedArguments.length == 2) return Math.min(evaluatedArguments[0], evaluatedArguments[1]);
+            case "pow":
+                if (evaluatedArguments.length == 2) return Math.pow(evaluatedArguments[0], evaluatedArguments[1]);
+            case "sqrt":
+                if (evaluatedArguments.length == 1) return Math.sqrt(evaluatedArguments[0]);
+            case "sin":
+                if (evaluatedArguments.length == 1) return Math.sin(evaluatedArguments[0]);
+            case "cos":
+                if (evaluatedArguments.length == 1) return Math.cos(evaluatedArguments[0]);
+            case "tan":
+                if (evaluatedArguments.length == 1) return Math.tan(evaluatedArguments[0]);
+            case "asin":
+                if (evaluatedArguments.length == 1) return Math.asin(evaluatedArguments[0]);
+            case "acos":
+                if (evaluatedArguments.length == 1) return Math.acos(evaluatedArguments[0]);
+            case "atan":
+                if (evaluatedArguments.length == 1) return Math.atan(evaluatedArguments[0]);
+            default:
+                throw "Unknown method: " + methodName;
+        }
+
+        throw "Invalid arguments for method: " + methodName;
+    }
+}
+
+class MathStatement extends Statement {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression> = null) {
+        this.methodName = methodName;
+        this.arguments = arguments != null ? arguments : [];
+    }
+
+    public override function execute():Void {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "getPI":
+                modules.Math.getPI();
+            case "abs":
+                if (evaluatedArguments.length == 1) Math.abs(evaluatedArguments[0]);
+            case "max":
+                if (evaluatedArguments.length == 2) Math.max(evaluatedArguments[0], evaluatedArguments[1]);
+            case "min":
+                if (evaluatedArguments.length == 2) Math.min(evaluatedArguments[0], evaluatedArguments[1]);
+            case "pow":
+                if (evaluatedArguments.length == 2) Math.pow(evaluatedArguments[0], evaluatedArguments[1]);
+            case "sqrt":
+                if (evaluatedArguments.length == 1) Math.sqrt(evaluatedArguments[0]);
+            case "sin":
+                if (evaluatedArguments.length == 1) Math.sin(evaluatedArguments[0]);
+            case "cos":
+                if (evaluatedArguments.length == 1) Math.cos(evaluatedArguments[0]);
+            case "tan":
+                if (evaluatedArguments.length == 1) Math.tan(evaluatedArguments[0]);
+            case "asin":
+                if (evaluatedArguments.length == 1) Math.asin(evaluatedArguments[0]);
+            case "acos":
+                if (evaluatedArguments.length == 1) Math.acos(evaluatedArguments[0]);
+            case "atan":
+                if (evaluatedArguments.length == 1) Math.atan(evaluatedArguments[0]);
+            default:
+                throw "Unknown method: " + methodName;
+        }
+    }
+}

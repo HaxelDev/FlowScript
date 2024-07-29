@@ -1,0 +1,9 @@
+let x = 2.5
+
+print(Math().abs(x))
+print(Math().sqrt(x))
+print(Math().pow(x, 3))
+print(Math().sin(x))
+print(Math().cos(x))
+print(Math().tan(x))
+print(Math().getPI())

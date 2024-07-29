@@ -147,6 +147,8 @@ class Lexer {
                 return new Token(TokenType.FILE, token);
             case "Json":
                 return new Token(TokenType.JSON, token);
+            case "Math":
+                return new Token(TokenType.MATH, token);
             case "and":
                 return new Token(TokenType.AND, token);
             case "or":
@@ -301,6 +303,7 @@ enum TokenType {
     SYSTEM;
     FILE;
     JSON;
+    MATH;
     DEFAULT;
     CASE;
 }

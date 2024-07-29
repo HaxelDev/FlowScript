@@ -63,6 +63,8 @@ class Parser {
             return parseFileStatement();
         } else if (firstTokenType == TokenType.JSON) {
             return parseJsonStatement();
+        } else if (firstTokenType == TokenType.MATH) {
+            return parseMathStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
             return parseLetStatement();
         } else {
@@ -538,6 +540,70 @@ class Parser {
         }
     }
 
+    private function parseMathStatement():Statement {
+        var ioToken:Token = advance();
+        if (ioToken.type != TokenType.MATH) {
+            Flow.error.report("Expected 'Math' keyword");
+            return null;
+        }
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('");
+            return null;
+        }
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'");
+            return null;
+        }
+
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        var methods = [
+            { name: ".getPI", args: 0 },
+            { name: ".abs", args: 1 },
+            { name: ".max", args: 2 },
+            { name: ".min", args: 2 },
+            { name: ".pow", args: 2 },
+            { name: ".sqrt", args: 1 },
+            { name: ".sin", args: 1 },
+            { name: ".cos", args: 1 },
+            { name: ".tan", args: 1 },
+            { name: ".asin", args: 1 },
+            { name: ".acos", args: 1 },
+            { name: ".atan", args: 1 }
+        ];
+
+        var methodConfig = null;
+        for (method in methods) {
+            if (method.name == methodName) {
+                methodConfig = method;
+                break;
+            }
+        }
+    
+        if (methodConfig == null) {
+            Flow.error.report("Unknown Math method: " + methodName);
+            return null;
+        }
+    
+        consume(TokenType.LPAREN, "Expected '(' after '" + methodName + "'");
+    
+        var arguments:Array<Expression> = [];
+    
+        for (i in 0...methodConfig.args) {
+            if (i > 0) {
+                consume(TokenType.COMMA, "Expected ',' between arguments");
+            }
+            arguments.push(parseExpression());
+        }
+    
+        consume(TokenType.RPAREN, "Expected ')' after arguments");
+    
+        return new MathStatement(methodName.substr(1), arguments);
+    }
+
     private function parseBlock(): BlockStatement {
         if (match([TokenType.LBRACE])) {
             var statements:Array<Statement> = [];
@@ -636,6 +702,10 @@ class Parser {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
             return parseJsonExpression();
+        } else if (match([TokenType.MATH])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseMathExpression();
         } else if (match([TokenType.IDENTIFIER])) {
             if (peek().type == TokenType.LPAREN) {
                 return parseCallExpression();
@@ -797,6 +867,54 @@ class Parser {
             Flow.error.report("Unknown Json method: " + methodName);
             return null;
         }
+    }
+
+    private function parseMathExpression():Expression {
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        var methods = [
+            { name: ".getPI", args: 0 },
+            { name: ".abs", args: 1 },
+            { name: ".max", args: 2 },
+            { name: ".min", args: 2 },
+            { name: ".pow", args: 2 },
+            { name: ".sqrt", args: 1 },
+            { name: ".sin", args: 1 },
+            { name: ".cos", args: 1 },
+            { name: ".tan", args: 1 },
+            { name: ".asin", args: 1 },
+            { name: ".acos", args: 1 },
+            { name: ".atan", args: 1 }
+        ];
+
+        var methodConfig = null;
+        for (method in methods) {
+            if (method.name == methodName) {
+                methodConfig = method;
+                break;
+            }
+        }
+    
+        if (methodConfig == null) {
+            Flow.error.report("Unknown Math method: " + methodName);
+            return null;
+        }
+    
+        consume(TokenType.LPAREN, "Expected '(' after '" + methodName + "'");
+    
+        var arguments:Array<Expression> = [];
+    
+        for (i in 0...methodConfig.args) {
+            if (i > 0) {
+                consume(TokenType.COMMA, "Expected ',' between arguments");
+            }
+            arguments.push(parseExpression());
+        }
+    
+        consume(TokenType.RPAREN, "Expected ')' after arguments");
+    
+        return new MathExpression(methodName.substr(1), arguments);
     }
 
     private function parseCallExpression():Expression {
