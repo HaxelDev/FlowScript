@@ -446,6 +446,20 @@ class Parser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new SystemStatement("sleep", [expression]);
+        } else if (methodName == ".command") {
+            consume(TokenType.LPAREN, "Expected '(' after 'command'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new SystemStatement("command", [expression]);
+        } else if (methodName == ".systemName") {
+            consume(TokenType.LPAREN, "Expected '(' after 'systemName'");
+            consume(TokenType.RPAREN, "Expected ')' after 'systemName'");
+            return new SystemStatement("systemName");
+        } else if (methodName == ".openUrl") {
+            consume(TokenType.LPAREN, "Expected '(' after 'openUrl'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new SystemStatement("openUrl", [expression]);
         } else {
             Flow.error.report("Unknown System method: " + methodName);
             return null;
@@ -811,6 +825,20 @@ class Parser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new SystemExpression("sleep", [expression]);
+        } else if (methodName == ".command") {
+            consume(TokenType.LPAREN, "Expected '(' after 'command'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new SystemExpression("command", [expression]);
+        } else if (methodName == ".systemName") {
+            consume(TokenType.LPAREN, "Expected '(' after 'systemName'");
+            consume(TokenType.RPAREN, "Expected ')' after 'systemName'");
+            return new SystemExpression("systemName");
+        } else if (methodName == ".openUrl") {
+            consume(TokenType.LPAREN, "Expected '(' after 'openUrl'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new SystemExpression("openUrl", [expression]);
         } else {
             Flow.error.report("Unknown System method: " + methodName);
             return null;

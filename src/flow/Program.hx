@@ -1,11 +1,7 @@
 package flow;
 
 import logs.*;
-import modules.IO;
-import modules.Random;
-import modules.System;
-import modules.File;
-import modules.Json;
+import modules.*;
 
 class Program {
     public var statements:Array<Statement>;
@@ -263,7 +259,7 @@ class BinaryExpression extends Expression {
                     Flow.error.report("Unsupported operator for strings: " + opera);
                     return null;
                 } else {
-                    return Math.floor(leftValue / rightValue);
+                    return std.Math.floor(leftValue / rightValue);
                 }
             case "%":
                 if (leftIsString || rightIsString) {
@@ -1085,6 +1081,18 @@ class SystemExpression extends Expression {
             case "sleep":
                 System.sleep(evaluatedArguments[0]);
                 return null;
+            case "openUrl":
+                if (evaluatedArguments.length > 0) {
+                    System.openUrl(evaluatedArguments[0]);
+                }
+                return null;
+            case "command":
+                if (evaluatedArguments.length > 0) {
+                    System.command(evaluatedArguments[0]);
+                }
+                return null;
+            case "systemName":
+                return System.systemName();
         }
 
         return null;
@@ -1115,6 +1123,16 @@ class SystemStatement extends Statement {
                 System.currentDate();
             case "sleep":
                 System.sleep(evaluatedArguments[0]);
+            case "openUrl":
+                if (evaluatedArguments.length > 0) {
+                    System.openUrl(evaluatedArguments[0]);
+                }
+            case "command":
+                if (evaluatedArguments.length > 0) {
+                    System.command(evaluatedArguments[0]);
+                }
+            case "systemName":
+                System.systemName();
         }
     }
 }
@@ -1245,29 +1263,29 @@ class MathExpression extends Expression {
 
         switch (methodName) {
             case "getPI":
-                return modules.Math.getPI();
+                return Math.getPI();
             case "abs":
-                if (evaluatedArguments.length == 1) return Math.abs(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) return std.Math.abs(evaluatedArguments[0]);
             case "max":
-                if (evaluatedArguments.length == 2) return Math.max(evaluatedArguments[0], evaluatedArguments[1]);
+                if (evaluatedArguments.length == 2) return std.Math.max(evaluatedArguments[0], evaluatedArguments[1]);
             case "min":
-                if (evaluatedArguments.length == 2) return Math.min(evaluatedArguments[0], evaluatedArguments[1]);
+                if (evaluatedArguments.length == 2) return std.Math.min(evaluatedArguments[0], evaluatedArguments[1]);
             case "pow":
-                if (evaluatedArguments.length == 2) return Math.pow(evaluatedArguments[0], evaluatedArguments[1]);
+                if (evaluatedArguments.length == 2) return std.Math.pow(evaluatedArguments[0], evaluatedArguments[1]);
             case "sqrt":
-                if (evaluatedArguments.length == 1) return Math.sqrt(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) return std.Math.sqrt(evaluatedArguments[0]);
             case "sin":
-                if (evaluatedArguments.length == 1) return Math.sin(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) return std.Math.sin(evaluatedArguments[0]);
             case "cos":
-                if (evaluatedArguments.length == 1) return Math.cos(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) return std.Math.cos(evaluatedArguments[0]);
             case "tan":
-                if (evaluatedArguments.length == 1) return Math.tan(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) return std.Math.tan(evaluatedArguments[0]);
             case "asin":
-                if (evaluatedArguments.length == 1) return Math.asin(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) return std.Math.asin(evaluatedArguments[0]);
             case "acos":
-                if (evaluatedArguments.length == 1) return Math.acos(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) return std.Math.acos(evaluatedArguments[0]);
             case "atan":
-                if (evaluatedArguments.length == 1) return Math.atan(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) return std.Math.atan(evaluatedArguments[0]);
             default:
                 throw "Unknown method: " + methodName;
         }
@@ -1293,29 +1311,29 @@ class MathStatement extends Statement {
 
         switch (methodName) {
             case "getPI":
-                modules.Math.getPI();
+                Math.getPI();
             case "abs":
-                if (evaluatedArguments.length == 1) Math.abs(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) std.Math.abs(evaluatedArguments[0]);
             case "max":
-                if (evaluatedArguments.length == 2) Math.max(evaluatedArguments[0], evaluatedArguments[1]);
+                if (evaluatedArguments.length == 2) std.Math.max(evaluatedArguments[0], evaluatedArguments[1]);
             case "min":
-                if (evaluatedArguments.length == 2) Math.min(evaluatedArguments[0], evaluatedArguments[1]);
+                if (evaluatedArguments.length == 2) std.Math.min(evaluatedArguments[0], evaluatedArguments[1]);
             case "pow":
-                if (evaluatedArguments.length == 2) Math.pow(evaluatedArguments[0], evaluatedArguments[1]);
+                if (evaluatedArguments.length == 2) std.Math.pow(evaluatedArguments[0], evaluatedArguments[1]);
             case "sqrt":
-                if (evaluatedArguments.length == 1) Math.sqrt(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) std.Math.sqrt(evaluatedArguments[0]);
             case "sin":
-                if (evaluatedArguments.length == 1) Math.sin(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) std.Math.sin(evaluatedArguments[0]);
             case "cos":
-                if (evaluatedArguments.length == 1) Math.cos(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) std.Math.cos(evaluatedArguments[0]);
             case "tan":
-                if (evaluatedArguments.length == 1) Math.tan(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) std.Math.tan(evaluatedArguments[0]);
             case "asin":
-                if (evaluatedArguments.length == 1) Math.asin(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) std.Math.asin(evaluatedArguments[0]);
             case "acos":
-                if (evaluatedArguments.length == 1) Math.acos(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) std.Math.acos(evaluatedArguments[0]);
             case "atan":
-                if (evaluatedArguments.length == 1) Math.atan(evaluatedArguments[0]);
+                if (evaluatedArguments.length == 1) std.Math.atan(evaluatedArguments[0]);
             default:
                 throw "Unknown method: " + methodName;
         }
