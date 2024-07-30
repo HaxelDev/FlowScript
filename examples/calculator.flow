@@ -1,0 +1,49 @@
+func calculator() {
+    print("Calculator:")
+    print("Enter the first number:")
+    let num1 = parseNumber(readLine())
+
+    print("Enter the operator (+, -, *, /):")
+    let op = readLine()
+
+    print("Enter the second number:")
+    let num2 = parseNumber(readLine())
+
+    let result = 0.0
+
+    switch op {
+        case "+": {
+            result = num1 + num2
+        }
+        case "-": {
+            result = num1 - num2
+        }
+        case "*": {
+            result = num1 * num2
+        }
+        case "/": {
+            if num2 != 0 {
+                result = num1 / num2
+            } else {
+                print("Blad: Dzielenie przez zero.")
+                call exit()
+            }
+        }
+        default: {
+            print("Nieprawidlowy operator.")
+            call exit()
+        }
+    }
+
+    print(result)
+}
+
+func readLine() {
+    return IO().readLine(">>> ")
+}
+
+func exit() {
+    return System().exit()
+}
+
+call calculator()

@@ -1059,6 +1059,20 @@ class SplitFunctionCall extends Expression {
     }
 }
 
+class ParseNumberFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var argValue = argument.evaluate();
+        var str = cast(argValue, String);
+        return Std.parseFloat(str);
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;

@@ -1033,6 +1033,11 @@ class Parser {
             var delimiterExpr: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after arguments");
             return new SplitFunctionCall(stringExpr, delimiterExpr);
+        } else if (name == "parseNumber") {
+            consume(TokenType.LPAREN, "Expected '(' after 'parseNumber'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ParseNumberFunctionCall(argument);
         }
 
         consume(TokenType.LPAREN, "Expected '(' after function name");
