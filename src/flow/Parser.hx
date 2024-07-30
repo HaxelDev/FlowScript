@@ -952,28 +952,28 @@ class Parser {
 
         if (name == "chr") {
             consume(TokenType.LPAREN, "Expected '(' after 'chr'");
-            var argument:Expression = parseExpression();
+            var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new ChrFunctionCall(argument);
         } else if (name == "fill") {
             consume(TokenType.LPAREN, "Expected '(' after 'fill'");
-            var size:Expression = parseExpression();
+            var size: Expression = parseExpression();
             consume(TokenType.COMMA, "Expected ',' after size argument in 'fill'");
-            var value:Expression = parseExpression();
+            var value: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after arguments");
             return new FillFunctionCall(size, value);
         } else if (name == "charAt") {
             consume(TokenType.LPAREN, "Expected '(' after 'charAt'");
-            var stringExpr:Expression = parseExpression();
+            var stringExpr: Expression = parseExpression();
             consume(TokenType.COMMA, "Expected ',' after string argument in 'charAt'");
-            var indexExpr:Expression = parseExpression();
+            var indexExpr: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after arguments");
             return new CharAtFunctionCall(stringExpr, indexExpr);
         } else if (name == "charCodeAt") {
             consume(TokenType.LPAREN, "Expected '(' after 'charCodeAt'");
-            var stringExpr:Expression = parseExpression();
+            var stringExpr: Expression = parseExpression();
             consume(TokenType.COMMA, "Expected ',' after string argument in 'charCodeAt'");
-            var indexExpr:Expression = parseExpression();
+            var indexExpr: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after arguments");
             return new CharCodeAtFunctionCall(stringExpr, indexExpr);
         } else if (name == "push") {
@@ -996,6 +996,43 @@ class Parser {
             var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new StrFunctionCall(argument);
+        } else if (name == "substring") {
+            consume(TokenType.LPAREN, "Expected '(' after 'substring'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'substring'");
+            var startExpr: Expression = parseExpression();
+            var endExpr: Expression = null;
+            if (match([TokenType.COMMA])) {
+                endExpr = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new SubstringFunctionCall(stringExpr, startExpr, endExpr);
+        } else if (name == "toUpperCase") {
+            consume(TokenType.LPAREN, "Expected '(' after 'toUpperCase'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ToUpperCaseFunctionCall(argument);
+        } else if (name == "toLowerCase") {
+            consume(TokenType.LPAREN, "Expected '(' after 'toLowerCase'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ToLowerCaseFunctionCall(argument);
+        } else if (name == "join") {
+            consume(TokenType.LPAREN, "Expected '(' after 'join'");
+            var arrayExpr: Expression = parseExpression();
+            var delimiterExpr: Expression = null;
+            if (match([TokenType.COMMA])) {
+                delimiterExpr = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new JoinFunctionCall(arrayExpr, delimiterExpr);
+        } else if (name == "split") {
+            consume(TokenType.LPAREN, "Expected '(' after 'split'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'split'");
+            var delimiterExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new SplitFunctionCall(stringExpr, delimiterExpr);
         }
 
         consume(TokenType.LPAREN, "Expected '(' after function name");

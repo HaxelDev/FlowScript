@@ -962,6 +962,103 @@ class StrFunctionCall extends Expression {
     }
 }
 
+class SubstringFunctionCall extends Expression {
+    public var stringExpr: Expression;
+    public var startExpr: Expression;
+    public var endExpr: Expression;
+
+    public function new(stringExpr: Expression, startExpr: Expression, endExpr: Expression = null) {
+        this.stringExpr = stringExpr;
+        this.startExpr = startExpr;
+        this.endExpr = endExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strValue = stringExpr.evaluate();
+        var startValue = startExpr.evaluate();
+        var str = cast(strValue, String);
+        var start = Std.int(startValue);
+
+        var end = endExpr != null ? Std.int(endExpr.evaluate()) : str.length;
+        
+        if (start < 0 || start > str.length || end < 0 || end > str.length || start > end) {
+            Flow.error.report("Invalid substring range: " + start + " to " + end);
+            return "";
+        }
+
+        return str.substring(start, end);
+    }
+}
+
+class ToUpperCaseFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strValue = argument.evaluate();
+        var str = cast(strValue, String);
+
+        return str.toUpperCase();
+    }
+}
+
+class ToLowerCaseFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strValue = argument.evaluate();
+        var str = cast(strValue, String);
+
+        return str.toLowerCase();
+    }
+}
+
+class JoinFunctionCall extends Expression {
+    public var arrayExpr: Expression;
+    public var delimiterExpr: Expression;
+
+    public function new(arrayExpr: Expression, delimiterExpr: Expression = null) {
+        this.arrayExpr = arrayExpr;
+        this.delimiterExpr = delimiterExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var arrayValue = arrayExpr.evaluate();
+        var array = cast(arrayValue, Array<Dynamic>);
+
+        var delimiter = delimiterExpr != null ? cast(delimiterExpr.evaluate(), String) : "";
+        
+        return array.join(delimiter);
+    }
+}
+
+class SplitFunctionCall extends Expression {
+    public var stringExpr: Expression;
+    public var delimiterExpr: Expression;
+
+    public function new(stringExpr: Expression, delimiterExpr: Expression) {
+        this.stringExpr = stringExpr;
+        this.delimiterExpr = delimiterExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strValue = stringExpr.evaluate();
+        var delimiterValue = delimiterExpr.evaluate();
+
+        var str = cast(strValue, String);
+        var delimiter = cast(delimiterValue, String);
+
+        return str.split(delimiter);
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
