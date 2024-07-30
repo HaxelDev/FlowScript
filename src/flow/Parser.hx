@@ -238,7 +238,11 @@ class Parser {
             return parsePushStatement();
         } else if (name == "pop") {
             return parsePopStatement();
-        }
+        } else if (name == "set") {
+            return parseSetStatement();
+        } else if (name == "get") {
+            return parseGetStatement();
+        }        
         consume(TokenType.LPAREN, "Expected '(' after function name");
         while (!check(TokenType.RPAREN)) {
             arguments.push(parseExpression());
@@ -310,6 +314,26 @@ class Parser {
         consume(TokenType.RPAREN, "Expected ')' after arguments in 'pop'");
         var variable: String = variableToken.value;
         return new PopStatement(array, variable);
+    }
+
+    private function parseSetStatement(): Statement {
+        consume(TokenType.LPAREN, "Expected '(' after 'set'");
+        var targetExpr: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after target expression in 'set'");
+        var keyExpr: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after key expression in 'set'");
+        var valueExpr: Expression = parseExpression();
+        consume(TokenType.RPAREN, "Expected ')' after value expression in 'set'");
+        return new SetStatement(targetExpr, keyExpr, valueExpr);
+    }
+
+    private function parseGetStatement(): Statement {
+        consume(TokenType.LPAREN, "Expected '(' after 'get'");
+        var targetExpr: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after target expression in 'get'");
+        var keyExpr: Expression = parseExpression();
+        consume(TokenType.RPAREN, "Expected ')' after key expression in 'get'");
+        return new GetStatement(targetExpr, keyExpr);
     }
 
     private function parseIOStatement():Statement {
@@ -1095,7 +1119,23 @@ class Parser {
                 endExpr = parseExpression();
             }
             consume(TokenType.RPAREN, "Expected ')' after arguments");
-            return new SliceFunctionCall(stringOrArrayExpr, startExpr, endExpr);        
+            return new SliceFunctionCall(stringOrArrayExpr, startExpr, endExpr);
+        } else if (name == "set") {
+            consume(TokenType.LPAREN, "Expected '(' after 'set'");
+            var targetExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after target expression in 'set'");
+            var keyExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after key expression in 'set'");
+            var valueExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after value expression in 'set'");
+            return new SetFunctionCall(targetExpr, keyExpr, valueExpr);
+        } else if (name == "get") {
+            consume(TokenType.LPAREN, "Expected '(' after 'get'");
+            var targetExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after target expression in 'get'");
+            var keyExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after key expression in 'get'");
+            return new GetFunctionCall(targetExpr, keyExpr);        
         }
 
         consume(TokenType.LPAREN, "Expected '(' after function name");

@@ -1268,6 +1268,170 @@ class SliceFunctionCall extends Expression {
     }
 }
 
+class SetFunctionCall extends Expression {
+    public var targetExpr: Expression;
+    public var keyExpr: Expression;
+    public var valueExpr: Expression;
+
+    public function new(targetExpr: Expression, keyExpr: Expression, valueExpr: Expression) {
+        this.targetExpr = targetExpr;
+        this.keyExpr = keyExpr;
+        this.valueExpr = valueExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var targetValue = targetExpr.evaluate();
+        var keyValue = keyExpr.evaluate();
+        var valueValue = valueExpr.evaluate();
+
+        switch (Type.typeof(targetValue)) {
+            case TClass(Array):
+                var arr = cast(targetValue, Array<Dynamic>);
+                if (Std.is(keyValue, Int)) {
+                    var index = cast(keyValue, Int);
+                    arr[index] = valueValue;
+                } else {
+                    var key = cast(keyValue, String);
+                    for (i in 0...arr.length) {
+                        if (arr[i][0] == key) {
+                            arr[i][1] = valueValue;
+                            return valueValue;
+                        }
+                    }
+                    arr.push([key, valueValue]);
+                }
+                return valueValue;
+            case TObject:
+                Reflect.setField(targetValue, cast(keyValue, String), valueValue);
+                return valueValue;
+            default:
+                throw "Set can only be applied to arrays or objects.";
+        }
+    }
+}
+
+class GetFunctionCall extends Expression {
+    public var targetExpr: Expression;
+    public var keyExpr: Expression;
+
+    public function new(targetExpr: Expression, keyExpr: Expression) {
+        this.targetExpr = targetExpr;
+        this.keyExpr = keyExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var targetValue = targetExpr.evaluate();
+        var keyValue = keyExpr.evaluate();
+
+        switch (Type.typeof(targetValue)) {
+            case TClass(Array):
+                var arr = cast(targetValue, Array<Dynamic>);
+                if (Std.is(keyValue, Int)) {
+                    var index = cast(keyValue, Int);
+                    return arr[index];
+                } else {
+                    var key = cast(keyValue, String);
+                    for (i in 0...arr.length) {
+                        if (arr[i][0] == key) {
+                            return arr[i][1];
+                        }
+                    }
+                    return null;
+                }
+            case TObject:
+                return Reflect.field(targetValue, cast(keyValue, String));
+            default:
+                throw "Get can only be applied to arrays or objects.";
+        }
+    }
+}
+
+class SetStatement extends Statement {
+    public var targetExpr: Expression;
+    public var keyExpr: Expression;
+    public var valueExpr: Expression;
+
+    public function new(targetExpr: Expression, keyExpr: Expression, valueExpr: Expression) {
+        this.targetExpr = targetExpr;
+        this.keyExpr = keyExpr;
+        this.valueExpr = valueExpr;
+    }
+
+    public override function execute():Void {
+        var targetValue = targetExpr.evaluate();
+        var keyValue = keyExpr.evaluate();
+        var valueValue = valueExpr.evaluate();
+
+        switch (Type.typeof(targetValue)) {
+            case TClass(Array):
+                var arr = cast(targetValue, Array<Dynamic>);
+                if (Std.is(keyValue, Int)) {
+                    var index = cast(keyValue, Int);
+                    arr[index] = valueValue;
+                } else {
+                    var key = cast(keyValue, String);
+                    var found = false;
+                    for (i in 0...arr.length) {
+                        if (arr[i][0] == key) {
+                            arr[i][1] = valueValue;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found) {
+                        arr.push([key, valueValue]);
+                    }
+                }
+            case TObject:
+                Reflect.setField(targetValue, cast(keyValue, String), valueValue);
+            default:
+                throw "Set can only be applied to arrays or objects.";
+        }
+    }
+}
+
+class GetStatement extends Statement {
+    public var targetExpr: Expression;
+    public var keyExpr: Expression;
+    public var result: Dynamic;
+
+    public function new(targetExpr: Expression, keyExpr: Expression) {
+        this.targetExpr = targetExpr;
+        this.keyExpr = keyExpr;
+    }
+
+    public override function execute():Void {
+        var targetValue = targetExpr.evaluate();
+        var keyValue = keyExpr.evaluate();
+
+        switch (Type.typeof(targetValue)) {
+            case TClass(Array):
+                var arr = cast(targetValue, Array<Dynamic>);
+                if (Std.is(keyValue, Int)) {
+                    var index = cast(keyValue, Int);
+                    if (index >= 0 && index < arr.length) {
+                        result = arr[index];
+                    } else {
+                        result = null;
+                    }
+                } else {
+                    var key = cast(keyValue, String);
+                    for (i in 0...arr.length) {
+                        if (arr[i][0] == key) {
+                            result = arr[i][1];
+                            return;
+                        }
+                    }
+                    result = null;
+                }
+            case TObject:
+                result = Reflect.field(targetValue, cast(keyValue, String));
+            default:
+                throw "Get can only be applied to arrays or objects.";
+        }
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;

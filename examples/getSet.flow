@@ -1,0 +1,12 @@
+let fruits = [
+    ["apples", 500],
+    ["bananas", 300],
+    ["oranges", 200]
+]
+
+call set(fruits, "apples", 500)
+call set(fruits, "bananas", 300)
+call set(fruits, "oranges", 200)
+
+let x = get(fruits, "apples")
+print(x)
