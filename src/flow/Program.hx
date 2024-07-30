@@ -3,6 +3,8 @@ package flow;
 import logs.*;
 import modules.*;
 
+using StringTools;
+
 class Program {
     public var statements:Array<Statement>;
 
@@ -1070,6 +1072,199 @@ class ParseNumberFunctionCall extends Expression {
         var argValue = argument.evaluate();
         var str = cast(argValue, String);
         return Std.parseFloat(str);
+    }
+}
+
+class ReplaceFunctionCall extends Expression {
+    public var stringExpr: Expression;
+    public var targetExpr: Expression;
+    public var replacementExpr: Expression;
+
+    public function new(stringExpr: Expression, targetExpr: Expression, replacementExpr: Expression) {
+        this.stringExpr = stringExpr;
+        this.targetExpr = targetExpr;
+        this.replacementExpr = replacementExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strValue = stringExpr.evaluate();
+        var targetValue = targetExpr.evaluate();
+        var replacementValue = replacementExpr.evaluate();
+
+        var str = cast(strValue, String);
+        var target = cast(targetValue, String);
+        var replacement = cast(replacementValue, String);
+
+        return str.split(target).join(replacement);
+    }
+}
+
+class ConcatFunctionCall extends Expression {
+    public var firstExpr: Expression;
+    public var secondExpr: Expression;
+
+    public function new(firstExpr: Expression, secondExpr: Expression) {
+        this.firstExpr = firstExpr;
+        this.secondExpr = secondExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var firstValue = firstExpr.evaluate();
+        var secondValue = secondExpr.evaluate();
+
+        switch (Type.typeof(firstValue)) {
+            case TClass(String):
+                var firstStr = cast(firstValue, String);
+                var secondStr = cast(secondValue, String);
+                return firstStr + secondStr;
+            case TClass(Array):
+                var firstArr = cast(firstValue, Array<Dynamic>);
+                var secondArr = cast(secondValue, Array<Dynamic>);
+                return firstArr.concat(secondArr);
+            default:
+                throw "Concat can only be applied to strings or arrays.";
+        }
+    }
+}
+
+class IndexOfFunctionCall extends Expression {
+    public var stringExpr: Expression;
+    public var searchExpr: Expression;
+
+    public function new(stringExpr: Expression, searchExpr: Expression) {
+        this.stringExpr = stringExpr;
+        this.searchExpr = searchExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strValue = stringExpr.evaluate();
+        var searchValue = searchExpr.evaluate();
+
+        switch (Type.typeof(strValue)) {
+            case TClass(String):
+                var str = cast(strValue, String);
+                var search = cast(searchValue, String);
+                return str.indexOf(search);
+            case TClass(Array):
+                var arr = cast(strValue, Array<Dynamic>);
+                var searchItem = searchValue;
+                return arr.indexOf(searchItem);
+            default:
+                throw "IndexOf can only be applied to strings or arrays.";
+        }
+    }
+}
+
+class ToStringFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var argValue = argument.evaluate();
+        return Std.string(argValue);
+    }
+}
+
+class TrimFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var argValue = argument.evaluate();
+        var arg = cast(argValue, String);
+        return arg.trim();
+    }
+}
+
+class StartsWithFunctionCall extends Expression {
+    public var stringOrArrayExpr: Expression;
+    public var searchExpr: Expression;
+
+    public function new(stringOrArrayExpr: Expression, searchExpr: Expression) {
+        this.stringOrArrayExpr = stringOrArrayExpr;
+        this.searchExpr = searchExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strOrArrValue = stringOrArrayExpr.evaluate();
+        var searchValue = searchExpr.evaluate();
+
+        switch (Type.typeof(strOrArrValue)) {
+            case TClass(String):
+                var str = cast(strOrArrValue, String);
+                var searchStr = cast(searchValue, String);
+                return str.indexOf(searchStr) == 0;
+            case TClass(Array):
+                var arr = cast(strOrArrValue, Array<Dynamic>);
+                return arr.length > 0 && arr[0] == searchValue;
+            default:
+                throw "StartsWith can only be applied to strings or arrays.";
+        }
+    }
+}
+
+class EndsWithFunctionCall extends Expression {
+    public var stringOrArrayExpr: Expression;
+    public var searchExpr: Expression;
+
+    public function new(stringOrArrayExpr: Expression, searchExpr: Expression) {
+        this.stringOrArrayExpr = stringOrArrayExpr;
+        this.searchExpr = searchExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strOrArrValue = stringOrArrayExpr.evaluate();
+        var searchValue = searchExpr.evaluate();
+
+        switch (Type.typeof(strOrArrValue)) {
+            case TClass(String):
+                var str = cast(strOrArrValue, String);
+                var searchStr = cast(searchValue, String);
+                return str.lastIndexOf(searchStr) == str.length - searchStr.length;
+            case TClass(Array):
+                var arr = cast(strOrArrValue, Array<Dynamic>);
+                return arr.length > 0 && arr[arr.length - 1] == searchValue;
+            default:
+                throw "EndsWith can only be applied to strings or arrays.";
+        }
+    }
+}
+
+class SliceFunctionCall extends Expression {
+    public var stringOrArrayExpr: Expression;
+    public var startExpr: Expression;
+    public var endExpr: Expression;
+
+    public function new(stringOrArrayExpr: Expression, startExpr: Expression, endExpr: Expression) {
+        this.stringOrArrayExpr = stringOrArrayExpr;
+        this.startExpr = startExpr;
+        this.endExpr = endExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strOrArrValue = stringOrArrayExpr.evaluate();
+        var startValue = startExpr.evaluate();
+        var endValue = endExpr.evaluate();
+
+        var start = cast(startValue, Int);
+        var end = cast(endValue, Int);
+
+        switch (Type.typeof(strOrArrValue)) {
+            case TClass(String):
+                var str = cast(strOrArrValue, String);
+                return str.substring(start, end);
+            case TClass(Array):
+                var arr = cast(strOrArrValue, Array<Dynamic>);
+                return arr.slice(start, end);
+            default:
+                throw "Slice can only be applied to strings or arrays.";
+        }
     }
 }
 
