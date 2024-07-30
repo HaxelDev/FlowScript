@@ -25,12 +25,12 @@ func calculator() {
             if num2 != 0 {
                 result = num1 / num2
             } else {
-                print("Blad: Dzielenie przez zero.")
+                print("Error: Division by zero.")
                 call exit()
             }
         }
         default: {
-            print("Nieprawidlowy operator.")
+            print("Invalid operator.")
             call exit()
         }
     }
