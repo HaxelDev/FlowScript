@@ -4,9 +4,11 @@ let text = ""
 switch x {
     case 0: {
         text = "Off"
-    } case 1: {
+    }
+    case 1: {
         text = "On"
-    } default: {
+    }
+    default: {
         text = "No value found"
     }
 }
