@@ -188,23 +188,9 @@ class Parser {
 
     private function parsePrintStatement():Statement {
         consume(TokenType.LPAREN, "Expected '(' after 'print'");
-        var expressions:Array<Expression> = [];
-
-        while (!check(TokenType.RPAREN)) {
-            if (match([TokenType.STRING])) {
-                expressions.push(parseInterpolatedString(previous().value));
-            } else if (match([TokenType.TEMPLATE_VARIABLE])) {
-                expressions.push(new VariableExpression(previous().value));
-            } else {
-                expressions.push(parseExpression());
-            }
-            if (match([TokenType.COMMA])) {
-                // Consume comma
-            }
-        }
-
+        var expression:Expression = parseExpression();
         consume(TokenType.RPAREN, "Expected ')' after expression");
-        return new PrintStatement(expressions);
+        return new PrintStatement(expression);
     }
 
     private function parseIfStatement():Statement {
@@ -798,8 +784,7 @@ class Parser {
                 return new LiteralExpression(Std.parseInt(value));
             }
         } else if (match([TokenType.STRING])) {
-            var stringValue:String = previous().value;
-            return parseInterpolatedString(stringValue);
+            return parseString();
         } else if (match([TokenType.IO])) {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
@@ -846,42 +831,46 @@ class Parser {
         }
     }
 
-    private function parseInterpolatedString(stringValue:String):Expression {
-        var regex:EReg = ~/(\{[^}]*\})/;
-        var matches:Array<Dynamic> = [];
-        var lastIndex:Int = 0;
-    
-        while (regex.match(stringValue)) {
-            var start = regex.matchedPos().pos;
-            var end = start + regex.matchedPos().len;
-            var match = regex.matched(0);
-            var variableName = match.substring(1, match.length - 1);
-            matches.push({start: start, end: end, name: variableName});
-            stringValue = stringValue.substring(end);
-        }
+    private function parseString(): Expression {
+        var value:String = previous().value;
+        var parts:Array<Expression> = [];
+        var currentPart:String = "";
+        var i:Int = 0;
 
-        if (matches.length == 0) {
-            return new LiteralExpression(stringValue);
-        }
+        while (i < value.length) {
+            var char:String = value.charAt(i);
 
-        var expressions:Array<Expression> = [];
-        var lastPos:Int = 0;
+            if (char == '{') {
+                if (currentPart.length > 0) {
+                    parts.push(new LiteralExpression(currentPart));
+                    currentPart = "";
+                }
 
-        for (match in matches) {
-            if (match.start > lastPos) {
-                var literalPart:String = stringValue.substring(lastPos, match.start);
-                expressions.push(new LiteralExpression(literalPart));
+                i++;
+                var varName:String = "";
+
+                while (i < value.length && value.charAt(i) != '}') {
+                    varName += value.charAt(i);
+                    i++;
+                }
+
+                if (i < value.length && value.charAt(i) == '}') {
+                    parts.push(new VariableExpression(varName));
+                }
+
+                currentPart = "";
+            } else {
+                currentPart += char;
             }
-            expressions.push(new VariableExpression(match.name));
-            lastPos = match.end;
+
+            i++;
         }
 
-        if (lastPos < stringValue.length) {
-            var remainingLiteral:String = stringValue.substring(lastPos);
-            expressions.push(new LiteralExpression(remainingLiteral));
+        if (currentPart.length > 0) {
+            parts.push(new LiteralExpression(currentPart));
         }
 
-        return new InterpolatedStringExpression(expressions);
+        return new ConcatenationExpression(parts);
     }
 
     private function parseIOExpression():Expression {

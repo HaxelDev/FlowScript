@@ -7,7 +7,6 @@ class Lexer {
         var inString:Bool = false;
         var stringDelimiter:String = "";
         var escapeSequence:Bool = false;
-        var inTemplate:Bool = false;
         var i:Int = 0;
 
         while (i < code.length) {
@@ -15,7 +14,10 @@ class Lexer {
 
             if (char == "\"" || char == "'") {
                 if (inString) {
-                    if (char == stringDelimiter && !escapeSequence) {
+                    if (currentToken.length > 0 && currentToken.charAt(currentToken.length - 1) == '\\') {
+                        currentToken = currentToken.substring(0, currentToken.length - 1) + char;
+                        escapeSequence = true;
+                    } else if (char == stringDelimiter) {
                         tokens.push(new Token(TokenType.STRING, currentToken));
                         currentToken = "";
                         inString = false;
@@ -24,32 +26,17 @@ class Lexer {
                         currentToken += char;
                     }
                 } else {
-                    if (currentToken.length > 0) {
-                        tokens.push(getToken(currentToken));
-                        currentToken = "";
-                    }
                     inString = true;
                     stringDelimiter = char;
                 }
-                escapeSequence = false;
                 i++;
                 continue;
             } else if (inString) {
                 if (escapeSequence) {
                     currentToken += char;
                     escapeSequence = false;
-                } else if (char == "\\") {
+                } else if (char == '\\') {
                     escapeSequence = true;
-                } else if (char == "{") {
-                    inTemplate = true;
-                    if (currentToken.length > 0) {
-                        tokens.push(new Token(TokenType.STRING, currentToken));
-                        currentToken = "";
-                    }
-                } else if (char == "}" && inTemplate) {
-                    inTemplate = false;
-                    tokens.push(new Token(TokenType.TEMPLATE_VARIABLE, currentToken));
-                    currentToken = "";         
                 } else {
                     currentToken += char;
                 }
@@ -319,5 +306,4 @@ enum TokenType {
     MATH;
     DEFAULT;
     CASE;
-    TEMPLATE_VARIABLE;
 }

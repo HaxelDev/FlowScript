@@ -24,20 +24,15 @@ class Statement {
 }
 
 class PrintStatement extends Statement {
-    public var expressions:Array<Expression>;
+    public var expression:Expression;
 
-    public function new(expressions:Array<Expression>) {
-        this.expressions = expressions;
+    public function new(expression:Expression) {
+        this.expression = expression;
     }
 
     public override function execute():Void {
-        var result:String = "";
-
-        for (expr in expressions) {
-            result += expr.evaluate();
-        }
-
-        var lines:Array<String> = result.split("\n");
+        var value:String = expression.evaluate();
+        var lines:Array<String> = value.split("\n");
         for (line in lines) {
             Logger.log(line);
         }
@@ -80,12 +75,7 @@ class Environment {
     }
 
     static public function get(name: String): Dynamic {
-        var strippedName:String = name;
-        if (strippedName.startsWith("{") && strippedName.endsWith("}")) {
-            strippedName = strippedName.substring(1, strippedName.length - 1);
-        }
-
-        var parts: Array<String> = strippedName.split(".");
+        var parts: Array<String> = name.split(".");
         var obj: Dynamic = values.get(parts[0]);
 
         if (obj == null && currentScope != null) {
@@ -362,20 +352,24 @@ class BinaryExpression extends Expression {
     }
 }
 
-class InterpolatedStringExpression extends Expression {
+class ConcatenationExpression extends Expression {
     public var parts:Array<Expression>;
 
     public function new(parts:Array<Expression>) {
         this.parts = parts;
     }
 
-    public override function evaluate():String {
+    public override function evaluate():Dynamic {
         var result:String = "";
-
         for (part in parts) {
-            result += part.evaluate();
+            var partValue:Dynamic = part.evaluate();
+            if (partValue == null) {
+                partValue = "null";
+            } else {
+                partValue = Std.string(partValue);
+            }
+            result += partValue;
         }
-
         return result;
     }
 }
