@@ -130,23 +130,60 @@ class Parser {
             consume(TokenType.COLON, "Expected ':' after property name");
     
             var value: Expression;
-            if (check(TokenType.LBRACKET)) {
+
+            var firstTokenType: TokenType = peek().type;
+    
+            if (firstTokenType == TokenType.KEYWORD) {
+                var keyword: String = advance().value;
+    
+                if (keyword == "func") {
+                    value = parseFunctionLiteral();
+                } else {
+                    Flow.error.report("Unexpected keyword: " + keyword);
+                    return null;
+                }
+            } else if (check(TokenType.LBRACKET)) {
                 value = parseArrayLiteral();
             } else {
                 value = parseExpression();
             }
     
+            if (value == null) {
+                Flow.error.report("Failed to parse value for property: " + key.value);
+                return null;
+            }
+    
             properties[key.value] = value;
     
             if (match([TokenType.COMMA])) {
-                // Consume comma
+                // Consume comma and continue
             } else {
                 break;
             }
         }
-    
+
         consume(TokenType.RBRACE, "Expected '}' after object literal");
         return new ObjectExpression(properties);
+    }    
+
+    private function parseFunctionLiteral():Expression {
+        var parameters:Array<String> = [];
+        consume(TokenType.LPAREN, "Expected '(' after function keyword");
+
+        while (!check(TokenType.RPAREN)) {
+            var parameterToken:Token = consume(TokenType.IDENTIFIER, "Expected parameter name");
+            parameters.push(parameterToken.value);
+    
+            if (match([TokenType.COMMA])) {
+                // Consume comma
+            }
+        }
+
+        consume(TokenType.RPAREN, "Expected ')' after parameters");
+
+        var body:BlockStatement = parseBlock();
+
+        return new FunctionLiteralExpression(parameters, body);
     }
 
     private function parsePrintStatement():PrintStatement {
@@ -243,15 +280,36 @@ class Parser {
         } else if (name == "get") {
             return parseGetStatement();
         }        
-        consume(TokenType.LPAREN, "Expected '(' after function name");
-        while (!check(TokenType.RPAREN)) {
-            arguments.push(parseExpression());
-            if (match([TokenType.COMMA])) {
-                // Consume comma
+        var isMethodCall: Bool = name.indexOf(".") > -1;
+        if (isMethodCall) {
+            var parts: Array<String> = name.split(".");
+            var objectName: String = parts.shift();
+            var methodName: String = parts.join(".");
+
+            consume(TokenType.LPAREN, "Expected '(' after method name");
+
+            while (!check(TokenType.RPAREN)) {
+                arguments.push(parseExpression());
+                if (match([TokenType.COMMA])) {
+                    // Consume comma
+                }
             }
+
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new MethodCallStatement(objectName, methodName, arguments);
+        } else {
+            consume(TokenType.LPAREN, "Expected '(' after function name");
+
+            while (!check(TokenType.RPAREN)) {
+                arguments.push(parseExpression());
+                if (match([TokenType.COMMA])) {
+                    // Consume comma
+                }
+            }
+
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CallStatement(name, arguments);
         }
-        consume(TokenType.RPAREN, "Expected ')' after arguments");
-        return new CallStatement(name, arguments);
     }
 
     private function parseReturnStatement(): Statement {
@@ -657,6 +715,13 @@ class Parser {
     }
 
     private function parseExpression():Expression {
+        var firstTokenType:TokenType = peek().type;
+        if (firstTokenType == TokenType.KEYWORD) {
+            var keyword:String = advance().value;
+            if (keyword == "func") {
+                return parseFunctionLiteral();
+            }
+        }
         return parseLogicalOr();
     }
 
@@ -1138,15 +1203,36 @@ class Parser {
             return new GetFunctionCall(targetExpr, keyExpr);        
         }
 
-        consume(TokenType.LPAREN, "Expected '(' after function name");
-        while (!check(TokenType.RPAREN)) {
-            arguments.push(parseExpression());
-            if (match([TokenType.COMMA])) {
-                // Consume comma
+        var isMethodCall: Bool = name.indexOf(".") > -1;
+        if (isMethodCall) {
+            var parts: Array<String> = name.split(".");
+            var objectName: String = parts.shift();
+            var methodName: String = parts.join(".");
+
+            consume(TokenType.LPAREN, "Expected '(' after method name");
+
+            while (!check(TokenType.RPAREN)) {
+                arguments.push(parseExpression());
+                if (match([TokenType.COMMA])) {
+                    // Consume comma
+                }
             }
+
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new MethodCallExpression(objectName, methodName, arguments);
+        } else {
+            consume(TokenType.LPAREN, "Expected '(' after function name");
+
+            while (!check(TokenType.RPAREN)) {
+                arguments.push(parseExpression());
+                if (match([TokenType.COMMA])) {
+                    // Consume comma
+                }
+            }
+
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CallExpression(name, arguments);
         }
-        consume(TokenType.RPAREN, "Expected ')' after arguments");
-        return new CallExpression(name, arguments);
     }
 
     private function parsePropertyAccess():Expression {

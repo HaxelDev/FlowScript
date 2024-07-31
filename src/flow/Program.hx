@@ -117,42 +117,65 @@ class Environment {
         return obj;
     }
 
-    static public function defineFunction(name:String, value:Function):Void {
-        functions.set(name, value);
+    static public function defineFunction(name:String, func:Dynamic):Void {
+        functions.set(name, func);
     }
 
-    static public function getFunction(name:String):Function {
-        if (!functions.exists(name)) {
-            Flow.error.report("Undefined function: " + name);
-        }
-        return functions.get(name);
-    }
-
-    static public function callFunction(name:String, arguments:Array<Dynamic>, context:Dynamic = null):Void {
-        var func:Function;
+    static public function getFunction(name:String, context:Dynamic = null):Dynamic {
         if (context != null) {
-            func = Reflect.field(context, name);
+            var parts: Array<String> = name.split(".");
+            var methodName: String = parts.pop();
+            var obj: Dynamic = context;
+
+            for (part in parts) {
+                if (obj == null) {
+                    Flow.error.report("Undefined property: " + part);
+                    return null;
+                }
+    
+                if (Reflect.hasField(obj, part)) {
+                    obj = Reflect.field(obj, part);
+                } else {
+                    Flow.error.report("Undefined property: " + part);
+                    return null;
+                }
+            }
+    
+            var func: Dynamic = Reflect.field(obj, methodName);
+            if (func == null || !(func is Function)) {
+                Flow.error.report("Undefined method: " + methodName);
+                return null;
+            }
+            return func;
+        } else {
+            var func: Dynamic = functions.get(name);
             if (func == null) {
-                Flow.error.report("Undefined method: " + name);
-                return;
+                Flow.error.report("Undefined function: " + name);
+                return null;
+            }
+            return func;
+        }
+    }
+
+    static public function callFunction(name: String, arguments: Array<Dynamic>, context: Dynamic = null): Dynamic {
+        var func: Dynamic = getFunction(name, context);
+
+        if (func == null) {
+            Flow.error.report("Function or method could not be found: " + name);
+            return null;
+        }
+
+        if (Std.is(func, Function)) {
+            try {
+                return Reflect.callMethod(context, func, arguments);
+            } catch (e: Dynamic) {
+                Flow.error.report("Error calling function: " + name + " - " + e.toString());
+                return null;
             }
         } else {
-            func = functions.get(name);
-            if (!functions.exists(name)) {
-                Flow.error.report("Undefined function: " + name);
-                return;
-            }
+            Flow.error.report("Retrieved item is not a function: " + name);
+            return null;
         }
-        if (func.parameters.length != arguments.length) {
-            Flow.error.report("Incorrect number of arguments for function: " + name);
-            return;
-        }
-        var oldValues:Map<String, Dynamic> = values.copy();
-        for (i in 0...func.parameters.length) {
-            values.set(func.parameters[i], arguments[i]);
-        }
-        func.body.execute();
-        values = oldValues;
     }
 
     static public function push(array:Array<Dynamic>, value:Dynamic):Void {
@@ -583,6 +606,89 @@ class CallExpression extends Expression {
         } catch (e:ReturnValue) {
             return e.value;
         }
+    }
+}
+
+class FunctionLiteralExpression extends Expression {
+    public var parameters:Array<String>;
+    public var body:BlockStatement;
+
+    public function new(parameters:Array<String>, body:BlockStatement) {
+        this.parameters = parameters;
+        this.body = body;
+    }
+
+    public override function evaluate():Dynamic {
+        return new Function(null, parameters, body);
+    }
+}
+
+class MethodCallExpression extends Expression {
+    public var objectName: String;
+    public var methodName: String;
+    public var arguments: Array<Expression>;
+
+    public function new(objectName: String, methodName: String, arguments: Array<Expression>) {
+        this.objectName = objectName;
+        this.methodName = methodName;
+        this.arguments = arguments;
+    }
+
+    public override function evaluate(): Dynamic {
+        var obj: Dynamic = Environment.get(objectName);
+        if (obj == null) {
+            Flow.error.report("Undefined object: " + objectName);
+            return null;
+        }
+
+        var func: Dynamic = Environment.getFunction(methodName, obj);
+        if (func == null || !(func is Function)) {
+            Flow.error.report("Undefined method: " + methodName);
+            return null;
+        }
+
+        var args: Array<Dynamic> = [];
+        for (arg in arguments) {
+            args.push(arg.evaluate());
+        }
+
+        try {
+            return func.execute(args);
+        } catch (e:ReturnValue) {
+            return e.value;
+        }
+    }
+}
+
+class MethodCallStatement extends Statement {
+    public var objectName: String;
+    public var methodName: String;
+    public var arguments: Array<Expression>;
+
+    public function new(objectName: String, methodName: String, arguments: Array<Expression>) {
+        this.objectName = objectName;
+        this.methodName = methodName;
+        this.arguments = arguments;
+    }
+
+    public override function execute():Void {
+        var obj: Dynamic = Environment.get(objectName);
+        if (obj == null) {
+            Flow.error.report("Undefined object: " + objectName);
+            return;
+        }
+
+        var func: Dynamic = Environment.getFunction(methodName, obj);
+        if (func == null || !(func is Function)) {
+            Flow.error.report("Undefined method: " + methodName);
+            return;
+        }
+
+        var args: Array<Dynamic> = [];
+        for (arg in arguments) {
+            args.push(arg.evaluate());
+        }
+        func.execute(args);
     }
 }
 
