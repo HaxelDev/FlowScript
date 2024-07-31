@@ -40,18 +40,16 @@ class Lexer {
                     escapeSequence = false;
                 } else if (char == "\\") {
                     escapeSequence = true;
-                } else if (char == "{" && !inTemplate) {
+                } else if (char == "{") {
+                    inTemplate = true;
                     if (currentToken.length > 0) {
                         tokens.push(new Token(TokenType.STRING, currentToken));
                         currentToken = "";
                     }
-                    inTemplate = true;
-                    currentToken += char;
                 } else if (char == "}" && inTemplate) {
-                    currentToken += char;
-                    tokens.push(new Token(TokenType.TEMPLATE_VARIABLE, currentToken));
-                    currentToken = "";
                     inTemplate = false;
+                    tokens.push(new Token(TokenType.TEMPLATE_VARIABLE, currentToken));
+                    currentToken = "";         
                 } else {
                     currentToken += char;
                 }
