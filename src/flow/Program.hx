@@ -24,15 +24,20 @@ class Statement {
 }
 
 class PrintStatement extends Statement {
-    public var expression:Expression;
+    public var expressions:Array<Expression>;
 
-    public function new(expression:Expression) {
-        this.expression = expression;
+    public function new(expressions:Array<Expression>) {
+        this.expressions = expressions;
     }
 
     public override function execute():Void {
-        var value:String = expression.evaluate();
-        var lines:Array<String> = value.split("\n");
+        var result:String = "";
+
+        for (expr in expressions) {
+            result += expr.evaluate();
+        }
+
+        var lines:Array<String> = result.split("\n");
         for (line in lines) {
             Logger.log(line);
         }
@@ -75,7 +80,12 @@ class Environment {
     }
 
     static public function get(name: String): Dynamic {
-        var parts: Array<String> = name.split(".");
+        var strippedName:String = name;
+        if (strippedName.startsWith("{") && strippedName.endsWith("}")) {
+            strippedName = strippedName.substring(1, strippedName.length - 1);
+        }
+
+        var parts: Array<String> = strippedName.split(".");
         var obj: Dynamic = values.get(parts[0]);
 
         if (obj == null && currentScope != null) {
@@ -349,6 +359,24 @@ class BinaryExpression extends Expression {
                 Flow.error.report("Unknown operator: " + opera);
                 return null;
         }
+    }
+}
+
+class InterpolatedStringExpression extends Expression {
+    public var parts:Array<Expression>;
+
+    public function new(parts:Array<Expression>) {
+        this.parts = parts;
+    }
+
+    public override function evaluate():String {
+        var result:String = "";
+
+        for (part in parts) {
+            result += part.evaluate();
+        }
+
+        return result;
     }
 }
 

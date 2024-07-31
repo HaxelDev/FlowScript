@@ -186,11 +186,25 @@ class Parser {
         return new FunctionLiteralExpression(parameters, body);
     }
 
-    private function parsePrintStatement():PrintStatement {
+    private function parsePrintStatement():Statement {
         consume(TokenType.LPAREN, "Expected '(' after 'print'");
-        var expression:Expression = parseExpression();
+        var expressions:Array<Expression> = [];
+
+        while (!check(TokenType.RPAREN)) {
+            if (match([TokenType.STRING])) {
+                expressions.push(parseInterpolatedString(previous().value));
+            } else if (match([TokenType.TEMPLATE_VARIABLE])) {
+                expressions.push(new VariableExpression(previous().value));
+            } else {
+                expressions.push(parseExpression());
+            }
+            if (match([TokenType.COMMA])) {
+                // Consume comma
+            }
+        }
+
         consume(TokenType.RPAREN, "Expected ')' after expression");
-        return new PrintStatement(expression);
+        return new PrintStatement(expressions);
     }
 
     private function parseIfStatement():Statement {
@@ -784,7 +798,8 @@ class Parser {
                 return new LiteralExpression(Std.parseInt(value));
             }
         } else if (match([TokenType.STRING])) {
-            return new LiteralExpression(previous().value);
+            var stringValue:String = previous().value;
+            return parseInterpolatedString(stringValue);
         } else if (match([TokenType.IO])) {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
@@ -829,6 +844,44 @@ class Parser {
             Flow.error.report("Unexpected token: " + peek().value);
             return null;
         }
+    }
+
+    private function parseInterpolatedString(stringValue:String):Expression {
+        var regex:EReg = ~/(\{[^}]*\})/;
+        var matches:Array<Dynamic> = [];
+        var lastIndex:Int = 0;
+    
+        while (regex.match(stringValue)) {
+            var start = regex.matchedPos().pos;
+            var end = start + regex.matchedPos().len;
+            var match = regex.matched(0);
+            var variableName = match.substring(1, match.length - 1);
+            matches.push({start: start, end: end, name: variableName});
+            stringValue = stringValue.substring(end);
+        }
+
+        if (matches.length == 0) {
+            return new LiteralExpression(stringValue);
+        }
+
+        var expressions:Array<Expression> = [];
+        var lastPos:Int = 0;
+
+        for (match in matches) {
+            if (match.start > lastPos) {
+                var literalPart:String = stringValue.substring(lastPos, match.start);
+                expressions.push(new LiteralExpression(literalPart));
+            }
+            expressions.push(new VariableExpression(match.name));
+            lastPos = match.end;
+        }
+
+        if (lastPos < stringValue.length) {
+            var remainingLiteral:String = stringValue.substring(lastPos);
+            expressions.push(new LiteralExpression(remainingLiteral));
+        }
+
+        return new InterpolatedStringExpression(expressions);
     }
 
     private function parseIOExpression():Expression {
