@@ -782,17 +782,17 @@ class PropertyAccessExpression extends Expression {
 }
 
 class ArrayAccessExpression extends Expression {
-    public var array: Expression;
-    public var index: Expression;
+    public var array:Expression;
+    public var index:Expression;
 
-    public function new(array: Expression, index: Expression) {
+    public function new(array:Expression, index:Expression) {
         this.array = array;
         this.index = index;
     }
 
-    public override function evaluate(): Dynamic {
-        var arrayValue: Array<Dynamic> = array.evaluate();
-        var indexValue: Int = index.evaluate();
+    public override function evaluate():Dynamic {
+        var arrayValue:Array<Dynamic> = array.evaluate();
+        var indexValue:Int = index.evaluate();
 
         if (arrayValue == null) {
             Flow.error.report("Cannot access element of null array");
