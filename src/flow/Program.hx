@@ -893,14 +893,25 @@ class ImportStatement extends Statement {
     }
 
     public override function execute():Void {
-        if (!sys.FileSystem.exists(scriptFile)) {
-            Flow.error.report('Script file "$scriptFile" does not exist.');
+        var scriptPath = getScriptPath();
+        if (!sys.FileSystem.exists(scriptPath)) {
+            Flow.error.report('Script file "$scriptPath" does not exist.');
         }
-        var code = sys.io.File.getContent(scriptFile);
+        var code = sys.io.File.getContent(scriptPath);
         var tokens:Array<flow.Lexer.Token> = Lexer.tokenize(code);
         var parser:Parser = new Parser(tokens);
         var program:Program = parser.parse();
         program.execute();
+    }
+
+    private function getScriptPath():String {
+        if (sys.FileSystem.exists("project.json")) {
+            var jsonData = sys.io.File.getContent("project.json");
+            var projectData:Dynamic = Json.parse(jsonData);
+            return projectData.src + "/" + scriptFile;
+        } else {
+            return scriptFile;
+        }
     }
 }
 
