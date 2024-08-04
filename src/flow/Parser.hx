@@ -68,7 +68,11 @@ class Parser {
         } else if (firstTokenType == TokenType.MATH) {
             return parseMathStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
-            return parseLetStatement();
+            if (peekNext().type == TokenType.LBRACKET) {
+                return parseArrayAssignment();
+            } else {
+                return parseLetStatement();
+            }
         } else {
             Flow.error.report("Unexpected token: " + peek().value);
             return null;
@@ -186,6 +190,16 @@ class Parser {
         var body:BlockStatement = parseBlock();
 
         return new FunctionLiteralExpression(parameters, body);
+    }
+
+    private function parseArrayAssignment():Statement {
+        var arrayName:String = advance().value;
+        consume(TokenType.LBRACKET, "Expected '[' after array name");
+        var index:Expression = parseExpression();
+        consume(TokenType.RBRACKET, "Expected ']' after array index");
+        consume(TokenType.EQUAL, "Expected '=' after array index");
+        var value:Expression = parseExpression();
+        return new ArrayAssignmentStatement(arrayName, index, value);
     }
 
     private function parsePrintStatement():Statement {
@@ -1319,6 +1333,10 @@ class Parser {
 
     private function isAtEnd():Bool {
         return currentTokenIndex >= tokens.length;
+    }
+
+    private function peekNext():Token {
+        return tokens[currentTokenIndex + 1];
     }
 
     private function previous():Token {

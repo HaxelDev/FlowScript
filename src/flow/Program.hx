@@ -808,6 +808,35 @@ class ArrayAccessExpression extends Expression {
     }
 }
 
+class ArrayAssignmentStatement extends Statement {
+    public var arrayName:String;
+    public var index:Expression;
+    public var value:Expression;
+
+    public function new(arrayName:String, index:Expression, value:Expression) {
+        this.arrayName = arrayName;
+        this.index = index;
+        this.value = value;
+    }
+
+    public override function execute():Void {
+        var arrayValue:Array<Dynamic> = Environment.get(arrayName);
+        if (arrayValue == null) {
+            Flow.error.report("Undefined array: " + arrayName);
+            return;
+        }
+
+        var indexValue:Int = index.evaluate();
+        if (indexValue < 0 || indexValue >= arrayValue.length) {
+            Flow.error.report("Index out of bounds: " + indexValue);
+            return;
+        }
+
+        arrayValue[indexValue] = value.evaluate();
+        Environment.define(arrayName, arrayValue);
+    }
+}
+
 class BreakStatement extends Statement {
     public function new() {}
 
