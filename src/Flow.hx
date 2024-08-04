@@ -94,27 +94,45 @@ class Flow {
     var command = args.length > 0? args[0] : null;
     var param = args.length > 1 ? args[1] : null;
 
-    switch (command) {
-      case "run":
-        if (param != null) {
-          runScript(param);
-        } else {
-          error.report('Invalid script file.');
-        }
-      case "create":
-        if (param != null) {
-          createProject(param);
-        } else {
-          error.report('Invalid project name.');
-        }
-      case "build":
-        buildProject();
-      case "interactive":
-        runInteractive();
-      case "version":
-        runVersion();
-      default:
+    if (FileSystem.exists(command) && FileSystem.isDirectory(command)) {
+      var projectDir = command;
+      var projectJsonPath = projectDir + "/project.json";
+      if (FileSystem.exists(projectJsonPath)) {
+        var jsonData = File.getContent(projectJsonPath);
+        var projectData:Dynamic = Json.parse(jsonData);
+        Logger.log('Project Information:');
+        Logger.log('-------------------');
+        Logger.log('Name: ' + projectData.name);
+        Logger.log('Version: ' + projectData.version);
+        Logger.log('Main Script: ' + projectData.main);
+        Logger.log('Source Directory: ' + projectData.src);
+        Logger.log('Dependencies: ' + Json.stringify(projectData.dependencies));
+      } else {
         printHelp();
+      }
+    } else {
+      switch (command) {
+        case "run":
+          if (param != null) {
+            runScript(param);
+          } else {
+            error.report('Invalid script file.');
+          }
+        case "create":
+          if (param != null) {
+            createProject(param);
+          } else {
+            error.report('Invalid project name.');
+          }
+        case "build":
+          buildProject();
+        case "interactive":
+          runInteractive();
+        case "version":
+          runVersion();
+        default:
+          printHelp();
+      }
     }
   }
 
