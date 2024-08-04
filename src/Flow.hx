@@ -25,24 +25,50 @@ class Flow {
   }
 
   static function runInteractive() {
-    var input:String;
-    var parser:Parser = new Parser([]);
+    var input:String = "";
+    var parser:Parser;
+    var prompt:String = "flow> ";
 
     while (true) {
-      Sys.print("flow> ");
-      input = Sys.stdin().readLine().trim();
+      Sys.print(prompt);
+      var line:String = Sys.stdin().readLine().trim();
 
-      if (input == "exit" || input == "quit") {
+      if (line == "exit" || line == "quit") {
         break;
       }
 
-      var tokens:Array<Token> = Lexer.tokenize(input);
-      parser = new Parser(tokens);
-      var program:Program = parser.parse();
-      for (statement in program.statements) {
-        statement.execute();
+      input += line + "\n";
+
+      if (isBlockClosed(input)) {
+        var tokens:Array<Token> = Lexer.tokenize(input);
+        parser = new Parser(tokens);
+        var program:Program = parser.parse();
+        for (statement in program.statements) {
+          statement.execute();
+        }
+        input = "";
       }
     }
+  }
+
+  static function isBlockClosed(input:String):Bool {
+    var brackets:Int = 0;
+    var braces:Int = 0;
+
+    for (i in 0...input.length) {
+      switch (input.charAt(i)) {
+          case "(":
+            brackets++;
+          case ")":
+            brackets--;
+          case "{":
+            braces++;
+          case "}":
+            braces--;
+      }
+    }
+
+    return brackets == 0 && braces == 0;
   }
 
   static function createProject(projectName:String) {
