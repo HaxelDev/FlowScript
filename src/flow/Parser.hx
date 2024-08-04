@@ -49,6 +49,8 @@ class Parser {
                 return parseContinueStatement();
             } else if (keyword == "switch") {
                 return parseSwitchStatement();
+            } else if (keyword == "import") {
+                return parseImportStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword);
                 return null;
@@ -353,6 +355,11 @@ class Parser {
         consume(TokenType.RBRACE, "Expected '}' after switch cases.");
 
         return new SwitchStatement(expression, cases, defaultClause);
+    }
+
+    private function parseImportStatement():Statement {
+        var scriptFile:Token = consume(TokenType.STRING, "Expected script file name after 'import'");
+        return new ImportStatement(scriptFile.value);
     }
 
     private function parsePushStatement(): Statement {

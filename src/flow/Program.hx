@@ -885,6 +885,25 @@ class DefaultClause {
     }
 }
 
+class ImportStatement extends Statement {
+    public var scriptFile:String;
+
+    public function new(scriptFile:String) {
+        this.scriptFile = scriptFile;
+    }
+
+    public override function execute():Void {
+        if (!sys.FileSystem.exists(scriptFile)) {
+            Flow.error.report('Script file "$scriptFile" does not exist.');
+        }
+        var code = sys.io.File.getContent(scriptFile);
+        var tokens:Array<flow.Lexer.Token> = Lexer.tokenize(code);
+        var parser:Parser = new Parser(tokens);
+        var program:Program = parser.parse();
+        program.execute();
+    }
+}
+
 class ChrFunctionCall extends Expression {
     public var argument: Expression;
 
