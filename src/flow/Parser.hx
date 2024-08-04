@@ -170,7 +170,7 @@ class Parser {
 
         consume(TokenType.RBRACE, "Expected '}' after object literal");
         return new ObjectExpression(properties);
-    }    
+    }
 
     private function parseFunctionLiteral():Expression {
         var parameters:Array<String> = [];
