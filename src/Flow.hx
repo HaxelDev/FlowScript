@@ -57,14 +57,14 @@ class Flow {
 
     for (i in 0...input.length) {
       switch (input.charAt(i)) {
-          case "(":
-            brackets++;
-          case ")":
-            brackets--;
-          case "{":
-            braces++;
-          case "}":
-            braces--;
+        case "(":
+          brackets++;
+        case ")":
+          brackets--;
+        case "{":
+          braces++;
+        case "}":
+          braces--;
       }
     }
 
