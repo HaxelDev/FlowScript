@@ -246,11 +246,11 @@ class BinaryExpression extends Expression {
         var leftIsString = Std.is(leftValue, String);
         var rightIsString = Std.is(rightValue, String);
 
-        if (!leftIsFloat && !leftIsString) {
+        if (!leftIsFloat &&!leftIsString) {
             Flow.error.report("Unsupported left operand type for operator: " + opera);
             return null;
         }
-        if (!rightIsFloat && !rightIsString) {
+        if (!rightIsFloat &&!rightIsString) {
             Flow.error.report("Unsupported right operand type for operator: " + opera);
             return null;
         }
@@ -302,7 +302,7 @@ class BinaryExpression extends Expression {
             case "==":
                 return leftValue == rightValue;
             case "!=":
-                return leftValue != rightValue;
+                return leftValue!= rightValue;
             case "<":
                 if (leftIsString || rightIsString) {
                     Flow.error.report("Unsupported operator for strings: " + opera);
@@ -336,14 +336,14 @@ class BinaryExpression extends Expression {
                     Flow.error.report("Unsupported operator 'and' for strings");
                     return null;
                 } else {
-                    return (leftValue != 0) && (rightValue != 0);
+                    return (leftValue!= 0) && (rightValue!= 0);
                 }
             case "or":
                 if (leftIsString || rightIsString) {
                     Flow.error.report("Unsupported operator 'or' for strings");
                     return null;
                 } else {
-                    return (leftValue != 0) || (rightValue != 0);
+                    return (leftValue!= 0) || (rightValue!= 0);
                 }
             default:
                 Flow.error.report("Unknown operator: " + opera);

@@ -785,7 +785,7 @@ class Parser {
         }
         return expr;
     }
-    
+
     private function parseTerm(): Expression {
         var expr: Expression = parseFactor();
         while (match([TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MODULO])) {
