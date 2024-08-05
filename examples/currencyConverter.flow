@@ -1,0 +1,25 @@
+let exchangeRates = {
+    USD: 1.0,
+    EUR: 0.93,
+    GBP: 0.82,
+    PLN: 4.33
+}
+
+func main() {
+    let amountStr = IO().readLine("Enter the amount to convert: ")
+    let amount = parseNumber(amountStr)
+
+    let fromCurrency = IO().readLine("Enter the source currency (e.g., USD): ")
+    let toCurrency = IO().readLine("Enter the target currency (e.g., EUR): ")
+
+    let convertedAmount = convertCurrency(amount, fromCurrency, toCurrency, exchangeRates)
+    print('{amount} {fromCurrency} = {convertedAmount} {toCurrency}')
+}
+
+func convertCurrency(amount, fromCurrency, toCurrency, rates) {
+    let fromRate = get(rates, fromCurrency)
+    let toRate = get(rates, toCurrency)
+    return (amount / fromRate) * toRate
+}
+
+call main()
