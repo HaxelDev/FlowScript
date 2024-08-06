@@ -148,6 +148,8 @@ class Parser {
                     Flow.error.report("Unexpected keyword: " + keyword);
                     return null;
                 }
+            } else if (firstTokenType == TokenType.LBRACE) {
+                value = parseObjectLiteral();
             } else if (check(TokenType.LBRACKET)) {
                 value = parseArrayLiteral();
             } else {
