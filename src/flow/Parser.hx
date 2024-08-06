@@ -85,16 +85,7 @@ class Parser {
 
         consume(TokenType.EQUAL, "Expected '=' after variable name");
 
-        var initializer: Expression;
-
-        if (check(TokenType.LBRACKET)) {
-            initializer = parseArrayLiteral();
-        } else if (check(TokenType.LBRACE)) {
-            initializer = parseObjectLiteral();
-        } else {
-            initializer = parseExpression();
-        }
-
+        var initializer: Expression = parseExpression();
         return new LetStatement(name, initializer);
     }
 
@@ -744,6 +735,10 @@ class Parser {
             if (keyword == "func") {
                 return parseFunctionLiteral();
             }
+        } else if (firstTokenType == TokenType.LBRACKET) {
+            return parseArrayLiteral();
+        } else if (firstTokenType == TokenType.LBRACE) {
+            return parseObjectLiteral();
         }
         return parseLogicalOr();
     }
