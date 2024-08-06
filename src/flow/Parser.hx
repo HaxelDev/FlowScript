@@ -166,18 +166,23 @@ class Parser {
     }
 
     private function parseFunctionLiteral():Expression {
-        var parameters:Array<String> = [];
+        var parameters:Array<Parameter> = [];
         consume(TokenType.LPAREN, "Expected '(' after function keyword");
-
         while (!check(TokenType.RPAREN)) {
             var parameterToken:Token = consume(TokenType.IDENTIFIER, "Expected parameter name");
-            parameters.push(parameterToken.value);
-    
+            var parameterName:String = parameterToken.value;
+            var defaultValue:Expression = null;
+
+            if (match([TokenType.EQUAL])) {
+                defaultValue = parseExpression();
+            }
+
+            parameters.push(new Parameter(parameterName, defaultValue));
+
             if (match([TokenType.COMMA])) {
                 // Consume comma
             }
         }
-
         consume(TokenType.RPAREN, "Expected ')' after parameters");
 
         var body:BlockStatement = parseBlock();
@@ -255,24 +260,31 @@ class Parser {
         return new ForStatement(variableName, iterableExpression, body);
     }
 
-    private function parseFuncStatement():FuncStatement {
+    private function parseFuncStatement():Statement {
         var nameToken:Token = consume(TokenType.IDENTIFIER, "Expected function name after 'func'");
         var name:String = nameToken.value;
-
+    
         consume(TokenType.LPAREN, "Expected '(' after function name");
-
-        var parameters:Array<String> = [];
+    
+        var parameters:Array<Parameter> = [];
         while (!check(TokenType.RPAREN)) {
             var parameterToken:Token = consume(TokenType.IDENTIFIER, "Expected parameter name");
-            parameters.push(parameterToken.value);
+            var parameterName:String = parameterToken.value;
+            var defaultValue:Expression = null;
+    
+            if (match([TokenType.EQUAL])) {
+                defaultValue = parseExpression();
+            }
+    
+            parameters.push(new Parameter(parameterName, defaultValue));
+    
             if (match([TokenType.COMMA])) {
                 // Consume comma
             }
         }
         consume(TokenType.RPAREN, "Expected ')' after parameters");
-
+    
         var body:BlockStatement = parseBlock();
-
         return new FuncStatement(name, parameters, body);
     }
 

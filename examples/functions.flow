@@ -10,3 +10,10 @@ func add(a, b) {
 
 let x = add(10, 10)
 print(x)
+
+func greet(name = "Guest") {
+    print("Hello, {name}!")
+}
+
+call greet()
+call greet("Alice")

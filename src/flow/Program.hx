@@ -536,10 +536,10 @@ class ArrayLiteralExpression extends Expression {
 
 class FuncStatement extends Statement {
     public var name:String;
-    public var parameters:Array<String>;
+    public var parameters:Array<Parameter>;
     public var body:BlockStatement;
 
-    public function new(name:String, parameters:Array<String>, body:BlockStatement) {
+    public function new(name:String, parameters:Array<Parameter>, body:BlockStatement) {
         this.name = name;
         this.parameters = parameters;
         this.body = body;
@@ -576,10 +576,10 @@ class CallStatement extends Statement {
 
 class Function {
     public var name:String;
-    public var parameters:Array<String>;
+    public var parameters:Array<Parameter>;
     public var body:BlockStatement;
 
-    public function new(name:String, parameters:Array<String>, body:BlockStatement) {
+    public function new(name:String, parameters:Array<Parameter>, body:BlockStatement) {
         this.name = name;
         this.parameters = parameters;
         this.body = body;
@@ -588,7 +588,14 @@ class Function {
     public function execute(args:Array<Dynamic>):Dynamic {
         var oldValues:Map<String, Dynamic> = Environment.values.copy();
         for (i in 0...parameters.length) {
-            Environment.define(parameters[i], args[i]);
+            if (i < args.length) {
+                Environment.define(parameters[i].name, args[i]);
+            } else if (parameters[i].defaultValue != null) {
+                Environment.define(parameters[i].name, parameters[i].defaultValue.evaluate());
+            } else {
+                Flow.error.report("Missing argument for parameter '" + parameters[i].name + "'");
+                return null;
+            }
         }
 
         try {
@@ -632,10 +639,10 @@ class CallExpression extends Expression {
 }
 
 class FunctionLiteralExpression extends Expression {
-    public var parameters:Array<String>;
+    public var parameters:Array<Parameter>;
     public var body:BlockStatement;
 
-    public function new(parameters:Array<String>, body:BlockStatement) {
+    public function new(parameters:Array<Parameter>, body:BlockStatement) {
         this.parameters = parameters;
         this.body = body;
     }
@@ -711,6 +718,16 @@ class MethodCallStatement extends Statement {
             args.push(arg.evaluate());
         }
         func.execute(args);
+    }
+}
+
+class Parameter {
+    public var name:String;
+    public var defaultValue:Expression;
+
+    public function new(name:String, defaultValue:Expression = null) {
+        this.name = name;
+        this.defaultValue = defaultValue;
     }
 }
 
