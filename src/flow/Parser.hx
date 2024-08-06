@@ -396,14 +396,9 @@ class Parser {
     }
 
     private function parseCatchClause(): CatchClause {
-        consume(TokenType.LPAREN, "Expected '(' after 'catch'");
-
         var variableToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name");
         var variableName: String = variableToken.value;
-
-        consume(TokenType.RPAREN, "Expected ')' after variable name");
         var catchBlock: BlockStatement = parseBlock();
-
         return new CatchClause(variableName, catchBlock);
     }
 
