@@ -961,6 +961,41 @@ class ImportStatement extends Statement {
     }
 }
 
+class TryStatement extends Statement {
+    public var tryBlock: BlockStatement;
+    public var catchClauses: Array<CatchClause>;
+
+    public function new(tryBlock: BlockStatement, catchClauses: Array<CatchClause>) {
+        this.tryBlock = tryBlock;
+        this.catchClauses = catchClauses;
+    }
+
+    public override function execute():Void {
+        try {
+            tryBlock.execute();
+        } catch (e:Dynamic) {
+            for (catchClause in catchClauses) {
+                if (catchClause.variableName == null || catchClause.variableName == "") {
+                    catchClause.catchBlock.execute();
+                } else {
+                    Environment.define(catchClause.variableName, e);
+                    catchClause.catchBlock.execute();
+                }
+            }
+        }
+    }
+}
+
+class CatchClause {
+    public var variableName: String;
+    public var catchBlock: BlockStatement;
+
+    public function new(variableName: String, catchBlock: BlockStatement) {
+        this.variableName = variableName;
+        this.catchBlock = catchBlock;
+    }
+}
+
 class ChrFunctionCall extends Expression {
     public var argument: Expression;
 

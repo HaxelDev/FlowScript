@@ -131,6 +131,10 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token);
             case "import":
                 return new Token(TokenType.KEYWORD, token);
+            case "try":
+                return new Token(TokenType.KEYWORD, token);
+            case "catch":
+                return new Token(TokenType.KEYWORD, token);
             case "in":
                 return new Token(TokenType.IN, token);
             case "case":

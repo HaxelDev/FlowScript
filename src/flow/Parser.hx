@@ -51,6 +51,8 @@ class Parser {
                 return parseSwitchStatement();
             } else if (keyword == "import") {
                 return parseImportStatement();
+            } else if (keyword == "try") {
+                return parseTryStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword);
                 return null;
@@ -379,6 +381,30 @@ class Parser {
     private function parseImportStatement():Statement {
         var scriptFile:Token = consume(TokenType.STRING, "Expected script file name after 'import'");
         return new ImportStatement(scriptFile.value);
+    }
+
+    private function parseTryStatement(): Statement {
+        var tryBlock: BlockStatement = parseBlock();
+
+        var catchClauses: Array<CatchClause> = [];
+        while (match([TokenType.KEYWORD]) && previous().value == "catch") {
+            var catchClause: CatchClause = parseCatchClause();
+            catchClauses.push(catchClause);
+        }
+
+        return new TryStatement(tryBlock, catchClauses);
+    }
+
+    private function parseCatchClause(): CatchClause {
+        consume(TokenType.LPAREN, "Expected '(' after 'catch'");
+
+        var variableToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name");
+        var variableName: String = variableToken.value;
+
+        consume(TokenType.RPAREN, "Expected ')' after variable name");
+        var catchBlock: BlockStatement = parseBlock();
+
+        return new CatchClause(variableName, catchBlock);
     }
 
     private function parsePushStatement(): Statement {
