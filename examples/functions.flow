@@ -2,7 +2,7 @@ func log(x) {
     System().println(x)
 }
 
-call log("it's only test!")
+call log("Hello, World!")
 
 func add(a, b) {
     return a + b
