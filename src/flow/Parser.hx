@@ -53,6 +53,8 @@ class Parser {
                 return parseImportStatement();
             } else if (keyword == "try") {
                 return parseTryStatement();
+            } else if (keyword == "error") {
+                return parseErrorStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword);
                 return null;
@@ -207,6 +209,13 @@ class Parser {
         var expression:Expression = parseExpression();
         consume(TokenType.RPAREN, "Expected ')' after expression");
         return new PrintStatement(expression);
+    }
+
+    private function parseErrorStatement():Statement {
+        consume(TokenType.LPAREN, "Expected '(' after 'error'");
+        var expression:Expression = parseExpression();
+        consume(TokenType.RPAREN, "Expected ')' after expression");
+        return new ErrorStatement(expression);
     }
 
     private function parseIfStatement():Statement {
@@ -803,7 +812,7 @@ class Parser {
             expr = new BinaryExpression(expr, opera, right);
         }
         return expr;
-    }    
+    }
 
     private function parseEquality():Expression {
         var expr = parseComparison();
@@ -836,7 +845,9 @@ class Parser {
     }
 
     private function parseFactor():Expression {
-        if (match([TokenType.NUMBER])) {
+        if (match([TokenType.NOT])) {
+            return parseLogicalNot();
+        } else if (match([TokenType.NUMBER])) {
             var value:String = previous().value;
             if (value.indexOf(".") != -1) {
                 return new LiteralExpression(Std.parseFloat(value));
@@ -931,6 +942,11 @@ class Parser {
         }
 
         return new ConcatenationExpression(parts);
+    }
+
+    private function parseLogicalNot():Expression {
+        var expr = parseLogicalAnd();
+        return new UnaryExpression("not", expr);
     }
 
     private function parseIOExpression():Expression {

@@ -39,6 +39,22 @@ class PrintStatement extends Statement {
     }
 }
 
+class ErrorStatement extends Statement {
+    public var expression:Expression;
+
+    public function new(expression:Expression) {
+        this.expression = expression;
+    }
+
+    public override function execute():Void {
+        var value:String = expression.evaluate();
+        var lines:Array<String> = value.split("\n");
+        for (line in lines) {
+            Flow.error.report(line);
+        }
+    }
+}
+
 class LetStatement extends Statement {
     public var name:String;
     public var initializer:Expression;
@@ -851,6 +867,32 @@ class ArrayAssignmentStatement extends Statement {
 
         arrayValue[indexValue] = value.evaluate();
         Environment.define(arrayName, arrayValue);
+    }
+}
+
+class UnaryExpression extends Expression {
+    public var opera:String;
+    public var right:Expression;
+
+    public function new(opera:String, right:Expression) {
+        this.opera = opera;
+        this.right = right;
+    }
+
+    public override function evaluate():Dynamic {
+        var value = right.evaluate();
+        switch (opera) {
+            case "not":
+                if (Std.is(value, Bool)) {
+                    return !cast(value);
+                } else {
+                    Flow.error.report("Logical 'not' operator can only be applied to boolean values.");
+                    return null;
+                }
+            default:
+                Flow.error.report("Unknown unary operator: " + opera);
+                return null;
+        }
     }
 }
 

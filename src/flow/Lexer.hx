@@ -133,6 +133,8 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token);
             case "try":
                 return new Token(TokenType.KEYWORD, token);
+            case "error":
+                return new Token(TokenType.KEYWORD, token);
             case "catch":
                 return new Token(TokenType.KEYWORD, token);
             case "in":
@@ -159,6 +161,8 @@ class Lexer {
                 return new Token(TokenType.AND, token);
             case "or":
                 return new Token(TokenType.OR, token);
+            case "not":
+                return new Token(TokenType.NOT, token);
             case "%":
                 return new Token(TokenType.MODULO, token);
             case "<<":
@@ -312,4 +316,5 @@ enum TokenType {
     MATH;
     DEFAULT;
     CASE;
+    NOT;
 }
