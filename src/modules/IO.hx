@@ -18,7 +18,7 @@ class IO {
 
     public static function writeByte(value:Int):Void {
         if (value < 0 || value > 255) {
-            throw "Invalid byte value: " + value;
+            Flow.error.report("Invalid byte value: " + value);
         }
         Sys.stdout().writeByte(value);
     }

@@ -1359,7 +1359,8 @@ class ConcatFunctionCall extends Expression {
                 var secondArr = cast(secondValue, Array<Dynamic>);
                 return firstArr.concat(secondArr);
             default:
-                throw "Concat can only be applied to strings or arrays.";
+                Flow.error.report("Concat can only be applied to strings or arrays.");
+                return null;
         }
     }
 }
@@ -1387,7 +1388,8 @@ class IndexOfFunctionCall extends Expression {
                 var searchItem = searchValue;
                 return arr.indexOf(searchItem);
             default:
-                throw "IndexOf can only be applied to strings or arrays.";
+                Flow.error.report("IndexOf can only be applied to strings or arrays.");
+                return null;
         }
     }
 }
@@ -1441,7 +1443,8 @@ class StartsWithFunctionCall extends Expression {
                 var arr = cast(strOrArrValue, Array<Dynamic>);
                 return arr.length > 0 && arr[0] == searchValue;
             default:
-                throw "StartsWith can only be applied to strings or arrays.";
+                Flow.error.report("StartsWith can only be applied to strings or arrays.");
+                return null;
         }
     }
 }
@@ -1468,7 +1471,8 @@ class EndsWithFunctionCall extends Expression {
                 var arr = cast(strOrArrValue, Array<Dynamic>);
                 return arr.length > 0 && arr[arr.length - 1] == searchValue;
             default:
-                throw "EndsWith can only be applied to strings or arrays.";
+                Flow.error.report("EndsWith can only be applied to strings or arrays.");
+                return null;
         }
     }
 }
@@ -1500,7 +1504,8 @@ class SliceFunctionCall extends Expression {
                 var arr = cast(strOrArrValue, Array<Dynamic>);
                 return arr.slice(start, end);
             default:
-                throw "Slice can only be applied to strings or arrays.";
+                Flow.error.report("Slice can only be applied to strings or arrays.");
+                return null;
         }
     }
 }
@@ -1542,7 +1547,8 @@ class SetFunctionCall extends Expression {
                 Reflect.setField(targetValue, cast(keyValue, String), valueValue);
                 return valueValue;
             default:
-                throw "Set can only be applied to arrays or objects.";
+                Flow.error.report("Set can only be applied to arrays or objects.");
+                return null;
         }
     }
 }
@@ -1578,7 +1584,8 @@ class GetFunctionCall extends Expression {
             case TObject:
                 return Reflect.field(targetValue, cast(keyValue, String));
             default:
-                throw "Get can only be applied to arrays or objects.";
+                Flow.error.report("Get can only be applied to arrays or objects.");
+                return null;
         }
     }
 }
@@ -1622,7 +1629,7 @@ class SetStatement extends Statement {
             case TObject:
                 Reflect.setField(targetValue, cast(keyValue, String), valueValue);
             default:
-                throw "Set can only be applied to arrays or objects.";
+                Flow.error.report("Set can only be applied to arrays or objects.");
         }
     }
 }
@@ -1664,7 +1671,75 @@ class GetStatement extends Statement {
             case TObject:
                 result = Reflect.field(targetValue, cast(keyValue, String));
             default:
-                throw "Get can only be applied to arrays or objects.";
+                Flow.error.report("Get can only be applied to arrays or objects.");
+        }
+    }
+}
+
+class SortFunctionCall extends Expression {
+    public var arrayExpr: Expression;
+
+    public function new(arrayExpr: Expression) {
+        this.arrayExpr = arrayExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var arrayValue = arrayExpr.evaluate();
+        if (Std.is(arrayValue, Array)) {
+            var array = cast(arrayValue, Array<Dynamic>);
+            array.sort(function(a: Dynamic, b: Dynamic): Int {
+                if (Std.is(a, String) && Std.is(b, String)) {
+                    return (a < b ? -1 : (a > b ? 1 : 0));
+                } else if (Std.is(a, Int) && Std.is(b, Int)) {
+                    return cast(a, Int) - cast(b, Int);
+                } else if (Std.is(a, Float) && Std.is(b, Float)) {
+                    return std.Math.floor(cast(a, Float) - cast(b, Float));
+                } else if (Std.is(a, Float) && Std.is(b, Int)) {
+                    return std.Math.floor(cast(a, Float) - cast(b, Int));
+                } else if (Std.is(a, Int) && Std.is(b, Float)) {
+                    return std.Math.floor(cast(a, Int) - cast(b, Float));
+                } else {
+                    Flow.error.report("Array contains mixed or unsupported types");
+                    return 0;
+                }
+            });
+            return array;
+        } else {
+            Flow.error.report("Sort function expects an array");
+            return null;
+        }
+    }
+}
+
+class SortStatement extends Statement {
+    public var arrayExpr: Expression;
+
+    public function new(arrayExpr: Expression) {
+        this.arrayExpr = arrayExpr;
+    }
+
+    public override function execute():Void {
+        var arrayValue = arrayExpr.evaluate();
+        if (Std.is(arrayValue, Array)) {
+            var array = cast(arrayValue, Array<Dynamic>);
+            array.sort(function(a: Dynamic, b: Dynamic): Int {
+                if (Std.is(a, String) && Std.is(b, String)) {
+                    return (a < b ? -1 : (a > b ? 1 : 0));
+                } else if (Std.is(a, Int) && Std.is(b, Int)) {
+                    return cast(a, Int) - cast(b, Int);
+                } else if (Std.is(a, Float) && Std.is(b, Float)) {
+                    return std.Math.floor(cast(a, Float) - cast(b, Float));
+                } else if (Std.is(a, Float) && Std.is(b, Int)) {
+                    return std.Math.floor(cast(a, Float) - cast(b, Int));
+                } else if (Std.is(a, Int) && Std.is(b, Float)) {
+                    return std.Math.floor(cast(a, Int) - cast(b, Float));
+                } else {
+                    Flow.error.report("Array contains mixed or unsupported types");
+                    return 0;
+                }
+            });
+        } else {
+            Flow.error.report("Sort function expects an array");
         }
     }
 }
@@ -2013,10 +2088,11 @@ class MathExpression extends Expression {
             case "atan":
                 if (evaluatedArguments.length == 1) return Math.atan(evaluatedArguments[0]);
             default:
-                throw "Unknown method: " + methodName;
+                Flow.error.report("Unknown method: " + methodName);
         }
 
-        throw "Invalid arguments for method: " + methodName;
+        Flow.error.report("Invalid arguments for method: " + methodName);
+        return null;
     }
 }
 
@@ -2061,7 +2137,7 @@ class MathStatement extends Statement {
             case "atan":
                 if (evaluatedArguments.length == 1) Math.atan(evaluatedArguments[0]);
             default:
-                throw "Unknown method: " + methodName;
+                Flow.error.report("Unknown method: " + methodName);
         }
     }
 }

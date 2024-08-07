@@ -302,6 +302,8 @@ class Parser {
             return parseSetStatement();
         } else if (name == "get") {
             return parseGetStatement();
+        } else if (name == "sort") {
+            return parseSortStatement();
         }        
         var isMethodCall: Bool = name.indexOf(".") > -1;
         if (isMethodCall) {
@@ -439,6 +441,13 @@ class Parser {
         var keyExpr: Expression = parseExpression();
         consume(TokenType.RPAREN, "Expected ')' after key expression in 'get'");
         return new GetStatement(targetExpr, keyExpr);
+    }
+
+    private function parseSortStatement(): Statement {
+        consume(TokenType.LPAREN, "Expected '(' after 'sort'");
+        var arrayExpr: Expression = parseExpression();
+        consume(TokenType.RPAREN, "Expected ')' after array argument in 'sort'");
+        return new SortStatement(arrayExpr);
     }
 
     private function parseIOStatement():Statement {
@@ -1293,7 +1302,12 @@ class Parser {
             consume(TokenType.COMMA, "Expected ',' after target expression in 'get'");
             var keyExpr: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after key expression in 'get'");
-            return new GetFunctionCall(targetExpr, keyExpr);        
+            return new GetFunctionCall(targetExpr, keyExpr);
+        } else if (name == "sort") {
+            consume(TokenType.LPAREN, "Expected '(' after 'sort'");
+            var arrayExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after array argument in 'sort'");
+            return new SortFunctionCall(arrayExpr);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;
