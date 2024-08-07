@@ -56,16 +56,47 @@ class ErrorStatement extends Statement {
 }
 
 class LetStatement extends Statement {
-    public var name:String;
-    public var initializer:Expression;
+    public var name: String;
+    public var opera: String;
+    public var initializer: Expression;
 
-    public function new(name:String, initializer:Expression) {
+    public function new(name: String, opera: String, initializer: Expression) {
         this.name = name;
+        this.opera = opera;
         this.initializer = initializer;
     }
 
-    public override function execute():Void {
-        Environment.define(name, initializer.evaluate());
+    public override function execute(): Void {
+        var value: Dynamic = initializer.evaluate();
+
+        switch (opera) {
+            case "=":
+                Environment.define(name, value);
+            case "+=":
+                var existingValue: Dynamic = Environment.get(name);
+                if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
+                    var existingFloat: Float = cast(existingValue, Float);
+                    var newValue: Float = existingFloat + cast(value, Float);
+                    Environment.define(name, newValue);
+                } else if (existingValue == null) {
+                    Environment.define(name, cast(value, Float));
+                } else {
+                    Flow.error.report("Variable '" + name + "' is not a number for '+=' operation");
+                }
+            case "-=":
+                var existingValue: Dynamic = Environment.get(name);
+                if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
+                    var existingFloat: Float = cast(existingValue, Float);
+                    var newValue: Float = existingFloat - cast(value, Float);
+                    Environment.define(name, newValue);
+                } else if (existingValue == null) {
+                    Environment.define(name, -cast(value, Float));
+                } else {
+                    Flow.error.report("Variable '" + name + "' is not a number for '-=' operation");
+                }
+            default:
+                Flow.error.report("Unsupported assignment operator: " + opera);
+        }
     }
 }
 

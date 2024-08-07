@@ -87,10 +87,16 @@ class Parser {
         var nameToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name after 'let'");
         var name: String = nameToken.value;
 
-        consume(TokenType.EQUAL, "Expected '=' after variable name");
+        var opera: String = "";
+        if (match([TokenType.EQUAL, TokenType.PLUS_EQUAL, TokenType.MINUS_EQUAL])) {
+            opera = previous().value;
+        } else {
+            Flow.error.report("Expected '=', '+=', or '-=' after variable name");
+            return null;
+        }
 
         var initializer: Expression = parseExpression();
-        return new LetStatement(name, initializer);
+        return new LetStatement(name, opera, initializer);
     }
 
     private function parseArrayLiteral():Expression {
