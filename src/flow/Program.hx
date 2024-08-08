@@ -1133,6 +1133,48 @@ class EnumValue {
     }
 }
 
+class ClassStatement extends Statement {
+    public var name:String;
+    public var properties:Array<Statement>;
+    public var methods:Array<Statement>;
+    public var constructor:Statement;
+
+    public function new(name:String, properties:Array<Statement>, methods:Array<Statement>, constructor:Statement) {
+        this.name = name;
+        this.properties = properties;
+        this.methods = methods;
+        this.constructor = constructor;
+    }
+
+    public override function execute():Void {
+        var classObj:Dynamic = {};
+
+        for (property in properties) {
+            property.execute();
+            var letProperty:LetStatement = cast property;
+            var propertyName:String = letProperty.name;
+            var propertyValue:Dynamic = Environment.get(propertyName);
+            Reflect.setField(classObj, propertyName, propertyValue);
+        }
+
+        for (method in methods) {
+            method.execute();
+            var funcMethod:FuncStatement = cast method;
+            var methodName:String = funcMethod.name;
+            var methodFunc:Function = Environment.getFunction(methodName);
+            Reflect.setField(classObj, methodName, methodFunc);
+        }
+
+        if (constructor != null) {
+            constructor.execute();
+            var constructorFunc:Function = Environment.getFunction(cast(constructor, FuncStatement).name);
+            Reflect.setField(classObj, "constructor", constructorFunc);
+        }
+
+        Environment.define(name, classObj);
+    }
+}
+
 class ChrFunctionCall extends Expression {
     public var argument: Expression;
 

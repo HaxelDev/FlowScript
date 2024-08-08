@@ -57,6 +57,8 @@ class Parser {
                 return parseErrorStatement();
             } else if (keyword == "enum") {
                 return parseEnumStatement();
+            } else if (keyword == "class") {
+                return parseClassStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword, peek().lineNumber);
                 return null;
@@ -446,6 +448,41 @@ class Parser {
         }
     
         return new EnumStatement(name, values);
+    }
+
+    private function parseClassStatement(): Statement {
+        var nameToken: Token = consume(TokenType.IDENTIFIER, "Expected class name after 'class'");
+        var name: String = nameToken.value;
+    
+        var properties: Array<Statement> = [];
+        var methods: Array<Statement> = [];
+        var constructor: Statement = null;
+    
+        consume(TokenType.LBRACE, "Expected '{' after class name");
+    
+        while (!check(TokenType.RBRACE) && !isAtEnd()) {
+            if (match([TokenType.KEYWORD])) {
+                var keyword: String = previous().value;
+                if (keyword == "let") {
+                    properties.push(parseLetStatement());
+                } else if (keyword == "func") {
+                    var funcStatement: Statement = parseFuncStatement();
+                    if (cast(funcStatement, FuncStatement).name == "constructor") {
+                        constructor = funcStatement;
+                    } else {
+                        methods.push(funcStatement);
+                    }
+                } else {
+                    Flow.error.report("Unexpected keyword in class: " + keyword);
+                }
+            } else {
+                Flow.error.report("Unexpected token in class: " + peek().value);
+            }
+        }
+    
+        consume(TokenType.RBRACE, "Expected '}' after class body");
+    
+        return new ClassStatement(name, properties, methods, constructor);
     }
 
     private function parsePushStatement(): Statement {

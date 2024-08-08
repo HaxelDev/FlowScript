@@ -161,6 +161,8 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token, lineNumber);
             case "enum":
                 return new Token(TokenType.KEYWORD, token, lineNumber);
+            case "class":
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "in":
                 return new Token(TokenType.IN, token, lineNumber);
             case "case":
@@ -187,6 +189,8 @@ class Lexer {
                 return new Token(TokenType.OR, token, lineNumber);
             case "not":
                 return new Token(TokenType.NOT, token, lineNumber);
+            case "new":
+                return new Token(TokenType.NEW, token, lineNumber);
             case "%":
                 return new Token(TokenType.MODULO, token, lineNumber);
             case "<<":
@@ -363,4 +367,5 @@ enum TokenType {
     MINUS_EQUAL;
     PLUS_PLUS;
     MINUS_MINUS;
+    NEW;
 }
