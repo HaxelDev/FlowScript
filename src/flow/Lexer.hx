@@ -1,6 +1,8 @@
 package flow;
 
 class Lexer {
+    public static var currentLine:Int = 1;
+
     static public function tokenize(code:String):Array<Token> {
         var tokens:Array<Token> = [];
         var currentToken:String = "";
@@ -12,13 +14,15 @@ class Lexer {
         while (i < code.length) {
             var char:String = code.charAt(i);
 
-            if (char == "\"" || char == "'") {
+            if (char == "\n") {
+                currentLine++;
+            } else if (char == "\"" || char == "'") {
                 if (inString) {
                     if (currentToken.length > 0 && currentToken.charAt(currentToken.length - 1) == '\\') {
                         currentToken = currentToken.substring(0, currentToken.length - 1) + char;
                         escapeSequence = true;
                     } else if (char == stringDelimiter) {
-                        tokens.push(new Token(TokenType.STRING, currentToken));
+                        tokens.push(new Token(TokenType.STRING, currentToken, currentLine));
                         currentToken = "";
                         inString = false;
                         stringDelimiter = "";
@@ -57,7 +61,7 @@ class Lexer {
                 char == "=" || char == ">" || char == "<" || char == ";" ||
                 char == "." || char == "!" || char == "%") {
                 if (currentToken.length > 0) {
-                    tokens.push(getToken(currentToken));
+                    tokens.push(getToken(currentToken, currentLine));
                     currentToken = "";
                 }
                 var symbol:String = char;
@@ -100,10 +104,10 @@ class Lexer {
                         i++;
                     }
                 }
-                tokens.push(new Token(getSymbolType(symbol), symbol));
+                tokens.push(new Token(getSymbolType(symbol), symbol, currentLine));
             } else {
                 if (currentToken.length > 0) {
-                    tokens.push(getToken(currentToken));
+                    tokens.push(getToken(currentToken, currentLine));
                     currentToken = "";
                 }
             }
@@ -111,119 +115,119 @@ class Lexer {
         }
 
         if (currentToken.length > 0) {
-            tokens.push(getToken(currentToken));
+            tokens.push(getToken(currentToken, currentLine));
         }
 
         return tokens;
     }
 
-    static private function getToken(token:String):Token {
+    static private function getToken(token:String, lineNumber:Int):Token {
         switch (token) {
             case "print":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "let":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "true":
-                return new Token(TokenType.TRUE, token);
+                return new Token(TokenType.TRUE, token, lineNumber);
             case "false":
-                return new Token(TokenType.FALSE, token);
+                return new Token(TokenType.FALSE, token, lineNumber);
             case "if":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "else":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "while":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "for":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "func":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "call":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "return":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "break":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "continue":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "switch":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "import":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "try":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "error":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "catch":
-                return new Token(TokenType.KEYWORD, token);
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "in":
-                return new Token(TokenType.IN, token);
+                return new Token(TokenType.IN, token, lineNumber);
             case "case":
-                return new Token(TokenType.CASE, token);
+                return new Token(TokenType.CASE, token, lineNumber);
             case "default":
-                return new Token(TokenType.DEFAULT, token);
+                return new Token(TokenType.DEFAULT, token, lineNumber);
             case "range":
-                return new Token(TokenType.RANGE, token);
+                return new Token(TokenType.RANGE, token, lineNumber);
             case "IO":
-                return new Token(TokenType.IO, token);
+                return new Token(TokenType.IO, token, lineNumber);
             case "Random":
-                return new Token(TokenType.RANDOM, token);
+                return new Token(TokenType.RANDOM, token, lineNumber);
             case "System":
-                return new Token(TokenType.SYSTEM, token);
+                return new Token(TokenType.SYSTEM, token, lineNumber);
             case "File":
-                return new Token(TokenType.FILE, token);
+                return new Token(TokenType.FILE, token, lineNumber);
             case "Json":
-                return new Token(TokenType.JSON, token);
+                return new Token(TokenType.JSON, token, lineNumber);
             case "Math":
-                return new Token(TokenType.MATH, token);
+                return new Token(TokenType.MATH, token, lineNumber);
             case "and":
-                return new Token(TokenType.AND, token);
+                return new Token(TokenType.AND, token, lineNumber);
             case "or":
-                return new Token(TokenType.OR, token);
+                return new Token(TokenType.OR, token, lineNumber);
             case "not":
-                return new Token(TokenType.NOT, token);
+                return new Token(TokenType.NOT, token, lineNumber);
             case "%":
-                return new Token(TokenType.MODULO, token);
+                return new Token(TokenType.MODULO, token, lineNumber);
             case "<<":
-                return new Token(TokenType.LEFT_SHIFT, token);
+                return new Token(TokenType.LEFT_SHIFT, token, lineNumber);
             case ">>":
-                return new Token(TokenType.RIGHT_SHIFT, token);
+                return new Token(TokenType.RIGHT_SHIFT, token, lineNumber);
             case "=":
-                return new Token(TokenType.EQUAL, token);
+                return new Token(TokenType.EQUAL, token, lineNumber);
             case "==":
-                return new Token(TokenType.EQUAL_EQUAL, token);
+                return new Token(TokenType.EQUAL_EQUAL, token, lineNumber);
             case "!=":
-                return new Token(TokenType.BANG_EQUAL, token);
+                return new Token(TokenType.BANG_EQUAL, token, lineNumber);
             case "+=":
-                return new Token(TokenType.PLUS_EQUAL, token);
+                return new Token(TokenType.PLUS_EQUAL, token, lineNumber);
             case "-=":
-                return new Token(TokenType.MINUS_EQUAL, token);
+                return new Token(TokenType.MINUS_EQUAL, token, lineNumber);
             case "++":
-                return new Token(TokenType.PLUS_PLUS, token);
+                return new Token(TokenType.PLUS_PLUS, token, lineNumber);
             case "--":
-                return new Token(TokenType.MINUS_MINUS, token);
+                return new Token(TokenType.MINUS_MINUS, token, lineNumber);
             case ">":
-                return new Token(TokenType.GREATER, token);
+                return new Token(TokenType.GREATER, token, lineNumber);
             case ">=":
-                return new Token(TokenType.GREATER_EQUAL, token);
+                return new Token(TokenType.GREATER_EQUAL, token, lineNumber);
             case "<":
-                return new Token(TokenType.LESS, token);
+                return new Token(TokenType.LESS, token, lineNumber);
             case "<=":
-                return new Token(TokenType.LESS_EQUAL, token);
+                return new Token(TokenType.LESS_EQUAL, token, lineNumber);
             case "*":
-                return new Token(TokenType.MULTIPLY, token);
+                return new Token(TokenType.MULTIPLY, token, lineNumber);
             case "/":
-                return new Token(TokenType.DIVIDE, token);
+                return new Token(TokenType.DIVIDE, token, lineNumber);
             case ":":
-                return new Token(TokenType.COLON, token);
+                return new Token(TokenType.COLON, token, lineNumber);
             case ";":
-                return new Token(TokenType.SEMICOLON, token);
+                return new Token(TokenType.SEMICOLON, token, lineNumber);
             case "!":
-                return new Token(TokenType.BANG, token);
+                return new Token(TokenType.BANG, token, lineNumber);
             default:
                 if (isNumeric(token)) {
-                    return new Token(TokenType.NUMBER, token);
+                    return new Token(TokenType.NUMBER, token, lineNumber);
                 } else {
-                    return new Token(TokenType.IDENTIFIER, token);
+                    return new Token(TokenType.IDENTIFIER, token, lineNumber);
                 }
         }
     }
@@ -298,10 +302,12 @@ class Lexer {
 class Token {
     public var type:TokenType;
     public var value:String;
+    public var lineNumber:Int;
 
-    public function new(type:TokenType, value:String) {
+    public function new(type:TokenType, value:String, lineNumber:Int) {
         this.type = type;
         this.value = value;
+        this.lineNumber = lineNumber;
     }
 }
 

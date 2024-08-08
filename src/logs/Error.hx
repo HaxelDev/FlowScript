@@ -13,8 +13,13 @@ class Error {
     return instance;
   }
 
-  public function report(message:Dynamic, exitOnReport:Bool = true):Void {
-    var errorMessage = '<red,u>Error! | $message</>';
+  public function report(message:Dynamic, lineNumber:Int = -1, exitOnReport:Bool = true):Void {
+    var errorMessage:String;
+    if (lineNumber == -1) {
+      errorMessage = '<red,u>Error: $message</>';
+    } else {
+      errorMessage = '<red,u>Error on line $lineNumber: $message</>';
+    }
     if (lastErrorMessage != errorMessage) {
       Console.error(errorMessage);
       lastErrorMessage = errorMessage;
