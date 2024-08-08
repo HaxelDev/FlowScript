@@ -1166,12 +1166,113 @@ class ClassStatement extends Statement {
         }
 
         if (constructor != null) {
-            constructor.execute();
-            var constructorFunc:Function = Environment.getFunction(cast(constructor, FuncStatement).name);
+            var constructorFunc = function(instance:Dynamic, args:Array<Dynamic>):Void {
+                for (i in 0...args.length) {
+                    Environment.define(cast(constructor, FuncStatement).parameters[i].name, args[i]);
+                }
+                cast(constructor, FuncStatement).execute();
+            };
             Reflect.setField(classObj, "constructor", constructorFunc);
         }
 
         Environment.define(name, classObj);
+    }
+}
+
+class NewStatement extends Statement {
+    public var className:String;
+    public var arguments:Array<Expression>;
+
+    public function new(className:String, arguments:Array<Expression>) {
+        this.className = className;
+        this.arguments = arguments;
+    }
+
+    public override function execute():Void {
+        var classObj:Dynamic = Environment.get(className);
+        if (classObj == null) {
+            Flow.error.report("Undefined class: " + className);
+            return;
+        }
+    
+        var instance:Dynamic = {};
+
+        var args:Array<Dynamic> = [];
+        for (arg in arguments) {
+            args.push(arg.evaluate());
+        }
+
+        var constructorFunc:Dynamic = Reflect.field(classObj, "constructor");
+        if (constructorFunc != null) {
+            constructorFunc(instance, args);
+        }
+
+        for (field in Reflect.fields(classObj)) {
+            if (field != "constructor") {
+                Reflect.setField(instance, field, Reflect.field(classObj, field));
+            }
+        }
+
+        Environment.define("this", instance);
+    }
+}
+
+class NewExpression extends Expression {
+    public var className:String;
+    public var arguments:Array<Expression>;
+
+    public function new(className:String, arguments:Array<Expression>) {
+        this.className = className;
+        this.arguments = arguments;
+    }
+
+    public override function evaluate():Dynamic {
+        var classObj:Dynamic = Environment.get(className);
+        if (classObj == null) {
+            Flow.error.report("Undefined class: " + className);
+            return null;
+        }
+    
+        var instance:Dynamic = {};
+
+        var args:Array<Dynamic> = [];
+        for (arg in arguments) {
+            args.push(arg.evaluate());
+        }
+
+        var constructorFunc:Dynamic = Reflect.field(classObj, "constructor");
+        if (constructorFunc != null) {
+            constructorFunc(instance, args);
+        }
+
+        for (field in Reflect.fields(classObj)) {
+            if (field != "constructor") {
+                Reflect.setField(instance, field, Reflect.field(classObj, field));
+            }
+        }
+
+        return instance;
+    }
+}
+
+class ThisStatement extends Statement {
+    public var expression:Expression;
+
+    public function new(expression:Expression) {
+        this.expression = expression;
+    }
+
+    public override function execute():Void {
+        Environment.define("this", expression.evaluate());
+    }
+}
+
+class ThisExpression extends Expression {
+    public function new() {}
+
+    public override function evaluate():Dynamic {
+        // TODO: fix THIS lmao
+        return null;
     }
 }
 

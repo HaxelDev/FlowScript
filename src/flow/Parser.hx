@@ -59,6 +59,8 @@ class Parser {
                 return parseEnumStatement();
             } else if (keyword == "class") {
                 return parseClassStatement();
+            } else if (keyword == "new") {
+                return parseNewStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword, peek().lineNumber);
                 return null;
@@ -75,6 +77,8 @@ class Parser {
             return parseJsonStatement();
         } else if (firstTokenType == TokenType.MATH) {
             return parseMathStatement();
+        } else if (firstTokenType == TokenType.THIS) {
+            return parseThisStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
             if (peekNext().type == TokenType.LBRACKET) {
                 return parseArrayAssignment();
@@ -202,6 +206,11 @@ class Parser {
         var body:BlockStatement = parseBlock();
 
         return new FunctionLiteralExpression(parameters, body);
+    }
+
+    function parseThisStatement():ThisStatement {
+        var expression = parseExpression();
+        return new ThisStatement(expression);
     }
 
     private function parseArrayAssignment():Statement {
@@ -483,6 +492,23 @@ class Parser {
         consume(TokenType.RBRACE, "Expected '}' after class body");
     
         return new ClassStatement(name, properties, methods, constructor);
+    }
+
+    private function parseNewStatement():Statement {
+        var classNameToken:Token = consume(TokenType.IDENTIFIER, "Expected class name after 'new'");
+        var className:String = classNameToken.value;
+    
+        consume(TokenType.LPAREN, "Expected '(' after class name");
+        var arguments:Array<Expression> = [];
+        while (!check(TokenType.RPAREN)) {
+            arguments.push(parseExpression());
+            if (match([TokenType.COMMA])) {
+                // Consume comma
+            }
+        }
+        consume(TokenType.RPAREN, "Expected ')' after arguments");
+    
+        return new NewStatement(className, arguments);
     }
 
     private function parsePushStatement(): Statement {
@@ -851,17 +877,37 @@ class Parser {
         }
     }
 
+    private function parseNewExpression():Expression {
+        var classNameToken:Token = consume(TokenType.IDENTIFIER, "Expected class name after 'new'");
+        var className:String = classNameToken.value;
+    
+        consume(TokenType.LPAREN, "Expected '(' after class name");
+        var arguments:Array<Expression> = [];
+        while (!check(TokenType.RPAREN)) {
+            arguments.push(parseExpression());
+            if (match([TokenType.COMMA])) {
+                // Consume comma
+            }
+        }
+        consume(TokenType.RPAREN, "Expected ')' after arguments");
+        return new NewExpression(className, arguments);
+    }
+
     private function parseExpression():Expression {
         var firstTokenType:TokenType = peek().type;
         if (firstTokenType == TokenType.KEYWORD) {
             var keyword:String = advance().value;
             if (keyword == "func") {
                 return parseFunctionLiteral();
+            } else if (keyword == "new") {
+                return parseNewExpression();
             }
         } else if (firstTokenType == TokenType.LBRACKET) {
             return parseArrayLiteral();
         } else if (firstTokenType == TokenType.LBRACE) {
             return parseObjectLiteral();
+        } else if (firstTokenType == TokenType.THIS) {
+            return new ThisExpression();
         }
         return parseLogicalOr();
     }
