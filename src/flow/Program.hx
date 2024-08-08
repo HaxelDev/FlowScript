@@ -914,33 +914,40 @@ class UnaryExpression extends Expression {
 
     public override function evaluate():Dynamic {
         var value = right.evaluate();
+        var variableName:String = null;
+
+        if (Std.is(right, VariableExpression)) {
+            var variableExpr = cast right;
+            variableName = variableExpr.name;
+        } else {
+            Flow.error.report("Unary operator '" + opera + "' can only be applied to variables.");
+            return null;
+        }
+
+        var currentValue = Environment.get(variableName);
 
         switch (opera) {
             case "++":
-                if (Std.is(value, Int) || Std.is(value, Float)) {
-                    if (isPrefix) {
-                        return value + 1;
-                    } else {
-                        var oldValue = value;
-                        value += 1;
-                        return oldValue;
-                    }
+                if (isPrefix) {
+                    currentValue += 1;
+                    Environment.define(variableName, currentValue);
+                    return currentValue;
                 } else {
-                    Flow.error.report("Increment operator '++' can only be applied to numeric values.");
-                    return null;
+                    var oldValue = currentValue;
+                    currentValue += 1;
+                    Environment.define(variableName, currentValue);
+                    return oldValue;
                 }
             case "--":
-                if (Std.is(value, Int) || Std.is(value, Float)) {
-                    if (isPrefix) {
-                        return value - 1;
-                    } else {
-                        var oldValue = value;
-                        value -= 1;
-                        return oldValue;
-                    }
+                if (isPrefix) {
+                    currentValue -= 1;
+                    Environment.define(variableName, currentValue);
+                    return currentValue;
                 } else {
-                    Flow.error.report("Decrement operator '--' can only be applied to numeric values.");
-                    return null;
+                    var oldValue = currentValue;
+                    currentValue -= 1;
+                    Environment.define(variableName, currentValue);
+                    return oldValue;
                 }
             case "not":
                 if (Std.is(value, Bool)) {
