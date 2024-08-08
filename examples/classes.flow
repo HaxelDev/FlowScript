@@ -1,0 +1,13 @@
+class Person {
+    func constructor(name, age) {
+        this.name = name
+        this.age = age
+    }
+
+    func getData() {
+        return '{name} | {age}'
+    }
+}
+
+let person = new Person("John", 35)
+print(person.getData())
