@@ -179,7 +179,7 @@ class Environment {
                     Flow.error.report("Undefined property: " + part);
                     return null;
                 }
-    
+
                 if (Reflect.hasField(obj, part)) {
                     obj = Reflect.field(obj, part);
                 } else {
@@ -187,7 +187,7 @@ class Environment {
                     return null;
                 }
             }
-    
+
             var func: Dynamic = Reflect.field(obj, methodName);
             if (func == null || !(func is Function)) {
                 Flow.error.report("Undefined method: " + methodName);
@@ -1102,6 +1102,34 @@ class CatchClause {
     public function new(variableName: String, catchBlock: BlockStatement) {
         this.variableName = variableName;
         this.catchBlock = catchBlock;
+    }
+}
+
+class EnumStatement extends Statement {
+    public var name:String;
+    public var values:Array<EnumValue>;
+
+    public function new(name:String, values:Array<EnumValue>) {
+        this.name = name;
+        this.values = values;
+    }
+
+    public override function execute():Void {
+        var enumObject:Dynamic = {};
+        for (value in values) {
+            Reflect.setField(enumObject, value.name, value.value.evaluate());
+        }
+        Environment.define(name, enumObject);
+    }
+}
+
+class EnumValue {
+    public var name:String;
+    public var value:Expression;
+
+    public function new(name:String, value:Expression) {
+        this.name = name;
+        this.value = value;
     }
 }
 

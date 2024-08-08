@@ -55,6 +55,8 @@ class Parser {
                 return parseTryStatement();
             } else if (keyword == "error") {
                 return parseErrorStatement();
+            } else if (keyword == "enum") {
+                return parseEnumStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword, peek().lineNumber);
                 return null;
@@ -417,6 +419,33 @@ class Parser {
         var variableName: String = variableToken.value;
         var catchBlock: BlockStatement = parseBlock();
         return new CatchClause(variableName, catchBlock);
+    }
+
+    private function parseEnumStatement():Statement {
+        var name = consume(TokenType.IDENTIFIER, "Expected enum name.").value;
+
+        var values:Array<EnumValue> = [];
+    
+        if (match([TokenType.LBRACE])) {
+            while (!check(TokenType.RBRACE) && !isAtEnd()) {
+                var valueName = consume(TokenType.IDENTIFIER, "Expected enum value name.").value;
+                var value = null;
+    
+                if (match([TokenType.EQUAL])) {
+                    value = parseExpression();
+                }
+    
+                values.push(new EnumValue(valueName, value));
+    
+                if (!match([TokenType.COMMA])) {
+                    break;
+                }
+            }
+    
+            consume(TokenType.RBRACE, "Expected '}' after enum values.");
+        }
+    
+        return new EnumStatement(name, values);
     }
 
     private function parsePushStatement(): Statement {
@@ -1349,7 +1378,7 @@ class Parser {
             var methodName: String = parts.join(".");
 
             consume(TokenType.LPAREN, "Expected '(' after method name");
-
+    
             while (!check(TokenType.RPAREN)) {
                 arguments.push(parseExpression());
                 if (match([TokenType.COMMA])) {
