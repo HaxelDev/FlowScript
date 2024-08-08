@@ -60,14 +60,14 @@ class LetStatement extends Statement {
     public var opera: String;
     public var initializer: Expression;
 
-    public function new(name: String, opera: String, initializer: Expression) {
+    public function new(name: String, opera: String, initializer: Expression = null) {
         this.name = name;
         this.opera = opera;
         this.initializer = initializer;
     }
 
     public override function execute(): Void {
-        var value: Dynamic = initializer.evaluate();
+        var value: Dynamic = initializer != null ? initializer.evaluate() : null;
 
         switch (opera) {
             case "=":
@@ -904,15 +904,51 @@ class ArrayAssignmentStatement extends Statement {
 class UnaryExpression extends Expression {
     public var opera:String;
     public var right:Expression;
+    public var isPrefix:Bool;
 
-    public function new(opera:String, right:Expression) {
+    public function new(opera:String, right:Expression, isPrefix:Bool) {
         this.opera = opera;
         this.right = right;
+        this.isPrefix = isPrefix;
     }
 
     public override function evaluate():Dynamic {
         var value = right.evaluate();
+        var variableName:String = null;
+
+        if (Std.is(right, VariableExpression)) {
+            var variableExpr = cast right;
+            variableName = variableExpr.name;
+        } else {
+            Flow.error.report("Unary operator '" + opera + "' can only be applied to variables.");
+            return null;
+        }
+
+        var currentValue = Environment.get(variableName);
+
         switch (opera) {
+            case "++":
+                if (isPrefix) {
+                    currentValue += 1;
+                    Environment.define(variableName, currentValue);
+                    return currentValue;
+                } else {
+                    var oldValue = currentValue;
+                    currentValue += 1;
+                    Environment.define(variableName, currentValue);
+                    return oldValue;
+                }
+            case "--":
+                if (isPrefix) {
+                    currentValue -= 1;
+                    Environment.define(variableName, currentValue);
+                    return currentValue;
+                } else {
+                    var oldValue = currentValue;
+                    currentValue -= 1;
+                    Environment.define(variableName, currentValue);
+                    return oldValue;
+                }
             case "not":
                 if (Std.is(value, Bool)) {
                     return !cast(value);

@@ -853,6 +853,10 @@ class Parser {
     private function parseFactor():Expression {
         if (match([TokenType.NOT])) {
             return parseLogicalNot();
+        } else if (match([TokenType.PLUS_PLUS, TokenType.MINUS_MINUS])) {
+            var opera: String = previous().value;
+            var operand: Expression = parseFactor();
+            return new UnaryExpression(opera, operand, true);
         } else if (match([TokenType.NUMBER])) {
             var value:String = previous().value;
             if (value.indexOf(".") != -1) {
@@ -887,13 +891,19 @@ class Parser {
             consume(TokenType.RPAREN, "Expected ')'");
             return parseMathExpression();
         } else if (match([TokenType.IDENTIFIER])) {
+            var expr: Expression = null;
             if (peek().type == TokenType.LPAREN) {
-                return parseCallExpression();
+                expr = parseCallExpression();
             } else if (peek().type == TokenType.LBRACKET) {
-                return parseArrayAccess();
+                expr = parseArrayAccess();
             } else {
-                return parsePropertyAccess();
+                expr = parsePropertyAccess();
             }
+            if (match([TokenType.PLUS_PLUS, TokenType.MINUS_MINUS])) {
+                var opera: String = previous().value;
+                return new UnaryExpression(opera, expr, false);
+            }
+            return expr;
         } else if (match([TokenType.TRUE])) {
             return new LiteralExpression(true);
         } else if (match([TokenType.FALSE])) {
@@ -952,7 +962,7 @@ class Parser {
 
     private function parseLogicalNot():Expression {
         var expr = parseLogicalAnd();
-        return new UnaryExpression("not", expr);
+        return new UnaryExpression("not", expr, true);
     }
 
     private function parseIOExpression():Expression {

@@ -81,12 +81,24 @@ class Lexer {
                 } else if (char == "<" && i + 1 < code.length && code.charAt(i + 1) == "=") {
                     symbol += "=";
                     i++;
-                } else if (char == "+" && i + 1 < code.length && code.charAt(i + 1) == "=") {
-                    symbol += "=";
-                    i++;
-                } else if (char == "-" && i + 1 < code.length && code.charAt(i + 1) == "=") {
-                    symbol += "=";
-                    i++;
+                } else if (char == "+" && i + 1 < code.length) {
+                    var nextChar:String = code.charAt(i + 1);
+                    if (nextChar == "=") {
+                        symbol += "=";
+                        i++;
+                    } else if (nextChar == "+") {
+                        symbol += "+";
+                        i++;
+                    }
+                } else if (char == "-" && i + 1 < code.length) {
+                    var nextChar:String = code.charAt(i + 1);
+                    if (nextChar == "=") {
+                        symbol += "=";
+                        i++;
+                    } else if (nextChar == "-") {
+                        symbol += "-";
+                        i++;
+                    }
                 }
                 tokens.push(new Token(getSymbolType(symbol), symbol));
             } else {
@@ -185,6 +197,10 @@ class Lexer {
                 return new Token(TokenType.PLUS_EQUAL, token);
             case "-=":
                 return new Token(TokenType.MINUS_EQUAL, token);
+            case "++":
+                return new Token(TokenType.PLUS_PLUS, token);
+            case "--":
+                return new Token(TokenType.MINUS_MINUS, token);
             case ">":
                 return new Token(TokenType.GREATER, token);
             case ">=":
@@ -256,6 +272,10 @@ class Lexer {
                 return TokenType.PLUS_EQUAL;
             case "-=":
                 return TokenType.MINUS_EQUAL;
+            case "++":
+                return TokenType.PLUS_PLUS;
+            case "--":
+                return TokenType.MINUS_MINUS;
             case ";":
                 return TokenType.SEMICOLON;
             case "%":
@@ -333,4 +353,6 @@ enum TokenType {
     NOT;
     PLUS_EQUAL;
     MINUS_EQUAL;
+    PLUS_PLUS;
+    MINUS_MINUS;
 }
