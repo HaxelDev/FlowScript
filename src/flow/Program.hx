@@ -249,9 +249,21 @@ class Environment {
 class Scope {
     public var letStatements:Array<LetStatement> = new Array();
     public var parentScope:Scope;
+    public var context:Dynamic;
 
-    public function new(parentScope:Scope = null) {
+    public function new(parentScope:Scope = null, context:Dynamic = null) {
         this.parentScope = parentScope;
+        this.context = context;
+    }
+
+    public function getContext():Dynamic {
+        if (context != null) {
+            return context;
+        } else if (parentScope != null) {
+            return parentScope.getContext();
+        } else {
+            return null;
+        }
     }
 }
 
@@ -1264,15 +1276,6 @@ class ThisStatement extends Statement {
 
     public override function execute():Void {
         Environment.define("this", expression.evaluate());
-    }
-}
-
-class ThisExpression extends Expression {
-    public function new() {}
-
-    public override function evaluate():Dynamic {
-        // TODO: fix THIS lmao
-        return null;
     }
 }
 

@@ -906,8 +906,6 @@ class Parser {
             return parseArrayLiteral();
         } else if (firstTokenType == TokenType.LBRACE) {
             return parseObjectLiteral();
-        } else if (firstTokenType == TokenType.THIS) {
-            return new ThisExpression();
         }
         return parseLogicalOr();
     }
