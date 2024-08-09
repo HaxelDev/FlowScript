@@ -19,7 +19,7 @@ func main() {
             print("Result: Obesity")
         }
     } else {
-        print("Error: Weight and height must be greater than zero.")
+        error("Weight and height must be greater than zero.")
     }
 }
 
