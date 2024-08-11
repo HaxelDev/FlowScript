@@ -1,0 +1,29 @@
+func encrypt(text, shift) {
+    let result = ""
+
+    for i in range(0, text.length) {
+        let code = charCodeAt(text, i)
+
+        if code >= 65 and code <= 65 + 26 - 1 {
+            code -= 65
+            code = (code + shift) % 26
+            code += 65
+        } else if code >= 97 and code <= 97 + 26 - 1 {
+            code -= 97
+            code = (code + shift) % 26
+            code += 97
+        }
+
+        result += chr(code)
+    }
+
+    return result
+}
+
+func decrypt(text, shift) {
+    let decryptShift = 26 - (shift % 26)
+    return encrypt(text, decryptShift)
+}
+
+print(encrypt("hello world", 3))
+print(decrypt("khoor zruog", 3))

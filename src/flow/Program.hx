@@ -75,24 +75,30 @@ class LetStatement extends Statement {
             case "+=":
                 var existingValue: Dynamic = Environment.get(name);
                 if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
-                    var existingFloat: Float = cast(existingValue, Float);
-                    var newValue: Float = existingFloat + cast(value, Float);
+                    var newValue: Float = cast(existingValue, Float) + cast(value, Float);
+                    Environment.define(name, newValue);
+                } else if (Std.is(existingValue, String)) {
+                    var existingString: String = cast(existingValue, String);
+                    var newValue: String = existingString + cast(value, String);
                     Environment.define(name, newValue);
                 } else if (existingValue == null) {
-                    Environment.define(name, cast(value, Float));
+                    Environment.define(name, cast(value, String));
                 } else {
-                    Flow.error.report("Variable '" + name + "' is not a number for '+=' operation");
+                    Flow.error.report("Variable '" + name + "' is not suitable for '+=' operation");
                 }
             case "-=":
                 var existingValue: Dynamic = Environment.get(name);
                 if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
-                    var existingFloat: Float = cast(existingValue, Float);
-                    var newValue: Float = existingFloat - cast(value, Float);
+                    var newValue: Float = cast(existingValue, Float) - cast(value, Float);
+                    Environment.define(name, newValue);
+                } else if (Std.is(existingValue, String)) {
+                    var existingString: String = cast(existingValue, String);
+                    var newValue: String = existingString.split(cast(value, String)).join("");
                     Environment.define(name, newValue);
                 } else if (existingValue == null) {
-                    Environment.define(name, -cast(value, Float));
+                    Flow.error.report("Variable '" + name + "' is null or not a string for '-=' operation");
                 } else {
-                    Flow.error.report("Variable '" + name + "' is not a number for '-=' operation");
+                    Flow.error.report("Variable '" + name + "' is not suitable for '-=' operation");
                 }
             default:
                 Flow.error.report("Unsupported assignment operator: " + opera);
@@ -1287,7 +1293,20 @@ class ChrFunctionCall extends Expression {
     }
 
     public override function evaluate(): Dynamic {
-        var code = Std.int(argument.evaluate());
+        var codeValue = argument.evaluate();
+
+        if (!Std.is(codeValue, Int)) {
+            Flow.error.report("Invalid type for character code.");
+            return "";
+        }
+
+        var code = Std.int(codeValue);
+
+        if (code < 0 || code > 1114111) {
+            Flow.error.report("Character code out of range: " + code);
+            return "";
+        }
+
         return String.fromCharCode(code);
     }
 }
@@ -1339,11 +1358,15 @@ class CharAtFunctionCall extends Expression {
         var strValue = stringExpr.evaluate();
         var indexValue = indexExpr.evaluate();
 
-        var index = Std.int(indexValue);
+        if (!(strValue is String)) {
+            Flow.error.report("Invalid type for string.");
+            return "";
+        }
+
         var str = cast(strValue, String);
+        var index = Std.int(Std.parseFloat(indexValue));
 
         if (index < 0 || index >= str.length) {
-            Flow.error.report("Index out of bounds: " + index);
             return "";
         }
 
@@ -1352,21 +1375,31 @@ class CharAtFunctionCall extends Expression {
 }
 
 class CharCodeAtFunctionCall extends Expression {
-    public var stringExpr:Expression;
-    public var indexExpr:Expression;
+    public var stringExpr: Expression;
+    public var indexExpr: Expression;
 
-    public function new(stringExpr:Expression, indexExpr:Expression) {
+    public function new(stringExpr: Expression, indexExpr: Expression) {
         this.stringExpr = stringExpr;
         this.indexExpr = indexExpr;
     }
 
-    public override function evaluate():Dynamic {
-        var str = stringExpr.evaluate();
-        var index = indexExpr.evaluate();
-        if (Std.is(str, String) && Std.is(index, Int)) {
-            return str.charCodeAt(index);
+    public override function evaluate(): Dynamic {
+        var strValue = stringExpr.evaluate();
+        var indexValue = indexExpr.evaluate();
+
+        if (!(strValue is String)) {
+            Flow.error.report("Invalid type for string.");
+            return null;
         }
-        return null;
+
+        var str = cast(strValue, String);
+        var index = Std.int(Std.parseFloat(indexValue));
+
+        if (index < 0 || index >= str.length) {
+            return 0;
+        }
+
+        return str.charCodeAt(index);
     }
 }
 
