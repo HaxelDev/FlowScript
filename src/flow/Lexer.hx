@@ -37,7 +37,22 @@ class Lexer {
                 continue;
             } else if (inString) {
                 if (escapeSequence) {
-                    currentToken += char;
+                    switch (char) {
+                        case "n":
+                            currentToken += "\n";
+                        case "t":
+                            currentToken += "\t";
+                        case "r":
+                            currentToken += "\r";
+                        case "\\":
+                            currentToken += "\\";
+                        case "\"":
+                            currentToken += "\"";
+                        case "'":
+                            currentToken += "'";
+                        default:
+                            currentToken += "\\" + char;
+                    }
                     escapeSequence = false;
                 } else if (char == '\\') {
                     escapeSequence = true;
