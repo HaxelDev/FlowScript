@@ -178,6 +178,8 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token, lineNumber);
             case "class":
                 return new Token(TokenType.KEYWORD, token, lineNumber);
+            case "do":
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "in":
                 return new Token(TokenType.IN, token, lineNumber);
             case "case":

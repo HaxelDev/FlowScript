@@ -61,6 +61,8 @@ class Parser {
                 return parseClassStatement();
             } else if (keyword == "new") {
                 return parseNewStatement();
+            } else if (keyword == "do") {
+                return parseDoWhileStatement();
             } else {
                 Flow.error.report("Unknown keyword: " + keyword, peek().lineNumber);
                 return null;
@@ -509,6 +511,21 @@ class Parser {
         consume(TokenType.RPAREN, "Expected ')' after arguments");
     
         return new NewStatement(className, arguments);
+    }
+
+    private function parseDoWhileStatement():Statement {
+        var body:Statement = parseBlock();
+    
+        consume(TokenType.KEYWORD, "Expected 'while' after 'do' block");
+        var whileKeyword:String = previous().value;
+
+        if (whileKeyword != "while") {
+            Flow.error.report("Expected 'while' after 'do' block");
+            return null;
+        }
+
+        var condition:Expression = parseExpression();
+        return new DoWhileStatement(condition, body);
     }
 
     private function parsePushStatement(): Statement {

@@ -1273,6 +1273,22 @@ class NewExpression extends Expression {
     }
 }
 
+class DoWhileStatement extends Statement {
+    public var condition:Expression;
+    public var body:Statement;
+
+    public function new(condition:Expression, body:Statement) {
+        this.condition = condition;
+        this.body = body;
+    }
+
+    public override function execute():Void {
+        do {
+            body.execute();
+        } while (condition.evaluate());
+    }
+}
+
 class ThisStatement extends Statement {
     public var expression:Expression;
 
