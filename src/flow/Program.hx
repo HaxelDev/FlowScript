@@ -59,11 +59,13 @@ class LetStatement extends Statement {
     public var name: String;
     public var opera: String;
     public var initializer: Expression;
+    public var isPrefix: Bool;
 
-    public function new(name: String, opera: String, initializer: Expression = null) {
+    public function new(name: String, opera: String, initializer: Expression = null, isPrefix: Bool = false) {
         this.name = name;
         this.opera = opera;
         this.initializer = initializer;
+        this.isPrefix = isPrefix;
     }
 
     public override function execute(): Void {
@@ -99,6 +101,32 @@ class LetStatement extends Statement {
                     Flow.error.report("Variable '" + name + "' is null or not a string for '-=' operation");
                 } else {
                     Flow.error.report("Variable '" + name + "' is not suitable for '-=' operation");
+                }
+            case "++":
+                var existingValue: Dynamic = Environment.get(name);
+                if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
+                    var incrementValue: Float = isPrefix ? 1 : 0;
+                    var newValue: Float = cast(existingValue, Float) + incrementValue;
+                    Environment.define(name, newValue);
+                    if (!isPrefix) {
+                        newValue += 1;
+                        Environment.define(name, newValue);
+                    }
+                } else {
+                    Flow.error.report("Variable '" + name + "' is not suitable for '++' operation");
+                }
+            case "--":
+                var existingValue: Dynamic = Environment.get(name);
+                if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
+                    var decrementValue: Float = isPrefix ? 1 : 0;
+                    var newValue: Float = cast(existingValue, Float) - decrementValue;
+                    Environment.define(name, newValue);
+                    if (!isPrefix) {
+                        newValue -= 1;
+                        Environment.define(name, newValue);
+                    }
+                } else {
+                    Flow.error.report("Variable '" + name + "' is not suitable for '--' operation");
                 }
             default:
                 Flow.error.report("Unsupported assignment operator: " + opera);

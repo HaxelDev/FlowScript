@@ -87,6 +87,11 @@ class Parser {
             } else {
                 return parseLetStatement();
             }
+        } else if (firstTokenType == TokenType.PLUS_PLUS || firstTokenType == TokenType.MINUS_MINUS) {
+            var opera: String = advance().value;
+            var nameToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name after '" + opera + "'");
+            var name: String = nameToken.value;
+            return new LetStatement(name, opera, null, true);
         } else {
             Flow.error.report("Unexpected token: " + peek().value, peek().lineNumber);
             return null;
@@ -98,14 +103,15 @@ class Parser {
         var name: String = nameToken.value;
 
         var opera: String = "";
-        if (match([TokenType.EQUAL, TokenType.PLUS_EQUAL, TokenType.MINUS_EQUAL])) {
+
+        if (match([TokenType.EQUAL, TokenType.PLUS_EQUAL, TokenType.MINUS_EQUAL, TokenType.PLUS_PLUS, TokenType.MINUS_MINUS])) {
             opera = previous().value;
         } else {
-            Flow.error.report("Expected '=', '+=', or '-=' after variable name", peek().lineNumber);
+            Flow.error.report("Expected '=', '+=', '-=', '++', or '--' after variable name", peek().lineNumber);
             return null;
         }
 
-        var initializer: Expression = parseExpression();
+        var initializer: Expression = (opera == "++" || opera == "--") ? null : parseExpression();
         return new LetStatement(name, opera, initializer);
     }
 
