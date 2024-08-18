@@ -2254,6 +2254,8 @@ class SystemExpression extends Expression {
                 return null;
             case "systemName":
                 return System.systemName();
+            case "args":
+                return System.args();
         }
 
         return null;
@@ -2294,6 +2296,8 @@ class SystemStatement extends Statement {
                 }
             case "systemName":
                 System.systemName();
+            case "args":
+                System.args();
         }
     }
 }

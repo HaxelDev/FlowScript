@@ -47,4 +47,21 @@ class System {
     public static function systemName(): String {
         return Sys.systemName();
     }
+
+    public static function args(): Array<String> {
+        var rawArgs: Array<String> = Sys.args();
+        var processedArgs: Array<String> = [];
+        if (rawArgs.length > 2) {
+            for (i in 2...rawArgs.length) {
+                if (rawArgs[i] != "") {
+                    processedArgs.push(rawArgs[i]);
+                }
+            }
+        } else if (rawArgs.length == 2) {
+            if (rawArgs[1] != "") {
+                processedArgs.push(rawArgs[1]);
+            }
+        }
+        return processedArgs;
+    }
 }

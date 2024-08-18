@@ -728,6 +728,10 @@ class Parser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new SystemStatement("openUrl", [expression]);
+        } else if (methodName == ".args") {
+            consume(TokenType.LPAREN, "Expected '(' after 'exit'");
+            consume(TokenType.RPAREN, "Expected ')' after 'exit'");
+            return new SystemStatement("args");
         } else {
             Flow.error.report("Unknown System method: " + methodName, peek().lineNumber);
             return null;
@@ -1195,6 +1199,10 @@ class Parser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new SystemExpression("openUrl", [expression]);
+        } else if (methodName == ".args") {
+            consume(TokenType.LPAREN, "Expected '(' after 'exit'");
+            consume(TokenType.RPAREN, "Expected ')' after 'exit'");
+            return new SystemExpression("args");
         } else {
             Flow.error.report("Unknown System method: " + methodName, peek().lineNumber);
             return null;
