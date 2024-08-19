@@ -2192,10 +2192,35 @@ class RandomExpression extends Expression {
         this.arguments = arguments;
     }
 
-    public override function evaluate():Int {
-        var min:Int = arguments[0].evaluate();
-        var max:Int = arguments[1].evaluate();
-        return Random.nextInt(min, max);
+    public override function evaluate():Dynamic {
+        switch (methodName) {
+            case ".nextInt":
+                if (arguments.length == 2) {
+                    var min:Int = arguments[0].evaluate();
+                    var max:Int = arguments[1].evaluate();
+                    return Random.nextInt(min, max);
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'nextInt'", 0);
+                    return null;
+                }
+            case ".choice":
+                if (arguments.length == 1) {
+                    var listExpr:Expression = arguments[0];
+                    var list:Array<Dynamic> = listExpr.evaluate();
+                    if (list == null || list.length == 0) {
+                        Flow.error.report("Empty list provided to 'choice'", 0);
+                        return null;
+                    }
+                    var index:Int = Random.nextInt(0, list.length - 1);
+                    return list[index];
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'choice'", 0);
+                    return null;
+                }
+            default:
+                Flow.error.report("Unknown Random method: " + methodName, 0);
+                return null;
+        }
     }
 }
 
@@ -2209,9 +2234,31 @@ class RandomStatement extends Statement {
     }
 
     public override function execute():Void {
-        var min:Int = arguments[0].evaluate();
-        var max:Int = arguments[1].evaluate();
-        Random.nextInt(min, max);
+        switch (methodName) {
+            case ".nextInt":
+                if (arguments.length == 2) {
+                    var min:Int = arguments[0].evaluate();
+                    var max:Int = arguments[1].evaluate();
+                    Random.nextInt(min, max);
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'nextInt'", 0);
+                }
+            case ".choice":
+                if (arguments.length == 1) {
+                    var listExpr:Expression = arguments[0];
+                    var list:Array<Dynamic> = listExpr.evaluate();
+                    if (list == null || list.length == 0) {
+                        Flow.error.report("Empty list provided to 'choice'", 0);
+                    } else {
+                        var index:Int = Random.nextInt(0, list.length - 1);
+                        list[index];
+                    }
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'choice'", 0);
+                }
+            default:
+                Flow.error.report("Unknown Random method: " + methodName, 0);
+        }
     }
 }
 
