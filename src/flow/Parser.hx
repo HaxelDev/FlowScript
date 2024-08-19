@@ -637,10 +637,21 @@ class Parser {
             return null;
         }
 
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'", peek().lineNumber);
+            return null;
+        }
+
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
 
         if (methodName == ".nextInt") {
+            var lparenToken:Token = advance();
+            if (lparenToken.type != TokenType.LPAREN) {
+                Flow.error.report("Expected '(' after 'nextInt'", peek().lineNumber);
+                return null;
+            }
             var minExpr:Expression = parseExpression();
             var commaToken:Token = advance();
             if (commaToken.type != TokenType.COMMA) {
@@ -655,6 +666,11 @@ class Parser {
             }
             return new RandomStatement(methodName, [minExpr, maxExpr]);
         } else if (methodName == ".choice") {
+            var lparenToken:Token = advance();
+            if (lparenToken.type != TokenType.LPAREN) {
+                Flow.error.report("Expected '(' after 'nextInt'", peek().lineNumber);
+                return null;
+            }
             var listExpr:Expression = parseExpression();
             var rparenToken:Token = advance();
             if (rparenToken.type != TokenType.RPAREN) {
