@@ -79,6 +79,8 @@ class Parser {
             return parseJsonStatement();
         } else if (firstTokenType == TokenType.MATH) {
             return parseMathStatement();
+        } else if (firstTokenType == TokenType.HTTP) {
+            return parseHttpStatement();
         } else if (firstTokenType == TokenType.THIS) {
             return parseThisStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
@@ -900,6 +902,46 @@ class Parser {
         return new MathStatement(methodName.substr(1), arguments);
     }
 
+    private function parseHttpStatement():Statement {
+        var httpToken:Token = advance();
+        if (httpToken.type != TokenType.HTTP) {
+            Flow.error.report("Expected 'HTTP' keyword", peek().lineNumber);
+            return null;
+        }
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('", peek().lineNumber);
+            return null;
+        }
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".get") {
+            consume(TokenType.LPAREN, "Expected '(' after 'get'");
+            var urlExpression:Expression = parseExpression();
+            var headersExpression:Expression = null;
+            if (match([TokenType.COMMA])) {
+                headersExpression = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after expression(s)");
+            return new HttpStatement("get", urlExpression, null, headersExpression);
+        } else if (methodName == ".post") {
+            consume(TokenType.LPAREN, "Expected '(' after 'post'");
+            var urlExpression:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after URL expression");
+            var dataExpression:Expression = parseExpression();
+            var headersExpression:Expression = null;
+            if (match([TokenType.COMMA])) {
+                headersExpression = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after expression(s)");
+            return new HttpStatement("post", urlExpression, dataExpression, headersExpression);
+        } else {
+            Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
+            return null;
+        }
+    }    
+
     private function parseBlock(): BlockStatement {
         if (match([TokenType.LBRACE])) {
             var statements:Array<Statement> = [];
@@ -1037,6 +1079,10 @@ class Parser {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
             return parseMathExpression();
+        } else if (match([TokenType.HTTP])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseHttpExpression();
         } else if (match([TokenType.IDENTIFIER])) {
             var expr: Expression = null;
             if (peek().type == TokenType.LPAREN) {
@@ -1327,6 +1373,36 @@ class Parser {
         consume(TokenType.RPAREN, "Expected ')' after arguments");
     
         return new MathExpression(methodName.substr(1), arguments);
+    }
+
+    private function parseHttpExpression():Expression {
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".get") {
+            consume(TokenType.LPAREN, "Expected '(' after 'get'");
+            var urlExpression:Expression = parseExpression();
+            var headersExpression:Expression = null;
+            if (match([TokenType.COMMA])) {
+                headersExpression = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after expression(s)");
+            return new HttpExpression("get", urlExpression, null, headersExpression);
+        } else if (methodName == ".post") {
+            consume(TokenType.LPAREN, "Expected '(' after 'post'");
+            var urlExpression:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after URL expression");
+            var dataExpression:Expression = parseExpression();
+            var headersExpression:Expression = null;
+            if (match([TokenType.COMMA])) {
+                headersExpression = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after expression(s)");
+            return new HttpExpression("post", urlExpression, dataExpression, headersExpression);
+        } else {
+            Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
+            return null;
+        }
     }
 
     private function parseCallExpression():Expression {

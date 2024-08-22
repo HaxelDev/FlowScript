@@ -2552,3 +2552,119 @@ class MathStatement extends Statement {
         }
     }
 }
+
+class HttpExpression extends Expression {
+    public var methodName:String;
+    public var urlExpression:Expression;
+    public var dataExpression:Expression;
+    public var headersExpression:Expression;
+
+    public function new(methodName:String, urlExpression:Expression, dataExpression:Expression = null, headersExpression:Expression = null) {
+        this.methodName = methodName;
+        this.urlExpression = urlExpression;
+        this.dataExpression = dataExpression;
+        this.headersExpression = headersExpression;
+    }
+
+    public override function evaluate():Dynamic {
+        var url:String = urlExpression.evaluate();
+        var headers:Map<String, String> = headersExpression != null ? headersExpression.evaluate() : new Map<String, String>();
+
+        switch (methodName) {
+            case "get":
+                return handleGetRequest(url, headers);
+            case "post":
+                var data:String = dataExpression != null ? dataExpression.evaluate() : "";
+                return handlePostRequest(url, data, headers);
+            default:
+                Flow.error.report("Unknown HTTP method: " + methodName);
+                return null;
+        }
+    }
+
+    private function handleGetRequest(url:String, headers:Map<String, String>):Dynamic {
+        var result:Dynamic = null;
+        var http = new haxe.Http(url);
+        
+        for (header in headers.keys()) {
+            http.setHeader(header, headers[header]);
+        }
+
+        http.onData = function(response:String) {
+            result = response;
+        };
+        http.onError = function(error:String) {
+            Flow.error.report("GET request failed: " + error);
+        };
+        
+        http.request(false);
+        return result;
+    }
+
+    private function handlePostRequest(url:String, data:String, headers:Map<String, String>):Dynamic {
+        var result:Dynamic = null;
+        var http = new haxe.Http(url);
+        
+        for (header in headers.keys()) {
+            http.setHeader(header, headers[header]);
+        }
+
+        http.setParameter("data", data);
+        http.onData = function(response:String) {
+            result = response;
+        };
+        http.onError = function(error:String) {
+            Flow.error.report("POST request failed: " + error);
+        };
+        
+        http.request(true);
+        return result;
+    }
+}
+
+class HttpStatement extends Statement {
+    public var methodName:String;
+    public var urlExpression:Expression;
+    public var dataExpression:Expression;
+    public var headersExpression:Expression;
+
+    public function new(methodName:String, urlExpression:Expression, dataExpression:Expression = null, headersExpression:Expression = null) {
+        this.methodName = methodName;
+        this.urlExpression = urlExpression;
+        this.dataExpression = dataExpression;
+        this.headersExpression = headersExpression;
+    }
+
+    public override function execute():Void {
+        var url = urlExpression.evaluate();
+        var headers:Map<String, String> = headersExpression != null ? headersExpression.evaluate() : new Map<String, String>();
+
+        if (methodName == "get") {
+            var http = new haxe.Http(url);
+            for (header in headers.keys()) {
+                http.setHeader(header, headers[header]);
+            }
+            http.onData = function(response:String) {
+                return response;
+            };
+            http.onError = function(error:String) {
+                Flow.error.report("GET request failed: " + error);
+            };
+            http.request(false);
+        } else if (methodName == "post") {
+            var data = dataExpression.evaluate();
+            var http = new haxe.Http(url);
+            for (header in headers.keys()) {
+                http.setHeader(header, headers[header]);
+            }
+            http.setParameter("data", Std.string(data));
+            http.onData = function(response:String) {
+                return response;
+            };
+            http.onError = function(error:String) {
+                Flow.error.report("POST request failed: " + error);
+            };
+            http.request(true);
+        }
+    }
+}
