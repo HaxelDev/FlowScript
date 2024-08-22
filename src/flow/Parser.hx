@@ -1577,6 +1577,11 @@ class Parser {
             var arrayExpr: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after array argument in 'sort'");
             return new SortFunctionCall(arrayExpr);
+        } else if (name == "capitalize") {
+            consume(TokenType.LPAREN, "Expected '(' after 'capitalize'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new CapitalizeFunctionCall(argument);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;

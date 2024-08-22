@@ -1,0 +1,17 @@
+let baseUrl = "https://pokeapi.co/api/v2"
+
+func getPokemonInfo(name) {
+    let url = "{baseUrl}/pokemon/{name}"
+    let response = Http().get(url)
+    return Json().parse(response)
+}
+
+let pokemonName = "pikachu"
+let pokemonInfo = getPokemonInfo(pokemonName)
+let infoName = capitalize(pokemonInfo.name)
+
+print("Name: {infoName}")
+print("Id: {pokemonInfo.id}")
+
+print("Height: {pokemonInfo.height}")
+print("Weight: {pokemonInfo.weight}")

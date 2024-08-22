@@ -2104,6 +2104,25 @@ class SortStatement extends Statement {
     }
 }
 
+class CapitalizeFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var argValue = argument.evaluate();
+        var strValue = Std.string(argValue);
+
+        if (strValue.length > 0) {
+            return strValue.charAt(0).toUpperCase() + strValue.substr(1);
+        } else {
+            return strValue;
+        }
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
