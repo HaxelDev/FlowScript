@@ -913,6 +913,11 @@ class Parser {
             Flow.error.report("Expected '('", peek().lineNumber);
             return null;
         }
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'", peek().lineNumber);
+            return null;
+        }
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
 
