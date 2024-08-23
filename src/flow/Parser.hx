@@ -924,21 +924,13 @@ class Parser {
         if (methodName == ".get") {
             consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            var optionsExpression:Expression = null;
-            if (match([TokenType.COMMA])) {
-                optionsExpression = parseExpression();
-            }
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpStatement("get", urlExpression, optionsExpression);
+            return new HttpStatement("get", urlExpression);
         } else if (methodName == ".post") {
             consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            var optionsExpression:Expression = null;
-            if (match([TokenType.COMMA])) {
-                optionsExpression = parseExpression();
-            }
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpStatement("post", urlExpression, optionsExpression);
+            return new HttpStatement("post", urlExpression);
         } else {
             Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
             return null;
@@ -1385,21 +1377,13 @@ class Parser {
         if (methodName == ".get") {
             consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            var optionsExpression:Expression = null;
-            if (match([TokenType.COMMA])) {
-                optionsExpression = parseExpression();
-            }
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpExpression("get", urlExpression, optionsExpression);
+            return new HttpExpression("get", urlExpression);
         } else if (methodName == ".post") {
             consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            var optionsExpression:Expression = null;
-            if (match([TokenType.COMMA])) {
-                optionsExpression = parseExpression();
-            }
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpExpression("post", urlExpression, optionsExpression);
+            return new HttpExpression("post", urlExpression);
         } else {
             Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
             return null;
