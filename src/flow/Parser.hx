@@ -151,7 +151,7 @@ class Parser {
         consume(TokenType.LBRACE, "Expected '{' to start object literal");
     
         while (!check(TokenType.RBRACE)) {
-            var key: Token = consume(TokenType.STRING, "Expected property name");
+            var key: Token = consume(TokenType.IDENTIFIER, "Expected property name");
             consume(TokenType.COLON, "Expected ':' after property name");
     
             var value: Expression;
