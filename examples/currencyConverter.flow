@@ -1,8 +1,8 @@
 let exchangeRates = {
-    USD: 1.0,
-    EUR: 0.93,
-    GBP: 0.82,
-    PLN: 4.33
+    "USD": 1.0,
+    "EUR": 0.93,
+    "GBP": 0.82,
+    "PLN": 4.33
 }
 
 func main() {

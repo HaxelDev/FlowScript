@@ -2575,38 +2575,35 @@ class MathStatement extends Statement {
 class HttpExpression extends Expression {
     public var methodName:String;
     public var urlExpression:Expression;
-    public var dataExpression:Expression;
-    public var headersExpression:Expression;
+    public var optionsExpression:Expression;
 
-    public function new(methodName:String, urlExpression:Expression, dataExpression:Expression = null, headersExpression:Expression = null) {
+    public function new(methodName:String, urlExpression:Expression, optionsExpression:Expression = null) {
         this.methodName = methodName;
         this.urlExpression = urlExpression;
-        this.dataExpression = dataExpression;
-        this.headersExpression = headersExpression;
+        this.optionsExpression = optionsExpression;
     }
 
     public override function evaluate():Dynamic {
         var url:String = urlExpression.evaluate();
-        var headers:Map<String, String> = headersExpression != null ? headersExpression.evaluate() : new Map<String, String>();
+        var options:HttpOptions = optionsExpression != null ? optionsExpression.evaluate() : new HttpOptions();
 
-        switch (methodName) {
+        switch (methodName.toLowerCase()) {
             case "get":
-                return handleGetRequest(url, headers);
+                return handleGetRequest(url, options);
             case "post":
-                var data:String = dataExpression != null ? dataExpression.evaluate() : "";
-                return handlePostRequest(url, data, headers);
+                return handlePostRequest(url, options);
             default:
                 Flow.error.report("Unknown HTTP method: " + methodName);
                 return null;
         }
     }
 
-    private function handleGetRequest(url:String, headers:Map<String, String>):Dynamic {
+    private function handleGetRequest(url:String, options:HttpOptions):Dynamic {
         var result:Dynamic = null;
         var http = new haxe.Http(url);
         
-        for (header in headers.keys()) {
-            http.setHeader(header, headers[header]);
+        for (header in options.headers.keys()) {
+            http.setHeader(header, options.headers[header]);
         }
 
         http.onData = function(response:String) {
@@ -2620,15 +2617,18 @@ class HttpExpression extends Expression {
         return result;
     }
 
-    private function handlePostRequest(url:String, data:String, headers:Map<String, String>):Dynamic {
+    private function handlePostRequest(url:String, options:HttpOptions):Dynamic {
         var result:Dynamic = null;
         var http = new haxe.Http(url);
         
-        for (header in headers.keys()) {
-            http.setHeader(header, headers[header]);
+        for (header in options.headers.keys()) {
+            http.setHeader(header, options.headers[header]);
         }
 
-        http.setParameter("data", data);
+        if (options.data != null) {
+            http.setParameter("data", options.data);
+        }
+
         http.onData = function(response:String) {
             result = response;
         };
@@ -2644,46 +2644,48 @@ class HttpExpression extends Expression {
 class HttpStatement extends Statement {
     public var methodName:String;
     public var urlExpression:Expression;
-    public var dataExpression:Expression;
-    public var headersExpression:Expression;
+    public var optionsExpression:Expression;
 
-    public function new(methodName:String, urlExpression:Expression, dataExpression:Expression = null, headersExpression:Expression = null) {
+    public function new(methodName:String, urlExpression:Expression, optionsExpression:Expression = null) {
         this.methodName = methodName;
         this.urlExpression = urlExpression;
-        this.dataExpression = dataExpression;
-        this.headersExpression = headersExpression;
+        this.optionsExpression = optionsExpression;
     }
 
     public override function execute():Void {
-        var url = urlExpression.evaluate();
-        var headers:Map<String, String> = headersExpression != null ? headersExpression.evaluate() : new Map<String, String>();
+        var url:String = urlExpression.evaluate();
+        var options:HttpOptions = optionsExpression != null ? optionsExpression.evaluate() : new HttpOptions();
 
-        if (methodName == "get") {
-            var http = new haxe.Http(url);
-            for (header in headers.keys()) {
-                http.setHeader(header, headers[header]);
-            }
-            http.onData = function(response:String) {
-                return response;
-            };
-            http.onError = function(error:String) {
-                Flow.error.report("GET request failed: " + error);
-            };
-            http.request(false);
-        } else if (methodName == "post") {
-            var data = dataExpression.evaluate();
-            var http = new haxe.Http(url);
-            for (header in headers.keys()) {
-                http.setHeader(header, headers[header]);
-            }
-            http.setParameter("data", Std.string(data));
-            http.onData = function(response:String) {
-                return response;
-            };
-            http.onError = function(error:String) {
-                Flow.error.report("POST request failed: " + error);
-            };
-            http.request(true);
+        var http = new haxe.Http(url);
+        
+        for (header in options.headers.keys()) {
+            http.setHeader(header, options.headers[header]);
         }
+
+        if (methodName.toLowerCase() == "post") {
+            if (options.data != null) {
+                http.setParameter("data", options.data);
+            }
+            http.request(true);
+        } else if (methodName.toLowerCase() == "get") {
+            http.request(false);
+        }
+        
+        http.onData = function(response:String) {
+            return response;
+        };
+        http.onError = function(error:String) {
+            Flow.error.report((methodName.toUpperCase() + " request failed: " + error));
+        };
+    }
+}
+
+class HttpOptions {
+    public var headers:Map<String, String>;
+    public var data:Dynamic;
+
+    public function new(?headers:Map<String, String> = null, ?data:Dynamic = null) {
+        this.headers = headers != null ? headers : new Map<String, String>();
+        this.data = data;
     }
 }

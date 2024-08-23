@@ -151,7 +151,7 @@ class Parser {
         consume(TokenType.LBRACE, "Expected '{' to start object literal");
     
         while (!check(TokenType.RBRACE)) {
-            var key: Token = consume(TokenType.IDENTIFIER, "Expected property name");
+            var key: Token = consume(TokenType.STRING, "Expected property name");
             consume(TokenType.COLON, "Expected ':' after property name");
     
             var value: Expression;
@@ -924,23 +924,21 @@ class Parser {
         if (methodName == ".get") {
             consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            var headersExpression:Expression = null;
+            var optionsExpression:Expression = null;
             if (match([TokenType.COMMA])) {
-                headersExpression = parseExpression();
+                optionsExpression = parseExpression();
             }
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpStatement("get", urlExpression, null, headersExpression);
+            return new HttpStatement("get", urlExpression, optionsExpression);
         } else if (methodName == ".post") {
-            consume(TokenType.LPAREN, "Expected '(' after 'post'");
+            consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            consume(TokenType.COMMA, "Expected ',' after URL expression");
-            var dataExpression:Expression = parseExpression();
-            var headersExpression:Expression = null;
+            var optionsExpression:Expression = null;
             if (match([TokenType.COMMA])) {
-                headersExpression = parseExpression();
+                optionsExpression = parseExpression();
             }
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpStatement("post", urlExpression, dataExpression, headersExpression);
+            return new HttpStatement("post", urlExpression, optionsExpression);
         } else {
             Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
             return null;
@@ -1387,23 +1385,21 @@ class Parser {
         if (methodName == ".get") {
             consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            var headersExpression:Expression = null;
+            var optionsExpression:Expression = null;
             if (match([TokenType.COMMA])) {
-                headersExpression = parseExpression();
+                optionsExpression = parseExpression();
             }
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpExpression("get", urlExpression, null, headersExpression);
+            return new HttpExpression("get", urlExpression, optionsExpression);
         } else if (methodName == ".post") {
-            consume(TokenType.LPAREN, "Expected '(' after 'post'");
+            consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            consume(TokenType.COMMA, "Expected ',' after URL expression");
-            var dataExpression:Expression = parseExpression();
-            var headersExpression:Expression = null;
+            var optionsExpression:Expression = null;
             if (match([TokenType.COMMA])) {
-                headersExpression = parseExpression();
+                optionsExpression = parseExpression();
             }
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpExpression("post", urlExpression, dataExpression, headersExpression);
+            return new HttpExpression("post", urlExpression, optionsExpression);
         } else {
             Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
             return null;

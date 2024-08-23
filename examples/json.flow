@@ -1,7 +1,7 @@
 let object = {
-    number: 1.2,
-    string: "Hello, world!",
-    array: [
+    "number": 1.2,
+    "string": "Hello, world!",
+    "array": [
         true,
         false
     ]
