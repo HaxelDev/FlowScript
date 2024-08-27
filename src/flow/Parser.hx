@@ -104,12 +104,17 @@ class Parser {
         var nameToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name after 'let'");
         var name: String = nameToken.value;
 
+        while (match([TokenType.DOT])) {
+            var propertyToken: Token = consume(TokenType.IDENTIFIER, "Expected property name after '.'");
+            name += "." + propertyToken.value;
+        }
+
         var opera: String = "";
 
         if (match([TokenType.EQUAL, TokenType.PLUS_EQUAL, TokenType.MINUS_EQUAL, TokenType.PLUS_PLUS, TokenType.MINUS_MINUS])) {
             opera = previous().value;
         } else {
-            Flow.error.report("Expected '=', '+=', '-=', '++', or '--' after variable name", peek().lineNumber);
+            Flow.error.report("Expected '=', '+=', '-=', '++', or '--' after variable name or property access", peek().lineNumber);
             return null;
         }
 

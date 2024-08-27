@@ -71,62 +71,111 @@ class LetStatement extends Statement {
     public override function execute(): Void {
         var value: Dynamic = initializer != null ? initializer.evaluate() : null;
 
+        var parts = name.split(".");
+        var baseName = parts.shift();
+        var propertyName = parts.join(".");
+
         switch (opera) {
             case "=":
-                Environment.define(name, value);
-            case "+=":
-                var existingValue: Dynamic = Environment.get(name);
-                if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
-                    var newValue: Float = cast(existingValue, Float) + cast(value, Float);
-                    Environment.define(name, newValue);
-                } else if (Std.is(existingValue, String)) {
-                    var existingString: String = cast(existingValue, String);
-                    var newValue: String = existingString + cast(value, String);
-                    Environment.define(name, newValue);
-                } else if (existingValue == null) {
-                    Environment.define(name, cast(value, String));
+                if (parts.length == 0) {
+                    Environment.define(baseName, value);
                 } else {
-                    Flow.error.report("Variable '" + name + "' is not suitable for '+=' operation");
+                    var baseObject = Environment.get(baseName);
+                    if (baseObject != null) {
+                        Reflect.setField(baseObject, propertyName, value);
+                    } else {
+                        Flow.error.report("Base object '" + baseName + "' is not defined", -1);
+                    }
+                }
+            case "+=":
+                var existingValue: Dynamic = (parts.length == 0) ? Environment.get(baseName) : Reflect.field(Environment.get(baseName), propertyName);
+                if (existingValue != null) {
+                    if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
+                        var newValue: Float = cast(existingValue, Float) + cast(value, Float);
+                        if (parts.length == 0) {
+                            Environment.define(baseName, newValue);
+                        } else {
+                            Reflect.setField(Environment.get(baseName), propertyName, newValue);
+                        }
+                    } else if (Std.is(existingValue, String)) {
+                        var existingString: String = cast(existingValue, String);
+                        var newValue: String = existingString + cast(value, String);
+                        if (parts.length == 0) {
+                            Environment.define(baseName, newValue);
+                        } else {
+                            Reflect.setField(Environment.get(baseName), propertyName, newValue);
+                        }
+                    } else {
+                        Flow.error.report("Variable '" + baseName + "' is not suitable for '+=' operation", -1);
+                    }
                 }
             case "-=":
-                var existingValue: Dynamic = Environment.get(name);
-                if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
-                    var newValue: Float = cast(existingValue, Float) - cast(value, Float);
-                    Environment.define(name, newValue);
-                } else if (Std.is(existingValue, String)) {
-                    var existingString: String = cast(existingValue, String);
-                    var newValue: String = existingString.split(cast(value, String)).join("");
-                    Environment.define(name, newValue);
-                } else if (existingValue == null) {
-                    Flow.error.report("Variable '" + name + "' is null or not a string for '-=' operation");
-                } else {
-                    Flow.error.report("Variable '" + name + "' is not suitable for '-=' operation");
+                var existingValue: Dynamic = (parts.length == 0) ? Environment.get(baseName) : Reflect.field(Environment.get(baseName), propertyName);
+                if (existingValue != null) {
+                    if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
+                        var newValue: Float = cast(existingValue, Float) - cast(value, Float);
+                        if (parts.length == 0) {
+                            Environment.define(baseName, newValue);
+                        } else {
+                            Reflect.setField(Environment.get(baseName), propertyName, newValue);
+                        }
+                    } else if (Std.is(existingValue, String)) {
+                        var existingString: String = cast(existingValue, String);
+                        var newValue: String = existingString.split(cast(value, String)).join("");
+                        if (parts.length == 0) {
+                            Environment.define(baseName, newValue);
+                        } else {
+                            Reflect.setField(Environment.get(baseName), propertyName, newValue);
+                        }
+                    } else {
+                        Flow.error.report("Variable '" + baseName + "' is not suitable for '-=' operation", -1);
+                    }
                 }
             case "++":
-                var existingValue: Dynamic = Environment.get(name);
-                if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
-                    var incrementValue: Float = isPrefix ? 1 : 0;
-                    var newValue: Float = cast(existingValue, Float) + incrementValue;
-                    Environment.define(name, newValue);
-                    if (!isPrefix) {
-                        newValue += 1;
-                        Environment.define(name, newValue);
+                var existingValue: Dynamic = (parts.length == 0) ? Environment.get(baseName) : Reflect.field(Environment.get(baseName), propertyName);
+                if (existingValue != null) {
+                    if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
+                        var incrementValue: Float = isPrefix ? 1 : 0;
+                        var newValue: Float = cast(existingValue, Float) + incrementValue;
+                        if (parts.length == 0) {
+                            Environment.define(baseName, newValue);
+                        } else {
+                            Reflect.setField(Environment.get(baseName), propertyName, newValue);
+                        }
+                        if (!isPrefix) {
+                            newValue += 1;
+                            if (parts.length == 0) {
+                                Environment.define(baseName, newValue);
+                            } else {
+                                Reflect.setField(Environment.get(baseName), propertyName, newValue);
+                            }
+                        }
+                    } else {
+                        Flow.error.report("Variable '" + baseName + "' is not suitable for '++' operation", -1);
                     }
-                } else {
-                    Flow.error.report("Variable '" + name + "' is not suitable for '++' operation");
                 }
             case "--":
-                var existingValue: Dynamic = Environment.get(name);
-                if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
-                    var decrementValue: Float = isPrefix ? 1 : 0;
-                    var newValue: Float = cast(existingValue, Float) - decrementValue;
-                    Environment.define(name, newValue);
-                    if (!isPrefix) {
-                        newValue -= 1;
-                        Environment.define(name, newValue);
+                var existingValue: Dynamic = (parts.length == 0) ? Environment.get(baseName) : Reflect.field(Environment.get(baseName), propertyName);
+                if (existingValue != null) {
+                    if (Std.is(existingValue, Int) || Std.is(existingValue, Float)) {
+                        var decrementValue: Float = isPrefix ? 1 : 0;
+                        var newValue: Float = cast(existingValue, Float) - decrementValue;
+                        if (parts.length == 0) {
+                            Environment.define(baseName, newValue);
+                        } else {
+                            Reflect.setField(Environment.get(baseName), propertyName, newValue);
+                        }
+                        if (!isPrefix) {
+                            newValue -= 1;
+                            if (parts.length == 0) {
+                                Environment.define(baseName, newValue);
+                            } else {
+                                Reflect.setField(Environment.get(baseName), propertyName, newValue);
+                            }
+                        }
+                    } else {
+                        Flow.error.report("Variable '" + baseName + "' is not suitable for '--' operation", -1);
                     }
-                } else {
-                    Flow.error.report("Variable '" + name + "' is not suitable for '--' operation");
                 }
             default:
                 Flow.error.report("Unsupported assignment operator: " + opera);
