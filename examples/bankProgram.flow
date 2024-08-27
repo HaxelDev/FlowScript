@@ -1,0 +1,65 @@
+let BankAccount = {
+    balance: 0.0,
+
+    deposit: func(amount) {
+        if amount > 0 {
+            BankAccount.balance += amount
+            print('Deposited: ${BankAccount.balance}')
+        } else {
+            print('Deposit amount must be positive.')
+        }
+    },
+
+    withdraw: func(amount) {
+        if amount > 0 and amount <= BankAccount.balance {
+            BankAccount.balance -= amount
+            print('Withdrew: ${amount}')
+        } else if amount > BankAccount.balance {
+            print('Insufficient funds.')
+        } else {
+            print('Withdrawal amount must be positive.')
+        }
+    },
+
+    checkBalance: func() {
+        print('Current balance: ${BankAccount.balance}')
+    }
+}
+
+let BankProgram = {
+    main: func() {
+        while true {
+            print('1. Deposit')
+            print('2. Withdraw')
+            print('3. Check Balance')
+            print('4. Exit')
+            print('Choose an option: ')
+
+            let input = IO().readLine('>>> ')
+            switch input {
+                case '1': {
+                    print('Enter deposit amount: ')
+                    let depositAmount = parseNumber(IO().readLine('>>> '))
+                    call BankAccount.deposit(depositAmount)
+                }
+                case '2': {
+                    print('Enter withdrawal amount: ')
+                    let withdrawAmount = parseNumber(IO().readLine('>>> '))
+                    call BankAccount.withdraw(withdrawAmount)
+                }
+                case '3': {
+                    call BankAccount.checkBalance()
+                }
+                case '4': {
+                    print('Exiting...')
+                    System().exit()
+                }
+                default: {
+                    print('Invalid option. Please try again.')
+                }
+            }
+        }
+    }
+}
+
+call BankProgram.main()
