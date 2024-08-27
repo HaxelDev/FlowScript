@@ -2123,6 +2123,41 @@ class CapitalizeFunctionCall extends Expression {
     }
 }
 
+class SpliceStatement extends Statement {
+    public var array: Expression;
+    public var startIndex: Expression;
+    public var deleteCount: Expression;
+
+    public function new(array: Expression, startIndex: Expression, deleteCount: Expression) {
+        this.array = array;
+        this.startIndex = startIndex;
+        this.deleteCount = deleteCount;
+    }
+
+    public override function execute(): Void {
+        var arrayValue: Array<Dynamic> = array.evaluate();
+        var startIndexEvaluated: Int = startIndex.evaluate();
+        var deleteCountEvaluated: Int = deleteCount.evaluate();
+
+        if (arrayValue == null) {
+            Flow.error.report("Cannot splice on null array");
+            return;
+        }
+
+        if (startIndexEvaluated < 0 || startIndexEvaluated > arrayValue.length) {
+            Flow.error.report("Start index out of bounds");
+            return;
+        }
+
+        if (deleteCountEvaluated < 0) {
+            Flow.error.report("Delete count cannot be negative");
+            return;
+        }
+
+        arrayValue.splice(startIndexEvaluated, deleteCountEvaluated);
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;

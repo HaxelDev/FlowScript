@@ -342,7 +342,9 @@ class Parser {
             return parseGetStatement();
         } else if (name == "sort") {
             return parseSortStatement();
-        }        
+        } else if (name == "splice") {
+            return parseSpliceStatement();
+        }
         var isMethodCall: Bool = name.indexOf(".") > -1;
         if (isMethodCall) {
             var parts: Array<String> = name.split(".");
@@ -580,6 +582,17 @@ class Parser {
         var arrayExpr: Expression = parseExpression();
         consume(TokenType.RPAREN, "Expected ')' after array argument in 'sort'");
         return new SortStatement(arrayExpr);
+    }
+
+    private function parseSpliceStatement(): Statement {
+        consume(TokenType.LPAREN, "Expected '(' after 'splice'");
+        var arrayExpr: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after array argument in 'splice'");
+        var startIndexExpr: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after start index in 'splice'");
+        var deleteCountExpr: Expression = parseExpression();
+        consume(TokenType.RPAREN, "Expected ')' after arguments in 'splice'");
+        return new SpliceStatement(arrayExpr, startIndexExpr, deleteCountExpr);
     }
 
     private function parseIOStatement():Statement {
@@ -935,7 +948,7 @@ class Parser {
             Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
             return null;
         }
-    }    
+    }
 
     private function parseBlock(): BlockStatement {
         if (match([TokenType.LBRACE])) {
