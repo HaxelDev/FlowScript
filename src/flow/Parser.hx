@@ -81,8 +81,6 @@ class Parser {
             return parseMathStatement();
         } else if (firstTokenType == TokenType.HTTP) {
             return parseHttpStatement();
-        } else if (firstTokenType == TokenType.THIS) {
-            return parseThisStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
             if (peekNext().type == TokenType.LBRACKET) {
                 return parseArrayAssignment();
@@ -221,11 +219,6 @@ class Parser {
         var body:BlockStatement = parseBlock();
 
         return new FunctionLiteralExpression(parameters, body);
-    }
-
-    function parseThisStatement():ThisStatement {
-        var expression = parseExpression();
-        return new ThisStatement(expression);
     }
 
     private function parseArrayAssignment():Statement {

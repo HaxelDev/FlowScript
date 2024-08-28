@@ -210,8 +210,6 @@ class Lexer {
                 return new Token(TokenType.NOT, token, lineNumber);
             case "new":
                 return new Token(TokenType.KEYWORD, token, lineNumber);
-            case "this":
-                return new Token(TokenType.THIS, token, lineNumber);
             case "%":
                 return new Token(TokenType.MODULO, token, lineNumber);
             case "<<":
@@ -389,5 +387,4 @@ enum TokenType {
     MINUS_EQUAL;
     PLUS_PLUS;
     MINUS_MINUS;
-    THIS;
 }
