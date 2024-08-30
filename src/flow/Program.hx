@@ -2276,6 +2276,75 @@ class SpliceStatement extends Statement {
     }
 }
 
+class ReverseFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var argValue = argument.evaluate();
+        if (Std.is(argValue, String)) {
+            var str = cast(argValue, String);
+            var chars = str.split("");
+            chars.reverse();
+            return chars.join("");
+        } else if (Std.is(argValue, Array)) {
+            var array = cast(argValue, Array<Dynamic>);
+            var reversedArray: Array<Dynamic> = [];
+            for (i in 0...array.length) {
+                reversedArray.push(array[array.length - 1 - i]);
+            }
+            return reversedArray;
+        } else {
+            Flow.error.report("Argument to 'reverse' must be either a String or an Array.");
+            return null;
+        }
+    }
+}
+
+class IsDigitFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Bool {
+        var argValue = argument.evaluate();
+        var arg = cast(argValue, String);
+        return isDigit(arg);
+    }
+
+	private function isDigit(c:String):Bool {
+		return ~/[0-9]/.match(c);
+	}
+}
+
+class IsNumericFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Bool {
+        var argValue = argument.evaluate();
+        if (Std.is(argValue, String)) {
+            var str = cast(argValue, String);
+            return isNumeric(str);
+        } else {
+            Flow.error.report("Argument to 'isNumeric' must be a string.");
+            return false;
+        }
+    }
+
+    public function isNumeric(value:String):Bool {
+        return Std.parseInt(value) != null || value == ".";
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;

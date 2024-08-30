@@ -1686,6 +1686,21 @@ class Parser {
             var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new CapitalizeFunctionCall(argument);
+        } else if (name == "reverse") {
+            consume(TokenType.LPAREN, "Expected '(' after 'reverse'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ReverseFunctionCall(argument);
+        } else if (name == "isDigit") {
+            consume(TokenType.LPAREN, "Expected '(' after 'isDigit'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new IsDigitFunctionCall(argument);
+        } else if (name == "isNumeric") {
+            consume(TokenType.LPAREN, "Expected '(' after 'isNumeric'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new IsNumericFunctionCall(argument);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;
