@@ -48,4 +48,12 @@ class Math {
     public static function atan(x:Float):Float {
         return std.Math.atan(x);
     }
+
+    public static function floor(x:Float):Float {
+        return std.Math.floor(x);
+    }
+
+    public static function random():Float {
+        return std.Math.random();
+    }
 }

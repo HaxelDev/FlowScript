@@ -2670,6 +2670,10 @@ class MathExpression extends Expression {
                 if (evaluatedArguments.length == 1) return Math.acos(evaluatedArguments[0]);
             case "atan":
                 if (evaluatedArguments.length == 1) return Math.atan(evaluatedArguments[0]);
+            case "floor":
+                if (evaluatedArguments.length == 1) return Math.floor(evaluatedArguments[0]);
+            case "random":
+                return Math.random();
             default:
                 Flow.error.report("Unknown method: " + methodName);
         }
@@ -2719,6 +2723,10 @@ class MathStatement extends Statement {
                 if (evaluatedArguments.length == 1) Math.acos(evaluatedArguments[0]);
             case "atan":
                 if (evaluatedArguments.length == 1) Math.atan(evaluatedArguments[0]);
+            case "floor":
+                if (evaluatedArguments.length == 1) Math.floor(evaluatedArguments[0]);
+            case "random":
+                Math.random();
             default:
                 Flow.error.report("Unknown method: " + methodName);
         }

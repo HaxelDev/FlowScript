@@ -881,7 +881,9 @@ class Parser {
             { name: ".tan", args: 1 },
             { name: ".asin", args: 1 },
             { name: ".acos", args: 1 },
-            { name: ".atan", args: 1 }
+            { name: ".atan", args: 1 },
+            { name: ".floor", args: 1 },
+            { name: ".random", args: 0 }
         ];
 
         var methodConfig = null;
@@ -1349,7 +1351,9 @@ class Parser {
             { name: ".tan", args: 1 },
             { name: ".asin", args: 1 },
             { name: ".acos", args: 1 },
-            { name: ".atan", args: 1 }
+            { name: ".atan", args: 1 },
+            { name: ".floor", args: 1 },
+            { name: ".random", args: 0 }
         ];
 
         var methodConfig = null;
