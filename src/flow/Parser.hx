@@ -783,26 +783,78 @@ class Parser {
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
 
-        if (methodName == ".readFile") {
-            consume(TokenType.LPAREN, "Expected '(' after 'readFile'");
-            var filePath:Expression = parseExpression();
-            consume(TokenType.RPAREN, "Expected ')' after file path expression");
-            return new FileStatement("readFile", [filePath]);
-        } else if (methodName == ".writeFile") {
-            consume(TokenType.LPAREN, "Expected '(' after 'writeFile'");
-            var filePath:Expression = parseExpression();
-            consume(TokenType.COMMA, "Expected ',' after file path expression");
-            var content:Expression = parseExpression();
-            consume(TokenType.RPAREN, "Expected ')' after content expression");
-            return new FileStatement("writeFile", [filePath, content]);
-        } else if (methodName == ".exists") {
-            consume(TokenType.LPAREN, "Expected '(' after 'exists'");
-            var filePath:Expression = parseExpression();
-            consume(TokenType.RPAREN, "Expected ')' after file path expression");
-            return new FileStatement("exists", [filePath]);
-        } else {
-            Flow.error.report("Unknown File method: " + methodName, peek().lineNumber);
-            return null;
+        switch (methodName) {
+            case ".readFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'readFile'");
+                var filePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileStatement("readFile", [filePath]);
+            case ".writeFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'writeFile'");
+                var filePath:Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after file path expression");
+                var content:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after content expression");
+                return new FileStatement("writeFile", [filePath, content]);
+            case ".exists":
+                consume(TokenType.LPAREN, "Expected '(' after 'exists'");
+                var filePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileStatement("exists", [filePath]);
+            case ".appendToFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'appendToFile'");
+                var appendFilePath:Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after file path expression");
+                var appendContent:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after content expression");
+                return new FileStatement("appendToFile", [appendFilePath, appendContent]);
+            case ".deleteFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'deleteFile'");
+                var deleteFilePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileStatement("deleteFile", [deleteFilePath]);
+            case ".copyFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'copyFile'");
+                var sourcePath:Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after source path expression");
+                var destinationPath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after destination path expression");
+                return new FileStatement("copyFile", [sourcePath, destinationPath]);
+            case ".renameFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'renameFile'");
+                var oldPath:Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after old path expression");
+                var newPath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after new path expression");
+                return new FileStatement("renameFile", [oldPath, newPath]);
+            case ".readLines":
+                consume(TokenType.LPAREN, "Expected '(' after 'readLines'");
+                var linesFilePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileStatement("readLines", [linesFilePath]);
+            case ".getFileSize":
+                consume(TokenType.LPAREN, "Expected '(' after 'getFileSize'");
+                var fileSizePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileStatement("getFileSize", [fileSizePath]);
+            case ".listFilesInDirectory":
+                consume(TokenType.LPAREN, "Expected '(' after 'listFilesInDirectory'");
+                var directoryPath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after directory path expression");
+                return new FileStatement("listFilesInDirectory", [directoryPath]);
+            case ".createDirectory":
+                consume(TokenType.LPAREN, "Expected '(' after 'createDirectory'");
+                var directoryPath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after directory path expression");
+                return new FileStatement("createDirectory", [directoryPath]);
+            case ".getFileExtension":
+                consume(TokenType.LPAREN, "Expected '(' after 'getFileExtension'");
+                var filePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileStatement("getFileExtension", [filePath]);
+            default:
+                Flow.error.report("Unknown File method: " + methodName, peek().lineNumber);
+                return null;
         }
     }
 
@@ -1286,27 +1338,79 @@ class Parser {
     private function parseFileExpression():Expression {
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
-
-        if (methodName == ".readFile") {
-            consume(TokenType.LPAREN, "Expected '(' after 'readFile'");
-            var filePath:Expression = parseExpression();
-            consume(TokenType.RPAREN, "Expected ')' after file path expression");
-            return new FileExpression("readFile", [filePath]);
-        } else if (methodName == ".writeFile") {
-            consume(TokenType.LPAREN, "Expected '(' after 'writeFile'");
-            var filePath:Expression = parseExpression();
-            consume(TokenType.COMMA, "Expected ',' after file path expression");
-            var content:Expression = parseExpression();
-            consume(TokenType.RPAREN, "Expected ')' after content expression");
-            return new FileExpression("writeFile", [filePath, content]);
-        } else if (methodName == ".exists") {
-            consume(TokenType.LPAREN, "Expected '(' after 'exists'");
-            var filePath:Expression = parseExpression();
-            consume(TokenType.RPAREN, "Expected ')' after file path expression");
-            return new FileExpression("exists", [filePath]);
-        } else {
-            Flow.error.report("Unknown File method: " + methodName, peek().lineNumber);
-            return null;
+    
+        switch (methodName) {
+            case ".readFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'readFile'");
+                var filePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileExpression("readFile", [filePath]);
+            case ".writeFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'writeFile'");
+                var filePath:Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after file path expression");
+                var content:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after content expression");
+                return new FileExpression("writeFile", [filePath, content]);
+            case ".exists":
+                consume(TokenType.LPAREN, "Expected '(' after 'exists'");
+                var filePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileExpression("exists", [filePath]);
+            case ".appendToFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'appendToFile'");
+                var appendFilePath:Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after file path expression");
+                var appendContent:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after content expression");
+                return new FileExpression("appendToFile", [appendFilePath, appendContent]);
+            case ".deleteFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'deleteFile'");
+                var deleteFilePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileExpression("deleteFile", [deleteFilePath]);
+            case ".copyFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'copyFile'");
+                var sourcePath:Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after source path expression");
+                var destinationPath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after destination path expression");
+                return new FileExpression("copyFile", [sourcePath, destinationPath]);
+            case ".renameFile":
+                consume(TokenType.LPAREN, "Expected '(' after 'renameFile'");
+                var oldPath:Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after old path expression");
+                var newPath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after new path expression");
+                return new FileExpression("renameFile", [oldPath, newPath]);
+            case ".readLines":
+                consume(TokenType.LPAREN, "Expected '(' after 'readLines'");
+                var linesFilePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileExpression("readLines", [linesFilePath]);
+            case ".getFileSize":
+                consume(TokenType.LPAREN, "Expected '(' after 'getFileSize'");
+                var fileSizePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileExpression("getFileSize", [fileSizePath]);
+            case ".listFilesInDirectory":
+                consume(TokenType.LPAREN, "Expected '(' after 'listFilesInDirectory'");
+                var directoryPath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after directory path expression");
+                return new FileExpression("listFilesInDirectory", [directoryPath]);
+            case ".createDirectory":
+                consume(TokenType.LPAREN, "Expected '(' after 'createDirectory'");
+                var directoryPath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after directory path expression");
+                return new FileExpression("createDirectory", [directoryPath]);
+            case ".getFileExtension":
+                consume(TokenType.LPAREN, "Expected '(' after 'getFileExtension'");
+                var filePath:Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after file path expression");
+                return new FileExpression("getFileExtension", [filePath]);
+            default:
+                Flow.error.report("Unknown File method: " + methodName, peek().lineNumber);
+                return null;
         }
     }
 

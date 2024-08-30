@@ -2544,6 +2544,29 @@ class FileExpression extends Expression {
                 return null;
             case "exists":
                 return File.exists(evaluatedArguments[0]);
+            case "appendToFile":
+                File.appendToFile(evaluatedArguments[0], evaluatedArguments[1]);
+                return null;
+            case "deleteFile":
+                File.deleteFile(evaluatedArguments[0]);
+                return null;
+            case "copyFile":
+                File.copyFile(evaluatedArguments[0], evaluatedArguments[1]);
+                return null;
+            case "renameFile":
+                File.renameFile(evaluatedArguments[0], evaluatedArguments[1]);
+                return null;
+            case "readLines":
+                return File.readLines(evaluatedArguments[0]);
+            case "getFileSize":
+                return File.getFileSize(evaluatedArguments[0]);
+            case "listFilesInDirectory":
+                return File.listFilesInDirectory(evaluatedArguments[0]);
+            case "createDirectory":
+                File.createDirectory(evaluatedArguments[0]);
+                return null;
+            case "getFileExtension":
+                return File.getFileExtension(evaluatedArguments[0]);
         }
 
         return null;
@@ -2572,6 +2595,24 @@ class FileStatement extends Statement {
                 File.writeFile(evaluatedArguments[0], evaluatedArguments[1]);
             case "exists":
                 File.exists(evaluatedArguments[0]);
+            case "appendToFile":
+                File.appendToFile(evaluatedArguments[0], evaluatedArguments[1]);
+            case "deleteFile":
+                File.deleteFile(evaluatedArguments[0]);
+            case "copyFile":
+                File.copyFile(evaluatedArguments[0], evaluatedArguments[1]);
+            case "renameFile":
+                File.renameFile(evaluatedArguments[0], evaluatedArguments[1]);
+            case "readLines":
+                File.readLines(evaluatedArguments[0]);
+            case "getFileSize":
+                File.getFileSize(evaluatedArguments[0]);
+            case "listFilesInDirectory":
+                File.listFilesInDirectory(evaluatedArguments[0]);
+            case "createDirectory":
+                File.createDirectory(evaluatedArguments[0]);
+            case "getFileExtension":
+                File.getFileExtension(evaluatedArguments[0]);
         }
     }
 }
