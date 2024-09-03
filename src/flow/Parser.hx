@@ -935,6 +935,9 @@ class Parser {
             { name: ".acos", args: 1 },
             { name: ".atan", args: 1 },
             { name: ".floor", args: 1 },
+            { name: ".round", args: 1 },
+            { name: ".ceil", args: 1 },
+            { name: ".trunc", args: 1 },
             { name: ".random", args: 0 }
         ];
 
@@ -1457,6 +1460,9 @@ class Parser {
             { name: ".acos", args: 1 },
             { name: ".atan", args: 1 },
             { name: ".floor", args: 1 },
+            { name: ".round", args: 1 },
+            { name: ".ceil", args: 1 },
+            { name: ".trunc", args: 1 },
             { name: ".random", args: 0 }
         ];
 

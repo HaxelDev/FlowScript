@@ -163,7 +163,7 @@ class Flow {
   }
 
   static function runVersion() {
-    Logger.log('Flow Script version 0.8.0');
+    Logger.log('Flow Script version 0.9.0');
   }
 
   static function printHelp() {

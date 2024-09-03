@@ -53,6 +53,18 @@ class Math {
         return std.Math.floor(x);
     }
 
+    public static function round(x:Float):Float {
+        return std.Math.round(x);
+    }
+    
+    public static function ceil(x:Float):Float {
+        return std.Math.ceil(x);
+    }
+    
+    public static function trunc(x:Float):Float {
+        return x >= 0 ? std.Math.floor(x) : std.Math.ceil(x);
+    }
+
     public static function random():Float {
         return std.Math.random();
     }

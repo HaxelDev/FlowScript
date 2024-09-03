@@ -2782,6 +2782,12 @@ class MathExpression extends Expression {
                 if (evaluatedArguments.length == 1) return Math.atan(evaluatedArguments[0]);
             case "floor":
                 if (evaluatedArguments.length == 1) return Math.floor(evaluatedArguments[0]);
+            case "round":
+                if (evaluatedArguments.length == 1) return Math.round(evaluatedArguments[0]);
+            case "ceil":
+                if (evaluatedArguments.length == 1) return Math.ceil(evaluatedArguments[0]);
+            case "trunc":
+                if (evaluatedArguments.length == 1) return Math.trunc(evaluatedArguments[0]);
             case "random":
                 return Math.random();
             default:
@@ -2835,6 +2841,12 @@ class MathStatement extends Statement {
                 if (evaluatedArguments.length == 1) Math.atan(evaluatedArguments[0]);
             case "floor":
                 if (evaluatedArguments.length == 1) Math.floor(evaluatedArguments[0]);
+            case "round":
+                if (evaluatedArguments.length == 1) Math.round(evaluatedArguments[0]);
+            case "ceil":
+                if (evaluatedArguments.length == 1) Math.ceil(evaluatedArguments[0]);
+            case "trunc":
+                if (evaluatedArguments.length == 1) Math.trunc(evaluatedArguments[0]);
             case "random":
                 Math.random();
             default:
