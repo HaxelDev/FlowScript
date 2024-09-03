@@ -461,21 +461,38 @@ class BinaryExpression extends Expression {
     }
 
     public override function evaluate():Dynamic {
-        var leftValue = left.evaluate();
-        var rightValue = right.evaluate();
+        var leftValue:Dynamic = left.evaluate();
+        var rightValue:Dynamic = right.evaluate();
 
-        var leftIsFloat = Std.is(leftValue, Float);
-        var rightIsFloat = Std.is(rightValue, Float);
-        var leftIsString = Std.is(leftValue, String);
-        var rightIsString = Std.is(rightValue, String);
+        var leftIsFloat:Bool = Std.is(leftValue, Float);
+        var rightIsFloat:Bool = Std.is(rightValue, Float);
+        var leftIsString:Bool = Std.is(leftValue, String);
+        var rightIsString:Bool = Std.is(rightValue, String);
+        var leftIsBool:Bool = Std.is(leftValue, Bool);
+        var rightIsBool:Bool = Std.is(rightValue, Bool);
 
-        if (!leftIsFloat &&!leftIsString) {
-            Flow.error.report("Unsupported left operand type for operator: " + opera);
-            return null;
-        }
-        if (!rightIsFloat &&!rightIsString) {
-            Flow.error.report("Unsupported right operand type for operator: " + opera);
-            return null;
+        if (opera == "and" || opera == "or") {
+            if (!leftIsBool) {
+                Flow.error.report("Unsupported left operand type for 'and'/'or': " + Type.typeof(leftValue));
+                return null;
+            }
+            if (!rightIsBool) {
+                Flow.error.report("Unsupported right operand type for 'and'/'or': " + Type.typeof(rightValue));
+                return null;
+            }
+
+            var leftBool:Bool = cast(leftValue, Bool);
+            var rightBool:Bool = cast(rightValue, Bool);
+
+            switch (opera) {
+                case "and":
+                    return leftBool && rightBool;
+                case "or":
+                    return leftBool || rightBool;
+                default:
+                    Flow.error.report("Unknown logical operator: " + opera);
+                    return null;
+            }
         }
 
         if (leftIsFloat) leftValue = cast(leftValue, Float);
@@ -490,21 +507,21 @@ class BinaryExpression extends Expression {
                 }
             case "-":
                 if (leftIsString || rightIsString) {
-                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    Flow.error.report("Unsupported operator '-' for strings");
                     return null;
                 } else {
                     return leftValue - rightValue;
                 }
             case "*":
                 if (leftIsString || rightIsString) {
-                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    Flow.error.report("Unsupported operator '*' for strings");
                     return null;
                 } else {
                     return leftValue * rightValue;
                 }
             case "/":
                 if (leftIsString || rightIsString) {
-                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    Flow.error.report("Unsupported operator '/' for strings");
                     return null;
                 } else if (rightValue == 0) {
                     Flow.error.report("Division by zero error");
@@ -514,7 +531,7 @@ class BinaryExpression extends Expression {
                 }
             case "%":
                 if (leftIsString || rightIsString) {
-                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    Flow.error.report("Unsupported operator '%' for strings");
                     return null;
                 } else if (rightValue == 0) {
                     Flow.error.report("Modulo by zero error");
@@ -525,52 +542,60 @@ class BinaryExpression extends Expression {
             case "==":
                 return leftValue == rightValue;
             case "!=":
-                return leftValue!= rightValue;
+                return leftValue != rightValue;
             case "<":
                 if (leftIsString || rightIsString) {
-                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    Flow.error.report("Unsupported operator '<' for strings");
                     return null;
                 } else {
                     return leftValue < rightValue;
                 }
             case "<=":
                 if (leftIsString || rightIsString) {
-                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    Flow.error.report("Unsupported operator '<=' for strings");
                     return null;
                 } else {
                     return leftValue <= rightValue;
                 }
             case ">":
                 if (leftIsString || rightIsString) {
-                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    Flow.error.report("Unsupported operator '>' for strings");
                     return null;
                 } else {
                     return leftValue > rightValue;
                 }
             case ">=":
                 if (leftIsString || rightIsString) {
-                    Flow.error.report("Unsupported operator for strings: " + opera);
+                    Flow.error.report("Unsupported operator '>=' for strings");
                     return null;
                 } else {
                     return leftValue >= rightValue;
                 }
-            case "and":
-                if (leftIsString || rightIsString) {
-                    Flow.error.report("Unsupported operator 'and' for strings");
-                    return null;
-                } else {
-                    return (leftValue!= 0) && (rightValue!= 0);
-                }
-            case "or":
-                if (leftIsString || rightIsString) {
-                    Flow.error.report("Unsupported operator 'or' for strings");
-                    return null;
-                } else {
-                    return (leftValue!= 0) || (rightValue!= 0);
-                }
             default:
                 Flow.error.report("Unknown operator: " + opera);
                 return null;
+        }
+    }
+}
+
+class TernaryExpression extends Expression {
+    public var condition:Expression;
+    public var trueBranch:Expression;
+    public var falseBranch:Expression;
+
+    public function new(condition:Expression, trueBranch:Expression, falseBranch:Expression) {
+        this.condition = condition;
+        this.trueBranch = trueBranch;
+        this.falseBranch = falseBranch;
+    }
+
+    public override function evaluate():Dynamic {
+        var conditionValue = condition.evaluate();
+        if (Std.is(conditionValue, Bool)) {
+            return cast(conditionValue, Bool) ? trueBranch.evaluate() : falseBranch.evaluate();
+        } else {
+            Flow.error.report("Condition in ternary operator must evaluate to a Boolean");
+            return null;
         }
     }
 }

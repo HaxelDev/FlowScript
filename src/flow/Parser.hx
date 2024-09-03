@@ -1049,7 +1049,18 @@ class Parser {
         } else if (firstTokenType == TokenType.LBRACE) {
             return parseObjectLiteral();
         }
-        return parseLogicalOr();
+        return parseTernaryExpression();
+    }
+
+    private function parseTernaryExpression():Expression {
+        var expr = parseLogicalOr();
+        if (match([TokenType.QUESTION])) {
+            var trueBranch = parseExpression();
+            consume(TokenType.COLON, "Expected ':' after '?'");
+            var falseBranch = parseExpression();
+            return new TernaryExpression(expr, trueBranch, falseBranch);
+        }
+        return expr;
     }
 
     private function parseLogicalOr():Expression {

@@ -25,7 +25,7 @@ func main() {
 func getPlayerChoice() {
     while true {
         print("Choose one of the options: 0 - paper, 1 - rock, 2 - scissors")
-        let choice = IO().readLine(">>> ")
+        let choice = parseNumber(IO().readLine(">>> "))
         if choice == 0 {
             return choice
         } else if choice == 1 {

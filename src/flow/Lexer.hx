@@ -74,7 +74,7 @@ class Lexer {
                 char == "[" || char == "]" || char == "," || char == ":" ||
                 char == "+" || char == "-" || char == "*" || char == "/" ||
                 char == "=" || char == ">" || char == "<" || char == ";" ||
-                char == "." || char == "!" || char == "%") {
+                char == "." || char == "!" || char == "%" || char == "?") {
                 if (currentToken.length > 0) {
                     tokens.push(getToken(currentToken, currentLine));
                     currentToken = "";
@@ -244,6 +244,8 @@ class Lexer {
                 return new Token(TokenType.DIVIDE, token, lineNumber);
             case ":":
                 return new Token(TokenType.COLON, token, lineNumber);
+            case ":":
+                return new Token(TokenType.QUESTION, token, lineNumber);
             case ";":
                 return new Token(TokenType.SEMICOLON, token, lineNumber);
             case "!":
@@ -307,6 +309,8 @@ class Lexer {
                 return TokenType.MINUS_MINUS;
             case ";":
                 return TokenType.SEMICOLON;
+            case "?":
+                return TokenType.QUESTION;
             case "%":
                 return TokenType.MODULO;
             default:
@@ -387,4 +391,5 @@ enum TokenType {
     MINUS_EQUAL;
     PLUS_PLUS;
     MINUS_MINUS;
+    QUESTION;
 }
