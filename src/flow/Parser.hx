@@ -1209,7 +1209,11 @@ class Parser {
                 }
 
                 if (i < value.length && value.charAt(i) == '}') {
-                    parts.push(new VariableExpression(varName));
+                    if (varName.length > 0) {
+                        parts.push(new VariableExpression(varName));
+                    } else {
+                        parts.push(new LiteralExpression("{}"));
+                    }
                 }
 
                 currentPart = "";
