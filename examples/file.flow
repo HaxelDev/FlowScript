@@ -1,10 +1,10 @@
-func exists(file) {
+func fileExists(file) {
     return File().exists(file)
 }
 
 File().writeFile("text.txt", "this is TXT test file")
 
-if exists("text.txt") {
+if fileExists("text.txt") {
     let file = File().readFile("text.txt")
     print(file)
 } else {

@@ -2179,6 +2179,81 @@ class GetStatement extends Statement {
     }
 }
 
+class ExistsFunctionCall extends Expression {
+    public var targetExpr: Expression;
+    public var keyExpr: Expression;
+
+    public function new(targetExpr: Expression, keyExpr: Expression) {
+        this.targetExpr = targetExpr;
+        this.keyExpr = keyExpr;
+    }
+
+    public override function evaluate(): Bool {
+        var targetValue = targetExpr.evaluate();
+        var keyValue = keyExpr.evaluate();
+
+        switch (Type.typeof(targetValue)) {
+            case TClass(Array):
+                var arr = cast(targetValue, Array<Dynamic>);
+                if (Std.is(keyValue, Int)) {
+                    var index = cast(keyValue, Int);
+                    return index >= 0 && index < arr.length;
+                } else {
+                    var key = cast(keyValue, String);
+                    for (i in 0...arr.length) {
+                        if (arr[i][0] == key) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            case TObject:
+                return Reflect.hasField(targetValue, cast(keyValue, String));
+            default:
+                Flow.error.report("Exists can only be applied to arrays or objects.");
+                return false;
+        }
+    }
+}
+
+class ExistsStatement extends Statement {
+    public var targetExpr: Expression;
+    public var keyExpr: Expression;
+    public var result: Bool;
+
+    public function new(targetExpr: Expression, keyExpr: Expression) {
+        this.targetExpr = targetExpr;
+        this.keyExpr = keyExpr;
+    }
+
+    public override function execute():Void {
+        var targetValue = targetExpr.evaluate();
+        var keyValue = keyExpr.evaluate();
+
+        switch (Type.typeof(targetValue)) {
+            case TClass(Array):
+                var arr = cast(targetValue, Array<Dynamic>);
+                if (Std.is(keyValue, Int)) {
+                    var index = cast(keyValue, Int);
+                    result = index >= 0 && index < arr.length;
+                } else {
+                    var key = cast(keyValue, String);
+                    result = false;
+                    for (i in 0...arr.length) {
+                        if (arr[i][0] == key) {
+                            result = true;
+                            break;
+                        }
+                    }
+                }
+            case TObject:
+                result = Reflect.hasField(targetValue, cast(keyValue, String));
+            default:
+                Flow.error.report("Exists can only be applied to arrays or objects.");
+        }
+    }
+}
+
 class SortFunctionCall extends Expression {
     public var arrayExpr: Expression;
 

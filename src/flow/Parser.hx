@@ -338,6 +338,8 @@ class Parser {
             return parseSetStatement();
         } else if (name == "get") {
             return parseGetStatement();
+        } else if (name == "exists") {
+            return parseExistsStatement();
         } else if (name == "sort") {
             return parseSortStatement();
         } else if (name == "splice") {
@@ -573,6 +575,15 @@ class Parser {
         var keyExpr: Expression = parseExpression();
         consume(TokenType.RPAREN, "Expected ')' after key expression in 'get'");
         return new GetStatement(targetExpr, keyExpr);
+    }
+
+    private function parseExistsStatement(): Statement {
+        consume(TokenType.LPAREN, "Expected '(' after 'exists'");
+        var targetExpr: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after target expression in 'exists'");
+        var keyExpr: Expression = parseExpression();
+        consume(TokenType.RPAREN, "Expected ')' after key expression in 'exists'");
+        return new ExistsStatement(targetExpr, keyExpr);
     }
 
     private function parseSortStatement(): Statement {
@@ -1697,6 +1708,13 @@ class Parser {
             var keyExpr: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after key expression in 'get'");
             return new GetFunctionCall(targetExpr, keyExpr);
+        } else if (name == "exists") {
+            consume(TokenType.LPAREN, "Expected '(' after 'exists'");
+            var targetExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after target expression in 'exists'");
+            var keyExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after key expression in 'exists'");
+            return new ExistsFunctionCall(targetExpr, keyExpr);
         } else if (name == "sort") {
             consume(TokenType.LPAREN, "Expected '(' after 'sort'");
             var arrayExpr: Expression = parseExpression();
