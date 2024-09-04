@@ -1128,7 +1128,7 @@ class UnaryExpression extends Expression {
 
         if (opera == "-") {
             if (Std.is(value, Int) || Std.is(value, Float)) {
-                return -cast(value);
+                return -Std.parseFloat(Std.string(value));
             } else {
                 Flow.error.report("Unary minus operator can only be applied to numeric values.");
                 return null;
