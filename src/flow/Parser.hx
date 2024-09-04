@@ -1127,6 +1127,8 @@ class Parser {
     private function parseFactor():Expression {
         if (match([TokenType.NOT])) {
             return parseLogicalNot();
+        } else if (match([TokenType.MINUS])) {
+            return parseUnaryMinus();
         } else if (match([TokenType.PLUS_PLUS, TokenType.MINUS_MINUS])) {
             var opera: String = previous().value;
             var operand: Expression = parseFactor();
@@ -1245,6 +1247,11 @@ class Parser {
     private function parseLogicalNot():Expression {
         var expr = parseLogicalAnd();
         return new UnaryExpression("not", expr, true);
+    }
+
+    private function parseUnaryMinus():Expression {
+        var expr = parseExpression();
+        return new UnaryExpression("-", expr, true);
     }
 
     private function parseIOExpression():Expression {

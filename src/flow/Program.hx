@@ -1064,6 +1064,10 @@ class ArrayAccessExpression extends Expression {
             return null;
         }
 
+        if (indexValue < 0) {
+            indexValue += arrayValue.length;
+        }
+
         if (indexValue < 0 || indexValue >= arrayValue.length) {
             Flow.error.report("Index out of bounds: " + indexValue);
             return null;
@@ -1092,6 +1096,11 @@ class ArrayAssignmentStatement extends Statement {
         }
 
         var indexValue:Int = index.evaluate();
+
+        if (indexValue < 0) {
+            indexValue += arrayValue.length;
+        }
+
         if (indexValue < 0 || indexValue >= arrayValue.length) {
             Flow.error.report("Index out of bounds: " + indexValue);
             return;
@@ -1116,6 +1125,15 @@ class UnaryExpression extends Expression {
     public override function evaluate():Dynamic {
         var value = right.evaluate();
         var variableName:String = null;
+
+        if (opera == "-") {
+            if (Std.is(value, Int) || Std.is(value, Float)) {
+                return -cast(value);
+            } else {
+                Flow.error.report("Unary minus operator can only be applied to numeric values.");
+                return null;
+            }
+        }
 
         if (Std.is(right, VariableExpression)) {
             var variableExpr = cast right;
