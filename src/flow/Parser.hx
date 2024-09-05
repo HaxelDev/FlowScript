@@ -1006,7 +1006,7 @@ class Parser {
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
             return new HttpStatement("get", urlExpression);
         } else if (methodName == ".post") {
-            consume(TokenType.LPAREN, "Expected '(' after 'get'");
+            consume(TokenType.LPAREN, "Expected '(' after 'post'");
             var urlExpression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
             return new HttpStatement("post", urlExpression);
@@ -1538,7 +1538,7 @@ class Parser {
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
             return new HttpExpression("get", urlExpression);
         } else if (methodName == ".post") {
-            consume(TokenType.LPAREN, "Expected '(' after 'get'");
+            consume(TokenType.LPAREN, "Expected '(' after 'post'");
             var urlExpression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression(s)");
             return new HttpExpression("post", urlExpression);
