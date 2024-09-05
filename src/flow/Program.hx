@@ -2566,14 +2566,44 @@ class RandomExpression extends Expression {
                 if (arguments.length == 1) {
                     var listExpr:Expression = arguments[0];
                     var list:Array<Dynamic> = listExpr.evaluate();
-                    if (list == null || list.length == 0) {
-                        Flow.error.report("Empty list provided to 'choice'", 0);
-                        return null;
-                    }
-                    var index:Int = Random.nextInt(0, list.length - 1);
-                    return list[index];
+                    return Random.choice(list);
                 } else {
                     Flow.error.report("Invalid number of arguments for 'choice'", 0);
+                    return null;
+                }
+            case ".weightedChoice":
+                if (arguments.length == 2) {
+                    var list:Array<Dynamic> = arguments[0].evaluate();
+                    var weights:Array<Float> = arguments[1].evaluate();
+                    return Random.weightedChoice(list, weights);
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'weightedChoice'", 0);
+                    return null;
+                }
+            case ".shuffle":
+                if (arguments.length == 1) {
+                    var list:Array<Dynamic> = arguments[0].evaluate();
+                    return Random.shuffle(list);
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'shuffle'", 0);
+                    return null;
+                }
+            case ".sample":
+                if (arguments.length == 2) {
+                    var list:Array<Dynamic> = arguments[0].evaluate();
+                    var n:Int = arguments[1].evaluate();
+                    return Random.sample(list, n);
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'sample'", 0);
+                    return null;
+                }
+            case ".gaussian":
+                if (arguments.length == 2) {
+                    var mean:Float = arguments[0].evaluate();
+                    var stddev:Float = arguments[1].evaluate();
+                    return Random.gaussian(mean, stddev);
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'gaussian'", 0);
                     return null;
                 }
             default:
@@ -2606,14 +2636,40 @@ class RandomStatement extends Statement {
                 if (arguments.length == 1) {
                     var listExpr:Expression = arguments[0];
                     var list:Array<Dynamic> = listExpr.evaluate();
-                    if (list == null || list.length == 0) {
-                        Flow.error.report("Empty list provided to 'choice'", 0);
-                    } else {
-                        var index:Int = Random.nextInt(0, list.length - 1);
-                        list[index];
-                    }
+                    Random.choice(list);
                 } else {
                     Flow.error.report("Invalid number of arguments for 'choice'", 0);
+                }
+            case ".weightedChoice":
+                if (arguments.length == 2) {
+                    var list:Array<Dynamic> = arguments[0].evaluate();
+                    var weights:Array<Float> = arguments[1].evaluate();
+                    Random.weightedChoice(list, weights);
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'weightedChoice'", 0);
+                }
+            case ".shuffle":
+                if (arguments.length == 1) {
+                    var list:Array<Dynamic> = arguments[0].evaluate();
+                    Random.shuffle(list);
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'shuffle'", 0);
+                }
+            case ".sample":
+                if (arguments.length == 2) {
+                    var list:Array<Dynamic> = arguments[0].evaluate();
+                    var n:Int = arguments[1].evaluate();
+                    Random.sample(list, n);
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'sample'", 0);
+                }
+            case ".gaussian":
+                if (arguments.length == 2) {
+                    var mean:Float = arguments[0].evaluate();
+                    var stddev:Float = arguments[1].evaluate();
+                    Random.gaussian(mean, stddev);
+                } else {
+                    Flow.error.report("Invalid number of arguments for 'gaussian'", 0);
                 }
             default:
                 Flow.error.report("Unknown Random method: " + methodName, 0);
