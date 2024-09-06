@@ -2463,6 +2463,58 @@ class IsNumericFunctionCall extends Expression {
     }
 }
 
+class CenterFunctionCall extends Expression {
+    public var argument: Expression;
+    public var width: Expression;
+    public var fillChar: Expression;
+
+    public function new(argument: Expression, width: Expression, fillChar: Expression = null) {
+        this.argument = argument;
+        this.width = width;
+        this.fillChar = fillChar;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strValue = argument.evaluate();
+        var widthValue = width.evaluate();
+        var fillCharValue = fillChar != null ? fillChar.evaluate() : " ";
+
+        if (Std.is(strValue, String) && Std.is(widthValue, Int) && Std.is(fillCharValue, String)) {
+            var str = cast(strValue, String);
+            var widthInt = cast(widthValue, Int);
+            var fill = cast(fillCharValue, String);
+
+            if (fill.length != 1) {
+                Flow.error.report("Fill character must be a single character.");
+                return str;
+            }
+
+            return centerString(str, widthInt, fill);
+        } else {
+            Flow.error.report("Invalid arguments to 'center'. Expected a string, integer width, and optional fill character.");
+            return null;
+        }
+    }
+
+    public function centerString(value:String, width:Int, fill:String):String {
+        if (value.length >= width) {
+            return value;
+        }
+
+        if (fill.length == 0) {
+            fill = " ";
+        } else if (fill.length > 1) {
+            fill = fill.substr(0, 1);
+        }
+
+        var padding = width - value.length;
+        var leftPad = Std.int(padding / 2);
+        var rightPad = padding - leftPad;
+
+        return StringTools.lpad(StringTools.rpad(value, fill, value.length + rightPad), fill, width);
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;

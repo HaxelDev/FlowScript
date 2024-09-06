@@ -1889,6 +1889,17 @@ class Parser {
             var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new IsNumericFunctionCall(argument);
+        } else if (name == "center") {
+            consume(TokenType.LPAREN, "Expected '(' after 'center'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after argument");
+            var width: Expression = parseExpression();
+            var fillChar: Expression = null;
+            if (match([TokenType.COMMA])) {
+                fillChar = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CenterFunctionCall(argument, width, fillChar);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;

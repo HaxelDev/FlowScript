@@ -244,7 +244,7 @@ class Lexer {
                 return new Token(TokenType.DIVIDE, token, lineNumber);
             case ":":
                 return new Token(TokenType.COLON, token, lineNumber);
-            case ":":
+            case "?":
                 return new Token(TokenType.QUESTION, token, lineNumber);
             case ";":
                 return new Token(TokenType.SEMICOLON, token, lineNumber);
