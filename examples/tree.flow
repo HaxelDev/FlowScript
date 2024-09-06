@@ -1,0 +1,13 @@
+func tree(height) {
+    let len = height * 2 - 1
+    for i in range(1, height) {
+        let stars = ""
+        for j in range(1, (i * 2 - 1)) {
+            stars += "*"
+        }
+        print(center(stars, len))
+    }
+    print(center("*", len))
+}
+
+call tree(6)
