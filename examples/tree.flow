@@ -10,4 +10,4 @@ func tree(height) {
     print(center("*", len))
 }
 
-call tree(6)
+call tree(9)
