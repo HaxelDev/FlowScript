@@ -353,16 +353,22 @@ class Environment {
             }
 
             var func: Dynamic = Reflect.field(obj, methodName);
-            if (func == null || !(func is Function)) {
-                Flow.error.report("Undefined method: " + methodName);
-                return null;
+            if (func == null) {
+                var variable = values.get(name);
+                if (Std.is(variable, Function)) {
+                    return variable;
+                }
+                Flow.error.report("Undefined function: " + name);
             }
             return func;
         } else {
             var func: Dynamic = functions.get(name);
             if (func == null) {
+                var variable = values.get(name);
+                if (Std.is(variable, Function)) {
+                    return variable;
+                }
                 Flow.error.report("Undefined function: " + name);
-                return null;
             }
             return func;
         }
@@ -811,8 +817,13 @@ class CallStatement extends Statement {
     public override function execute():Void {
         var func:Function = Environment.getFunction(name);
         if (func == null) {
-            Flow.error.report("Unknown function: " + name);
-            return;
+            var variable = Environment.get(name);
+            if (Std.is(variable, Function)) {
+                func = variable;
+            } else {
+                Flow.error.report("Unknown function or variable: " + name);
+                return;
+            }
         }
         var args:Array<Dynamic> = [];
         for (arg in arguments) {
@@ -869,8 +880,13 @@ class CallExpression extends Expression {
     public override function evaluate():Dynamic {
         var func:Function = Environment.getFunction(name);
         if (func == null) {
-            Flow.error.report("Undefined function: " + name);
-            return null;
+            var variable = Environment.get(name);
+            if (Std.is(variable, Function)) {
+                func = variable;
+            } else {
+                Flow.error.report("Unknown function or variable: " + name);
+                return null;
+            }
         }
 
         var args:Array<Dynamic> = [];
