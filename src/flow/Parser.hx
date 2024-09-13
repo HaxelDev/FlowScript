@@ -467,13 +467,13 @@ class Parser {
     private function parseClassStatement(): Statement {
         var nameToken: Token = consume(TokenType.IDENTIFIER, "Expected class name after 'class'");
         var name: String = nameToken.value;
-    
+
         var properties: Array<Statement> = [];
         var methods: Array<Statement> = [];
-        var constructor: Statement = null;
-    
+        var constructor: FuncStatement = null;
+
         consume(TokenType.LBRACE, "Expected '{' after class name");
-    
+
         while (!check(TokenType.RBRACE) && !isAtEnd()) {
             if (match([TokenType.KEYWORD])) {
                 var keyword: String = previous().value;
@@ -482,7 +482,7 @@ class Parser {
                 } else if (keyword == "func") {
                     var funcStatement: Statement = parseFuncStatement();
                     if (cast(funcStatement, FuncStatement).name == "constructor") {
-                        constructor = funcStatement;
+                        constructor = cast(funcStatement, FuncStatement);
                     } else {
                         methods.push(funcStatement);
                     }
@@ -493,9 +493,8 @@ class Parser {
                 Flow.error.report("Unexpected token in class: " + peek().value);
             }
         }
-    
+
         consume(TokenType.RBRACE, "Expected '}' after class body");
-    
         return new ClassStatement(name, properties, methods, constructor);
     }
 

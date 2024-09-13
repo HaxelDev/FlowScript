@@ -1384,9 +1384,9 @@ class ClassStatement extends Statement {
     public var name:String;
     public var properties:Array<Statement>;
     public var methods:Array<Statement>;
-    public var constructor:Statement;
+    public var constructor:FuncStatement;
 
-    public function new(name:String, properties:Array<Statement>, methods:Array<Statement>, constructor:Statement) {
+    public function new(name:String, properties:Array<Statement>, methods:Array<Statement>, constructor:FuncStatement) {
         this.name = name;
         this.properties = properties;
         this.methods = methods;
@@ -1396,13 +1396,15 @@ class ClassStatement extends Statement {
     public override function execute():Void {
         var classObj:Dynamic = {};
 
-        for (property in properties) {
-            property.execute();
-            var letProperty:LetStatement = cast property;
-            var propertyName:String = letProperty.name;
-            var propertyValue:Dynamic = Environment.get(propertyName);
-            Reflect.setField(classObj, propertyName, propertyValue);
-        }
+        var initProperties = function(instance:Dynamic):Void {
+            for (property in properties) {
+                property.execute();
+                var letProperty:LetStatement = cast property;
+                var propertyName:String = letProperty.name;
+                var propertyValue:Dynamic = Environment.get(propertyName);
+                Reflect.setField(instance, propertyName, propertyValue);
+            }
+        };
 
         for (method in methods) {
             method.execute();
@@ -1414,12 +1416,15 @@ class ClassStatement extends Statement {
 
         if (constructor != null) {
             var constructorFunc = function(instance:Dynamic, args:Array<Dynamic>):Void {
+                initProperties(instance);
                 for (i in 0...args.length) {
                     Environment.define(cast(constructor, FuncStatement).parameters[i].name, args[i]);
                 }
                 cast(constructor, FuncStatement).execute();
             };
             Reflect.setField(classObj, "constructor", constructorFunc);
+        } else {
+            Reflect.setField(classObj, "constructor", initProperties);
         }
 
         Environment.define(name, classObj);
@@ -1441,7 +1446,7 @@ class NewStatement extends Statement {
             Flow.error.report("Undefined class: " + className);
             return;
         }
-    
+
         var instance:Dynamic = {};
 
         var args:Array<Dynamic> = [];
@@ -1479,7 +1484,7 @@ class NewExpression extends Expression {
             Flow.error.report("Undefined class: " + className);
             return null;
         }
-    
+
         var instance:Dynamic = {};
 
         var args:Array<Dynamic> = [];
