@@ -1892,6 +1892,13 @@ class Parser {
             }
             consume(TokenType.RPAREN, "Expected ')' after arguments");
             return new CenterFunctionCall(argument, width, fillChar);
+        } else if (name == "count") {
+            consume(TokenType.LPAREN, "Expected '(' after 'count'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after first argument");
+            var target: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CountFunctionCall(argument, target);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;

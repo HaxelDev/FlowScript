@@ -2392,6 +2392,50 @@ class CapitalizeFunctionCall extends Expression {
     }
 }
 
+class CountFunctionCall extends Expression {
+    public var firstArgument: Expression;
+    public var secondArgument: Expression;
+
+    public function new(firstArgument: Expression, secondArgument: Expression) {
+        this.firstArgument = firstArgument;
+        this.secondArgument = secondArgument;
+    }
+
+    override function evaluate(): Dynamic {
+        var arg = this.firstArgument.evaluate();
+        var target = this.secondArgument.evaluate();
+        
+        if (Std.is(arg, String)) {
+            return countOccurrencesInString(cast(arg, String), cast(target, String));
+        } else if (Std.is(arg, Array)) {
+            return countOccurrencesInList(cast(arg, Array<Dynamic>), target);
+        } else {
+            Flow.error.report("Unsupported type for count function");
+            return null;
+        }
+    }
+
+    function countOccurrencesInString(text: String, target: String): Int {
+        var count = 0;
+        var idx = 0;
+        while ((idx = text.indexOf(target, idx)) != -1) {
+            count++;
+            idx += target.length;
+        }
+        return count;
+    }
+
+    function countOccurrencesInList(list: Array<Dynamic>, target: Dynamic): Int {
+        var count = 0;
+        for (item in list) {
+            if (item == target) {
+                count++;
+            }
+        }
+        return count;
+    }
+}
+
 class SpliceStatement extends Statement {
     public var array: Expression;
     public var startIndex: Expression;
