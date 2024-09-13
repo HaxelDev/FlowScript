@@ -444,30 +444,23 @@ class Parser {
         return new CatchClause(variableName, catchBlock);
     }
 
-    private function parseEnumStatement():Statement {
+    private function parseEnumStatement(): Statement {
         var name = consume(TokenType.IDENTIFIER, "Expected enum name.").value;
-
         var values:Array<EnumValue> = [];
-    
         if (match([TokenType.LBRACE])) {
             while (!check(TokenType.RBRACE) && !isAtEnd()) {
                 var valueName = consume(TokenType.IDENTIFIER, "Expected enum value name.").value;
                 var value = null;
-    
                 if (match([TokenType.EQUAL])) {
                     value = parseExpression();
                 }
-    
                 values.push(new EnumValue(valueName, value));
-    
                 if (!match([TokenType.COMMA])) {
                     break;
                 }
             }
-    
             consume(TokenType.RBRACE, "Expected '}' after enum values.");
         }
-    
         return new EnumStatement(name, values);
     }
 

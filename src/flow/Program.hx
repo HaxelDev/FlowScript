@@ -1351,9 +1351,21 @@ class EnumStatement extends Statement {
 
     public override function execute():Void {
         var enumObject:Dynamic = {};
+        var currentIndex:Int = 0;
+
         for (value in values) {
-            Reflect.setField(enumObject, value.name, value.value.evaluate());
+            var enumValue:Dynamic;
+
+            if (value.value != null) {
+                enumValue = value.value.evaluate();
+            } else {
+                enumValue = currentIndex;
+            }
+
+            Reflect.setField(enumObject, value.name, enumValue);
+            currentIndex++;
         }
+
         Environment.define(name, enumObject);
     }
 }
