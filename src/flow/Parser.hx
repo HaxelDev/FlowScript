@@ -1899,6 +1899,11 @@ class Parser {
             var target: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after arguments");
             return new CountFunctionCall(argument, target);
+        } else if (name == "eval") {
+            consume(TokenType.LPAREN, "Expected '(' after 'eval'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new EvalFunctionCall(argument);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;

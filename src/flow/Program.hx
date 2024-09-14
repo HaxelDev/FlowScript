@@ -2592,6 +2592,53 @@ class CenterFunctionCall extends Expression {
     }
 }
 
+class EvalFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var evaluatedArgument = argument.evaluate();
+        try {
+            var tokens = tokenize(evaluatedArgument);
+            var result = parseExpression(tokens);
+            return result;
+        } catch (e:Dynamic) {
+            Flow.error.report("Invalid expression");
+            return null;
+        }
+    }
+
+    static function tokenize(expression:String):Array<String> {
+        return expression.split(" ").filter(token -> token != "");
+    }
+
+    static function parseExpression(tokens:Array<String>):Float {
+        var result:Float = 0;
+        var opera:String = "+";
+
+        for (token in tokens) {
+            switch (token) {
+                case "+":
+                case "-":
+                case "*":
+                case "/":
+                    opera = token;
+                default:
+                    var number = Std.parseFloat(token);
+                    if (opera == "+") result += number;
+                    else if (opera == "-") result -= number;
+                    else if (opera == "*") result *= number;
+                    else if (opera == "/") result /= number;
+            }
+        }
+
+        return result;
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
