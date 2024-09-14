@@ -2603,7 +2603,7 @@ class CalculateFunctionCall extends Expression {
         var expression = argument.evaluate();
         try {
             var tokens = tokenize(expression);
-            var result = parseExpression(tokens);
+            var result = evaluateExpression(tokens);
             return result;
         } catch (e:Dynamic) {
             Flow.error.report("Invalid expression");
@@ -2612,30 +2612,75 @@ class CalculateFunctionCall extends Expression {
     }
 
     static function tokenize(expression:String):Array<String> {
-        return expression.split(" ").filter(token -> token != "");
-    }
+        expression = expression.replace(" ", "");
+        var tokens:Array<String> = [];
+        var currentToken:String = "";
 
-    static function parseExpression(tokens:Array<String>):Float {
-        var result:Float = 0;
-        var opera:String = "+";
+        for (i in 0...expression.length) {
+            var char = expression.charAt(i);
 
-        for (token in tokens) {
-            switch (token) {
-                case "+":
-                case "-":
-                case "*":
-                case "/":
-                    opera = token;
-                default:
-                    var number = Std.parseFloat(token);
-                    if (opera == "+") result += number;
-                    else if (opera == "-") result -= number;
-                    else if (opera == "*") result *= number;
-                    else if (opera == "/") result /= number;
+            if (char == "+" || char == "-" || char == "*" || char == "/") {
+                if (currentToken.length > 0) {
+                    tokens.push(currentToken);
+                    currentToken = "";
+                }
+                tokens.push(char);
+            } else {
+                currentToken += char;
             }
         }
 
-        return result;
+        if (currentToken.length > 0) {
+            tokens.push(currentToken);
+        }
+
+        return tokens;
+    }
+
+    static function evaluateExpression(tokens:Array<String>):Float {
+        var values = new List<Float>();
+        var operators = new List<String>();
+
+        var precedence = function(op:String):Int {
+            switch (op) {
+                case "+", "-": return 1;
+                case "*", "/": return 2;
+                default: return 0;
+            }
+        };
+
+        var applyOp = function(op:String, b:Float, a:Float):Float {
+            switch (op) {
+                case "+": return a + b;
+                case "-": return a - b;
+                case "*": return a * b;
+                case "/": return a / b;
+                default: return 0;
+            }
+        };
+
+        for (token in tokens) {
+            if (token == "+" || token == "-" || token == "*" || token == "/") {
+                while (operators.length > 0 && precedence(operators.last()) >= precedence(token)) {
+                    var op = operators.pop();
+                    var value2 = values.pop();
+                    var value1 = values.pop();
+                    values.push(applyOp(op, value2, value1));
+                }
+                operators.push(token);
+            } else {
+                values.push(Std.parseFloat(token));
+            }
+        }
+
+        while (operators.length > 0) {
+            var op = operators.pop();
+            var value2 = values.pop();
+            var value1 = values.pop();
+            values.push(applyOp(op, value2, value1));
+        }
+
+        return values.last();
     }
 }
 
