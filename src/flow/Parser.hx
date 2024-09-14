@@ -274,27 +274,13 @@ class Parser {
     private function parseForStatement():Statement {
         var variableToken:Token = consume(TokenType.IDENTIFIER, "Expected identifier after 'for'");
         var variableName:String = variableToken.value;
-    
-        consume(TokenType.IN, "Expected 'in' after identifier");
-    
-        var iterableExpression:Expression;
 
-        if (match([TokenType.RANGE])) {
-            consume(TokenType.LPAREN, "Expected '(' after 'range'");
-            var startExpr:Expression = parseExpression();
-            if (match([TokenType.COMMA])) {
-                // Consume comma
-            }
-            var endExpr:Expression = parseExpression();
-            consume(TokenType.RPAREN, "Expected ')' after range expression");
-    
-            iterableExpression = new RangeExpression(startExpr, endExpr);
-        } else {
-            iterableExpression = parseExpression();
-        }
+        consume(TokenType.IN, "Expected 'in' after identifier");
+
+        var iterableExpression:Expression = parseExpression();
 
         var body:Statement = parseBlock();
-    
+
         return new ForStatement(variableName, iterableExpression, body);
     }
 
@@ -1904,6 +1890,20 @@ class Parser {
             var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new CalculateFunctionCall(argument);
+        } else if (name == "repeat") {
+            consume(TokenType.LPAREN, "Expected '(' after 'repeat'");
+            var stringArgument:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument");
+            var countArgument:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new RepeatFunctionCall(stringArgument, countArgument);
+        } else if (name == "range") {
+            consume(TokenType.LPAREN, "Expected '(' after 'range'");
+            var start: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after start argument");
+            var end: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new RangeExpression(start, end);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;

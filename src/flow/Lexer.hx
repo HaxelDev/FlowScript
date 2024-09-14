@@ -186,8 +186,6 @@ class Lexer {
                 return new Token(TokenType.CASE, token, lineNumber);
             case "default":
                 return new Token(TokenType.DEFAULT, token, lineNumber);
-            case "range":
-                return new Token(TokenType.RANGE, token, lineNumber);
             case "IO":
                 return new Token(TokenType.IO, token, lineNumber);
             case "Random":
@@ -374,7 +372,6 @@ enum TokenType {
     OR;
     IN;
     MODULO;
-    RANGE;
     LEFT_SHIFT;
     RIGHT_SHIFT;
     IO;

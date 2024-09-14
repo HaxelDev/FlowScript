@@ -2684,6 +2684,31 @@ class CalculateFunctionCall extends Expression {
     }
 }
 
+class RepeatFunctionCall extends Expression {
+    public var stringArgument: Expression;
+    public var countArgument: Expression;
+
+    public function new(stringArgument: Expression, countArgument: Expression) {
+        this.stringArgument = stringArgument;
+        this.countArgument = countArgument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strValue = stringArgument.evaluate();
+        var countValue = countArgument.evaluate();
+
+        var str = cast(strValue, String);
+        var count = cast(countValue, Int);
+
+        var result = "";
+        for (i in 0...count) {
+            result += str;
+        }
+
+        return result;
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
