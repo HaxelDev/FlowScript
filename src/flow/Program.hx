@@ -2592,7 +2592,7 @@ class CenterFunctionCall extends Expression {
     }
 }
 
-class EvalFunctionCall extends Expression {
+class CalculateFunctionCall extends Expression {
     public var argument: Expression;
 
     public function new(argument: Expression) {
@@ -2600,9 +2600,9 @@ class EvalFunctionCall extends Expression {
     }
 
     public override function evaluate(): Dynamic {
-        var evaluatedArgument = argument.evaluate();
+        var expression = argument.evaluate();
         try {
-            var tokens = tokenize(evaluatedArgument);
+            var tokens = tokenize(expression);
             var result = parseExpression(tokens);
             return result;
         } catch (e:Dynamic) {
