@@ -320,6 +320,8 @@ class Parser {
             return parsePushStatement();
         } else if (name == "pop") {
             return parsePopStatement();
+        } else if (name == "remove") {
+            return parseRemoveStatement();
         } else if (name == "set") {
             return parseSetStatement();
         } else if (name == "get") {
@@ -533,6 +535,18 @@ class Parser {
         consume(TokenType.RPAREN, "Expected ')' after arguments in 'pop'");
         var variable: String = variableToken.value;
         return new PopStatement(array, variable);
+    }
+
+    private function parseRemoveStatement(): Statement {
+        consume(TokenType.LPAREN, "Expected '(' after 'remove'");
+        var array: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after array argument in 'remove'");
+        var element: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after element argument in 'remove'");
+        var variableToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name after ','");
+        consume(TokenType.RPAREN, "Expected ')' after arguments in 'remove'");
+        var variable: String = variableToken.value;
+        return new RemoveStatement(array, element, variable);
     }
 
     private function parseSetStatement(): Statement {
@@ -1714,6 +1728,16 @@ class Parser {
             consume(TokenType.RPAREN, "Expected ')' after arguments in 'pop'");
             var variable: String = variableToken.value;
             return new PopFunctionCall(array, variable);
+        } else if (name == "remove") {
+            consume(TokenType.LPAREN, "Expected '(' after 'remove'");
+            var array: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after array argument in 'remove'");
+            var element: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after element argument in 'remove'");
+            var variableToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name after ','");
+            consume(TokenType.RPAREN, "Expected ')' after arguments in 'remove'");
+            var variable: String = variableToken.value;
+            return new RemoveFunctionCall(array, element, variable);            
         } else if (name == "str") {
             consume(TokenType.LPAREN, "Expected '(' after 'str'");
             var argument: Expression = parseExpression();

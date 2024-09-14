@@ -1690,6 +1690,37 @@ class PopStatement extends Statement {
     }
 }
 
+class RemoveStatement extends Statement {
+    public var array: Expression;
+    public var element: Expression;
+    public var variable: String;
+
+    public function new(array: Expression, element: Expression, variable: String) {
+        this.array = array;
+        this.element = element;
+        this.variable = variable;
+    }
+
+    public override function execute(): Void {
+        var arrayValue: Array<Dynamic> = array.evaluate();
+        var elementValue: Dynamic = element.evaluate();
+
+        if (arrayValue == null) {
+            Flow.error.report("Cannot remove from null array");
+            return;
+        }
+
+        var index = arrayValue.indexOf(elementValue);
+        if (index == -1) {
+            Flow.error.report("Element not found in array");
+            return;
+        }
+
+        var removedValue: Dynamic = arrayValue.splice(index, 1)[0];
+        Environment.define(variable, removedValue);
+    }
+}
+
 class PushFunctionCall extends Expression {
     public var array: Expression;
     public var value: Expression;
@@ -1739,6 +1770,39 @@ class PopFunctionCall extends Expression {
         Environment.define(value, poppedValue);
 
         return poppedValue;
+    }
+}
+
+class RemoveFunctionCall extends Expression {
+    public var array: Expression;
+    public var element: Expression;
+    public var value: String;
+
+    public function new(array: Expression, element: Expression, value: String) {
+        this.array = array;
+        this.element = element;
+        this.value = value;
+    }
+
+    public override function evaluate(): Dynamic {
+        var arrayValue: Array<Dynamic> = array.evaluate();
+        var elementValue: Dynamic = element.evaluate();
+
+        if (arrayValue == null) {
+            Flow.error.report("Cannot remove from null array");
+            return null;
+        }
+
+        var index = arrayValue.indexOf(elementValue);
+        if (index == -1) {
+            Flow.error.report("Element not found in array");
+            return null;
+        }
+
+        var removedValue: Dynamic = arrayValue.splice(index, 1)[0];
+        Environment.define(value, removedValue);
+
+        return removedValue;
     }
 }
 
