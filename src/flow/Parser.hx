@@ -81,6 +81,8 @@ class Parser {
             return parseMathStatement();
         } else if (firstTokenType == TokenType.HTTP) {
             return parseHttpStatement();
+        } else if (firstTokenType == TokenType.DATE) {
+            return parseDateStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
             if (peekNext().type == TokenType.LBRACKET) {
                 return parseArrayAssignment();
@@ -1079,6 +1081,61 @@ class Parser {
         }
     }
 
+    private function parseDateStatement():Statement {
+        var dateToken:Token = advance();
+        if (dateToken.type != TokenType.DATE) {
+            Flow.error.report("Expected 'Date' keyword", peek().lineNumber);
+            return null;
+        }
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('", peek().lineNumber);
+            return null;
+        }
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'", peek().lineNumber);
+            return null;
+        }
+
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".getCurrentDateTime") {
+            consume(TokenType.RPAREN, "Expected ')' after 'getCurrentDateTime'");
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new DateStatement("getCurrentDateTime");
+        } else if (methodName == ".getCurrentDate") {
+            consume(TokenType.RPAREN, "Expected ')' after 'getCurrentDate'");
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new DateStatement("getCurrentDate");
+        } else if (methodName == ".getCurrentTime") {
+            consume(TokenType.RPAREN, "Expected ')' after 'getCurrentTime'");
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new DateStatement("getCurrentTime");
+        } else if (methodName == ".formatDate") {
+            consume(TokenType.LPAREN, "Expected '(' after 'formatDate'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new DateStatement("formatDate", [expression]);
+        } else if (methodName == ".formatTime") {
+            consume(TokenType.LPAREN, "Expected '(' after 'formatTime'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new DateStatement("formatTime", [expression]);
+        } else if (methodName == ".diffInSeconds") {
+            consume(TokenType.LPAREN, "Expected '(' after 'diffInSeconds'");
+            var expr1:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' between dates in 'diffInSeconds'");
+            var expr2:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after second date");
+            return new DateStatement("diffInSeconds", [expr1, expr2]);
+        } else {
+            Flow.error.report("Unknown Date method: " + methodName, peek().lineNumber);
+            return null;
+        }
+    }
+
     private function parseBlock(): BlockStatement {
         if (match([TokenType.LBRACE])) {
             var statements:Array<Statement> = [];
@@ -1233,6 +1290,10 @@ class Parser {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
             return parseHttpExpression();
+        } else if (match([TokenType.DATE])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseDateExpression();
         } else if (match([TokenType.IDENTIFIER])) {
             var expr: Expression = null;
             if (peek().type == TokenType.LPAREN) {
@@ -1678,6 +1739,50 @@ class Parser {
             return new HttpExpression("post", urlExpression);
         } else {
             Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
+            return null;
+        }
+    }
+
+    private function parseDateExpression():Expression {
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".getCurrentDateTime") {
+            consume(TokenType.LPAREN, "Expected '(' after 'getCurrentDateTime'");
+            consume(TokenType.RPAREN, "Expected ')' after 'getCurrentDateTime'");
+            return new DateExpression("getCurrentDateTime");
+        } else if (methodName == ".getCurrentDate") {
+            consume(TokenType.LPAREN, "Expected '(' after 'getCurrentDate'");
+            consume(TokenType.RPAREN, "Expected ')' after 'getCurrentDate'");
+            return new DateExpression("getCurrentDate");
+        } else if (methodName == ".getCurrentTime") {
+            consume(TokenType.LPAREN, "Expected '(' after 'getCurrentTime'");
+            consume(TokenType.RPAREN, "Expected ')' after 'getCurrentTime'");
+            return new DateExpression("getCurrentTime");
+        } else if (methodName == ".formatDate") {
+            consume(TokenType.LPAREN, "Expected '(' after 'formatDate'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new DateExpression("formatDate", [expression]);
+        } else if (methodName == ".formatTime") {
+            consume(TokenType.LPAREN, "Expected '(' after 'formatTime'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new DateExpression("formatTime", [expression]);
+        } else if (methodName == ".fromString") {
+            consume(TokenType.LPAREN, "Expected '(' after 'fromString'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new DateExpression("fromString", [expression]);
+        } else if (methodName == ".diffInSeconds") {
+            consume(TokenType.LPAREN, "Expected '(' after 'diffInSeconds'");
+            var expr1:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' between dates in 'diffInSeconds'");
+            var expr2:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after second date");
+            return new DateExpression("diffInSeconds", [expr1, expr2]);
+        } else {
+            Flow.error.report("Unknown Date method: " + methodName, peek().lineNumber);
             return null;
         }
     }

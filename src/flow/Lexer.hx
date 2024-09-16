@@ -200,6 +200,8 @@ class Lexer {
                 return new Token(TokenType.MATH, token, lineNumber);
             case "Http":
                 return new Token(TokenType.HTTP, token, lineNumber);
+            case "Date":
+                return new Token(TokenType.DATE, token, lineNumber);
             case "and":
                 return new Token(TokenType.AND, token, lineNumber);
             case "or":
@@ -381,6 +383,7 @@ enum TokenType {
     JSON;
     MATH;
     HTTP;
+    DATE;
     DEFAULT;
     CASE;
     NOT;
