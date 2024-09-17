@@ -35,6 +35,7 @@ class DateTools {
         formatted = formatted.replace("yyyy", Std.string(date.getFullYear()));
         formatted = formatted.replace("MM", StringTools.lpad(Std.string(date.getMonth() + 1), "0", 2));
         formatted = formatted.replace("dd", StringTools.lpad(Std.string(date.getDate()), "0", 2));
+        formatted = formatted.replace("E", StringTools.lpad(Std.string(date.getDay()), "0", 1));
         return formatted;
     }
 
@@ -43,6 +44,7 @@ class DateTools {
         formatted = formatted.replace("HH", StringTools.lpad(Std.string(date.getHours()), "0", 2));
         formatted = formatted.replace("mm", StringTools.lpad(Std.string(date.getMinutes()), "0", 2));
         formatted = formatted.replace("ss", StringTools.lpad(Std.string(date.getSeconds()), "0", 2));
+        formatted = formatted.replace("SSS", StringTools.lpad(Std.string(date.getTime()), "0", 13));
         return formatted;
     }
 
