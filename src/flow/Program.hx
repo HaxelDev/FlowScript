@@ -3445,23 +3445,29 @@ class DateExpression extends Expression {
             case "getCurrentTime":
                 return DateTools.getCurrentTime();
             case "formatDate":
-                if (evaluatedArguments.length == 1 && Std.is(evaluatedArguments[0], Date)) {
-                    return DateTools.formatDate(evaluatedArguments[0]);
+                if (evaluatedArguments.length >= 1 && Std.is(evaluatedArguments[0], Date)) {
+                    var date = evaluatedArguments[0];
+                    var format = evaluatedArguments.length > 1 ? Std.string(evaluatedArguments[1]) : "yyyy-MM-dd";
+                    return DateTools.formatDate(date, format);
                 } else {
                     Flow.error.report("formatDate requires a Date argument.");
+                    return null;
                 }
             case "formatTime":
-                if (evaluatedArguments.length == 1 && Std.is(evaluatedArguments[0], Date)) {
-                    return DateTools.formatTime(evaluatedArguments[0]);
+                if (evaluatedArguments.length >= 1 && Std.is(evaluatedArguments[0], Date)) {
+                    var date = evaluatedArguments[0];
+                    var format = evaluatedArguments.length > 1 ? Std.string(evaluatedArguments[1]) : "HH:mm:ss";
+                    return DateTools.formatTime(date, format);
                 } else {
                     Flow.error.report("formatTime requires a Date argument.");
+                    return null;
                 }
             case "fromString":
-                if (arguments.length == 1) {
-                    var timeStr = arguments[0].evaluate();
+                if (evaluatedArguments.length == 1) {
+                    var timeStr = evaluatedArguments[0];
                     return DateTools.fromString(timeStr);
                 }
-                Flow.error.report("formatTime requires exactly one argument.");
+                Flow.error.report("fromString requires exactly one argument.");
                 return null;
             case "diffInSeconds":
                 if (evaluatedArguments.length == 2 && Std.is(evaluatedArguments[0], Date) && Std.is(evaluatedArguments[1], Date)) {
@@ -3498,20 +3504,24 @@ class DateStatement extends Statement {
             case "getCurrentTime":
                 trace(DateTools.getCurrentTime());
             case "formatDate":
-                if (evaluatedArguments.length == 1 && Std.is(evaluatedArguments[0], Date)) {
-                    trace(DateTools.formatDate(evaluatedArguments[0]));
+                if (evaluatedArguments.length >= 1 && Std.is(evaluatedArguments[0], Date)) {
+                    var date = evaluatedArguments[0];
+                    var format = evaluatedArguments.length > 1 ? Std.string(evaluatedArguments[1]) : "yyyy-MM-dd";
+                    DateTools.formatDate(date, format);
                 } else {
-                    Flow.error.report("formatDate requires a Date argument.");
+                    Flow.error.report("formatDate requires a Date argument and optionally a format string.");
                 }
             case "formatTime":
-                if (evaluatedArguments.length == 1 && Std.is(evaluatedArguments[0], Date)) {
-                    trace(DateTools.formatTime(evaluatedArguments[0]));
+                if (evaluatedArguments.length >= 1 && Std.is(evaluatedArguments[0], Date)) {
+                    var date = evaluatedArguments[0];
+                    var format = evaluatedArguments.length > 1 ? Std.string(evaluatedArguments[1]) : "HH:mm:ss";
+                    DateTools.formatTime(date, format);
                 } else {
-                    Flow.error.report("formatTime requires a Date argument.");
+                    Flow.error.report("formatTime requires a Date argument and optionally a format string.");
                 }
             case "diffInSeconds":
                 if (evaluatedArguments.length == 2 && Std.is(evaluatedArguments[0], Date) && Std.is(evaluatedArguments[1], Date)) {
-                    trace(DateTools.diffInSeconds(evaluatedArguments[0], evaluatedArguments[1]));
+                    DateTools.diffInSeconds(evaluatedArguments[0], evaluatedArguments[1]);
                 } else {
                     Flow.error.report("diffInSeconds requires two Date arguments.");
                 }

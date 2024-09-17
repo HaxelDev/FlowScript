@@ -1115,14 +1115,22 @@ class Parser {
             return new DateStatement("getCurrentTime");
         } else if (methodName == ".formatDate") {
             consume(TokenType.LPAREN, "Expected '(' after 'formatDate'");
-            var expression:Expression = parseExpression();
+            var dateExpression:Expression = parseExpression();
+            var formatExpression:Expression = null;
+            if (match([TokenType.COMMA])) {
+                formatExpression = parseExpression();
+            }
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new DateStatement("formatDate", [expression]);
+            return new DateStatement("formatDate", [dateExpression, formatExpression]);
         } else if (methodName == ".formatTime") {
             consume(TokenType.LPAREN, "Expected '(' after 'formatTime'");
-            var expression:Expression = parseExpression();
+            var timeExpression:Expression = parseExpression();
+            var formatExpression:Expression = null;
+            if (match([TokenType.COMMA])) {
+                formatExpression = parseExpression();
+            }
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new DateStatement("formatTime", [expression]);
+            return new DateStatement("formatTime", [timeExpression, formatExpression]);
         } else if (methodName == ".diffInSeconds") {
             consume(TokenType.LPAREN, "Expected '(' after 'diffInSeconds'");
             var expr1:Expression = parseExpression();
@@ -1761,14 +1769,30 @@ class Parser {
             return new DateExpression("getCurrentTime");
         } else if (methodName == ".formatDate") {
             consume(TokenType.LPAREN, "Expected '(' after 'formatDate'");
-            var expression:Expression = parseExpression();
+            var dateExpression:Expression = parseExpression();
+            var formatExpression:Expression = null;
+            if (match([TokenType.COMMA])) {
+                formatExpression = parseExpression();
+            }
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new DateExpression("formatDate", [expression]);
+            if (formatExpression != null) {
+                return new DateExpression("formatDate", [dateExpression, formatExpression]);
+            } else {
+                return new DateExpression("formatDate", [dateExpression]);
+            }
         } else if (methodName == ".formatTime") {
             consume(TokenType.LPAREN, "Expected '(' after 'formatTime'");
-            var expression:Expression = parseExpression();
+            var timeExpression:Expression = parseExpression();
+            var formatExpression:Expression = null;
+            if (match([TokenType.COMMA])) {
+                formatExpression = parseExpression();
+            }
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new DateExpression("formatTime", [expression]);
+            if (formatExpression != null) {
+                return new DateExpression("formatTime", [timeExpression, formatExpression]);
+            } else {
+                return new DateExpression("formatTime", [timeExpression]);
+            }
         } else if (methodName == ".fromString") {
             consume(TokenType.LPAREN, "Expected '(' after 'fromString'");
             var expression:Expression = parseExpression();

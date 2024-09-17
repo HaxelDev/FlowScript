@@ -21,16 +21,29 @@ class DateTools {
             + StringTools.lpad(Std.string(now.getSeconds()), "0", 2);
     }
 
-    public static function formatDate(date:Date):String {
-        return Std.string(date.getFullYear()) + "-" 
-            + StringTools.lpad(Std.string(date.getMonth() + 1), "0", 2) + "-" 
-            + StringTools.lpad(Std.string(date.getDate()), "0", 2);
+
+    public static function formatDate(date:Date, format:String = "yyyy-MM-dd"):String {
+        return formatDateString(date, format);
     }
 
-    public static function formatTime(date:Date):String {
-        return StringTools.lpad(Std.string(date.getHours()), "0", 2) + ":" 
-            + StringTools.lpad(Std.string(date.getMinutes()), "0", 2) + ":" 
-            + StringTools.lpad(Std.string(date.getSeconds()), "0", 2);
+    public static function formatTime(date:Date, format:String = "HH:mm:ss"):String {
+        return formatTimeString(date, format);
+    }
+
+    private static function formatDateString(date:Date, format:String):String {
+        var formatted = format;
+        formatted = formatted.replace("yyyy", Std.string(date.getFullYear()));
+        formatted = formatted.replace("MM", StringTools.lpad(Std.string(date.getMonth() + 1), "0", 2));
+        formatted = formatted.replace("dd", StringTools.lpad(Std.string(date.getDate()), "0", 2));
+        return formatted;
+    }
+
+    private static function formatTimeString(date:Date, format:String):String {
+        var formatted = format;
+        formatted = formatted.replace("HH", StringTools.lpad(Std.string(date.getHours()), "0", 2));
+        formatted = formatted.replace("mm", StringTools.lpad(Std.string(date.getMinutes()), "0", 2));
+        formatted = formatted.replace("ss", StringTools.lpad(Std.string(date.getSeconds()), "0", 2));
+        return formatted;
     }
 
     public static function fromString(dateString:String):Date {
