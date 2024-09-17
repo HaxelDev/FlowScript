@@ -1121,7 +1121,11 @@ class Parser {
                 formatExpression = parseExpression();
             }
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new DateStatement("formatDate", [dateExpression, formatExpression]);
+            if (formatExpression != null) {
+                return new DateStatement("formatDate", [dateExpression, formatExpression]);
+            } else {
+                return new DateStatement("formatDate", [dateExpression]);
+            }
         } else if (methodName == ".formatTime") {
             consume(TokenType.LPAREN, "Expected '(' after 'formatTime'");
             var timeExpression:Expression = parseExpression();
@@ -1130,7 +1134,11 @@ class Parser {
                 formatExpression = parseExpression();
             }
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new DateStatement("formatTime", [timeExpression, formatExpression]);
+            if (formatExpression != null) {
+                return new DateStatement("formatTime", [timeExpression, formatExpression]);
+            } else {
+                return new DateStatement("formatTime", [timeExpression]);
+            }
         } else if (methodName == ".diffInSeconds") {
             consume(TokenType.LPAREN, "Expected '(' after 'diffInSeconds'");
             var expr1:Expression = parseExpression();
