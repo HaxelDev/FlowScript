@@ -3498,11 +3498,11 @@ class DateStatement extends Statement {
 
         switch (methodName) {
             case "getCurrentDateTime":
-                trace(DateTools.getCurrentDateTime());
+                DateTools.getCurrentDateTime();
             case "getCurrentDate":
-                trace(DateTools.getCurrentDate());
+                DateTools.getCurrentDate();
             case "getCurrentTime":
-                trace(DateTools.getCurrentTime());
+                DateTools.getCurrentTime();
             case "formatDate":
                 if (evaluatedArguments.length >= 1 && Std.is(evaluatedArguments[0], Date)) {
                     var date = evaluatedArguments[0];
