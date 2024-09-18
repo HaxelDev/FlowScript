@@ -2065,6 +2065,28 @@ class Parser {
             var end: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after arguments");
             return new RangeExpression(start, end);
+        } else if (name == "padStart") {
+            consume(TokenType.LPAREN, "Expected '(' after 'padStart'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'padStart'");
+            var lengthExpr: Expression = parseExpression();
+            var charExpr: Expression = null;
+            if (match([TokenType.COMMA])) {
+                charExpr = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new PadStartFunctionCall(stringExpr, lengthExpr, charExpr);
+        } else if (name == "padEnd") {
+            consume(TokenType.LPAREN, "Expected '(' after 'padEnd'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'padEnd'");
+            var lengthExpr: Expression = parseExpression();
+            var charExpr: Expression = null;
+            if (match([TokenType.COMMA])) {
+                charExpr = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new PadEndFunctionCall(stringExpr, lengthExpr, charExpr);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;

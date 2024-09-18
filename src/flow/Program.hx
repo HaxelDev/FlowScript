@@ -2774,6 +2774,74 @@ class RepeatFunctionCall extends Expression {
     }
 }
 
+class PadStartFunctionCall extends Expression {
+    public var stringExpr: Expression;
+    public var lengthExpr: Expression;
+    public var charExpr: Expression;
+
+    public function new(stringExpr: Expression, lengthExpr: Expression, charExpr: Expression) {
+        this.stringExpr = stringExpr;
+        this.lengthExpr = lengthExpr;
+        this.charExpr = charExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strValue = stringExpr.evaluate();
+        var lengthValue = lengthExpr.evaluate();
+        var charValue = charExpr != null ? charExpr.evaluate() : " ";
+
+        var str = cast(strValue, String);
+        var length = cast(lengthValue, Int);
+        var paddingChar = cast(charValue, String);
+
+        if (paddingChar.length != 1) {
+            Flow.error.report("Padding character must be a single character.");
+        }
+
+        var paddingLength = Std.int(Math.max(0, length - str.length));
+        var padding = "";
+        for (i in 0...paddingLength) {
+            padding += paddingChar;
+        }
+
+        return padding + str;
+    }
+}
+
+class PadEndFunctionCall extends Expression {
+    public var stringExpr: Expression;
+    public var lengthExpr: Expression;
+    public var charExpr: Expression;
+
+    public function new(stringExpr: Expression, lengthExpr: Expression, charExpr: Expression) {
+        this.stringExpr = stringExpr;
+        this.lengthExpr = lengthExpr;
+        this.charExpr = charExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var strValue = stringExpr.evaluate();
+        var lengthValue = lengthExpr.evaluate();
+        var charValue = charExpr != null ? charExpr.evaluate() : " ";
+
+        var str = cast(strValue, String);
+        var length = cast(lengthValue, Int);
+        var paddingChar = cast(charValue, String);
+
+        if (paddingChar.length != 1) {
+            Flow.error.report("Padding character must be a single character.");
+        }
+
+        var paddingLength = Std.int(Math.max(0, length - str.length));
+        var padding = "";
+        for (i in 0...paddingLength) {
+            padding += paddingChar;
+        }
+
+        return str + padding;
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
