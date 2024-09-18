@@ -2087,6 +2087,29 @@ class Parser {
             }
             consume(TokenType.RPAREN, "Expected ')' after arguments");
             return new PadEndFunctionCall(stringExpr, lengthExpr, charExpr);
+        } else if (name == "regex") {
+            consume(TokenType.LPAREN, "Expected '(' after 'regex'");
+            var patternExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after pattern argument in 'regex'");
+            var flagsExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new RegexFunctionCall(patternExpr, flagsExpr);
+        } else if (name == "regexMatch") {
+            consume(TokenType.LPAREN, "Expected '(' after 'regexMatch'");
+            var regexExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after regex argument in 'regexMatch'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new RegexMatchFunctionCall(regexExpr, stringExpr);
+        } else if (name == "regexReplace") {
+            consume(TokenType.LPAREN, "Expected '(' after 'regexReplace'");
+            var regexExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after regex argument in 'regexReplace'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'regexReplace'");
+            var replacementExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new RegexReplaceFunctionCall(regexExpr, stringExpr, replacementExpr);        
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;

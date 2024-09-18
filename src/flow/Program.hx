@@ -2842,6 +2842,70 @@ class PadEndFunctionCall extends Expression {
     }
 }
 
+class RegexFunctionCall extends Expression {
+    public var patternExpr: Expression;
+    public var flagsExpr: Expression;
+
+    public function new(patternExpr: Expression, flagsExpr: Expression) {
+        this.patternExpr = patternExpr;
+        this.flagsExpr = flagsExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var patternValue = patternExpr.evaluate();
+        var flagsValue = flagsExpr.evaluate();
+
+        var pattern = cast(patternValue, String);
+        var flags = cast(flagsValue, String);
+
+        return new EReg(pattern, flags);
+    }
+}
+
+class RegexMatchFunctionCall extends Expression {
+    public var regexExpr: Expression;
+    public var stringExpr: Expression;
+
+    public function new(regexExpr: Expression, stringExpr: Expression) {
+        this.regexExpr = regexExpr;
+        this.stringExpr = stringExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var regexValue = regexExpr.evaluate();
+        var stringValue = stringExpr.evaluate();
+
+        var regex = cast(regexValue, EReg);
+        var str = cast(stringValue, String);
+
+        return regex.match(str);
+    }
+}
+
+class RegexReplaceFunctionCall extends Expression {
+    public var regexExpr: Expression;
+    public var stringExpr: Expression;
+    public var replacementExpr: Expression;
+
+    public function new(regexExpr: Expression, stringExpr: Expression, replacementExpr: Expression) {
+        this.regexExpr = regexExpr;
+        this.stringExpr = stringExpr;
+        this.replacementExpr = replacementExpr;
+    }
+
+    public override function evaluate(): Dynamic {
+        var regexValue = regexExpr.evaluate();
+        var stringValue = stringExpr.evaluate();
+        var replacementValue = replacementExpr.evaluate();
+
+        var regex = cast(regexValue, EReg);
+        var str = cast(stringValue, String);
+        var replacement = cast(replacementValue, String);
+
+        return regex.replace(str, replacement);
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
