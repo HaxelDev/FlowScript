@@ -2906,6 +2906,28 @@ class RegexReplaceFunctionCall extends Expression {
     }
 }
 
+class IsEmptyFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var value = argument.evaluate();
+
+        if (Std.is(value, String)) {
+            var str = cast(value, String);
+            return str.length == 0;
+        } else if (Std.is(value, Array)) {
+            var arr = cast(value, Array<Dynamic>);
+            return arr.length == 0;
+        }
+
+        return false;
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;

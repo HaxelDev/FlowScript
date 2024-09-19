@@ -180,6 +180,8 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token, lineNumber);
             case "do":
                 return new Token(TokenType.KEYWORD, token, lineNumber);
+            case "lambda":
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "in":
                 return new Token(TokenType.IN, token, lineNumber);
             case "case":
@@ -250,6 +252,8 @@ class Lexer {
                 return new Token(TokenType.SEMICOLON, token, lineNumber);
             case "!":
                 return new Token(TokenType.BANG, token, lineNumber);
+            case "=>":
+                return new Token(TokenType.ARROW, token, lineNumber);
             default:
                 if (isNumeric(token)) {
                     return new Token(TokenType.NUMBER, token, lineNumber);
@@ -313,6 +317,8 @@ class Lexer {
                 return TokenType.QUESTION;
             case "%":
                 return TokenType.MODULO;
+            case "=>":
+                return TokenType.ARROW;
             default:
                 return TokenType.SYMBOL;
         }
@@ -392,4 +398,5 @@ enum TokenType {
     PLUS_PLUS;
     MINUS_MINUS;
     QUESTION;
+    ARROW;
 }

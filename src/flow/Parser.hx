@@ -1188,6 +1188,8 @@ class Parser {
             var keyword:String = advance().value;
             if (keyword == "func") {
                 return parseFunctionLiteral();
+            } else if (keyword == "lambda") {
+                return parseLambdaExpression();
             } else if (keyword == "new") {
                 return parseNewExpression();
             }
@@ -1197,6 +1199,37 @@ class Parser {
             return parseObjectLiteral();
         }
         return parseTernaryExpression();
+    }
+
+    private function parseLambdaExpression(): Expression {
+        var parameters: Array<Parameter> = [];
+        if (match([TokenType.LPAREN])) {
+            parameters = parseParameterList();
+            consume(TokenType.RPAREN, "Expected ')' after parameters");
+        } else {
+            parameters.push(parseParameter());
+        }
+        consume(TokenType.ARROW, "Expected '=>' after lambda parameters");
+        var singleExpression: Expression = parseExpression();
+        var body: BlockStatement = new BlockStatement([new ReturnStatement(singleExpression)]);
+        return new FunctionLiteralExpression(parameters, body);
+    }
+
+    private function parseParameterList(): Array<Parameter> {
+        var parameters: Array<Parameter> = [];
+        do {
+            parameters.push(parseParameter());
+        } while (match([TokenType.COMMA]));
+        return parameters;
+    }
+    
+    private function parseParameter(): Parameter {
+        var name: String = consume(TokenType.IDENTIFIER, "Expected parameter name").value;
+        var defaultValue: Expression = null;
+        if (match([TokenType.EQUAL])) {
+            defaultValue = parseExpression();
+        }
+        return new Parameter(name, defaultValue);
     }
 
     private function parseTernaryExpression():Expression {
@@ -2109,7 +2142,12 @@ class Parser {
             consume(TokenType.COMMA, "Expected ',' after string argument in 'regexReplace'");
             var replacementExpr: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after arguments");
-            return new RegexReplaceFunctionCall(regexExpr, stringExpr, replacementExpr);        
+            return new RegexReplaceFunctionCall(regexExpr, stringExpr, replacementExpr);
+        } else if (name == "isEmpty") {
+            consume(TokenType.LPAREN, "Expected '(' after 'isEmpty'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new IsEmptyFunctionCall(argument);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;
