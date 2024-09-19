@@ -1206,8 +1206,6 @@ class Parser {
         if (match([TokenType.LPAREN])) {
             parameters = parseParameterList();
             consume(TokenType.RPAREN, "Expected ')' after parameters");
-        } else {
-            parameters.push(parseParameter());
         }
         consume(TokenType.ARROW, "Expected '=>' after lambda parameters");
         var singleExpression: Expression = parseExpression();
