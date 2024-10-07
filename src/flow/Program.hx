@@ -1031,7 +1031,8 @@ class ObjectExpression extends Expression {
             if (key == "new" && value is FunctionLiteralExpression) {
                 Reflect.setField(obj, key, function(...args) {
                     var instance = {};
-                    value.evaluate().apply(instance, args);
+                    var func = value.evaluate();
+                    func.apply(instance, args);
                     return instance;
                 });
             } else {
