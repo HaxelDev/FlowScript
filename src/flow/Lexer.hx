@@ -176,8 +176,6 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token, lineNumber);
             case "enum":
                 return new Token(TokenType.KEYWORD, token, lineNumber);
-            case "class":
-                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "do":
                 return new Token(TokenType.KEYWORD, token, lineNumber);
             case "lambda":
@@ -210,8 +208,6 @@ class Lexer {
                 return new Token(TokenType.OR, token, lineNumber);
             case "not":
                 return new Token(TokenType.NOT, token, lineNumber);
-            case "new":
-                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "%":
                 return new Token(TokenType.MODULO, token, lineNumber);
             case "<<":

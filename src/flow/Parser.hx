@@ -57,10 +57,6 @@ class Parser {
                 return parseErrorStatement();
             } else if (keyword == "enum") {
                 return parseEnumStatement();
-            } else if (keyword == "class") {
-                return parseClassStatement();
-            } else if (keyword == "new") {
-                return parseNewStatement();
             } else if (keyword == "do") {
                 return parseDoWhileStatement();
             } else {
@@ -193,7 +189,6 @@ class Parser {
                 break;
             }
         }
-
         consume(TokenType.RBRACE, "Expected '}' after object literal");
         return new ObjectExpression(properties);
     }
@@ -452,57 +447,6 @@ class Parser {
             consume(TokenType.RBRACE, "Expected '}' after enum values.");
         }
         return new EnumStatement(name, values);
-    }
-
-    private function parseClassStatement(): Statement {
-        var nameToken: Token = consume(TokenType.IDENTIFIER, "Expected class name after 'class'");
-        var name: String = nameToken.value;
-
-        var properties: Array<Statement> = [];
-        var methods: Array<Statement> = [];
-        var constructor: FuncStatement = null;
-
-        consume(TokenType.LBRACE, "Expected '{' after class name");
-
-        while (!check(TokenType.RBRACE) && !isAtEnd()) {
-            if (match([TokenType.KEYWORD])) {
-                var keyword: String = previous().value;
-                if (keyword == "let") {
-                    properties.push(parseLetStatement());
-                } else if (keyword == "func") {
-                    var funcStatement: Statement = parseFuncStatement();
-                    if (cast(funcStatement, FuncStatement).name == "constructor") {
-                        constructor = cast(funcStatement, FuncStatement);
-                    } else {
-                        methods.push(funcStatement);
-                    }
-                } else {
-                    Flow.error.report("Unexpected keyword in class: " + keyword);
-                }
-            } else {
-                Flow.error.report("Unexpected token in class: " + peek().value);
-            }
-        }
-
-        consume(TokenType.RBRACE, "Expected '}' after class body");
-        return new ClassStatement(name, properties, methods, constructor);
-    }
-
-    private function parseNewStatement():Statement {
-        var classNameToken:Token = consume(TokenType.IDENTIFIER, "Expected class name after 'new'");
-        var className:String = classNameToken.value;
-    
-        consume(TokenType.LPAREN, "Expected '(' after class name");
-        var arguments:Array<Expression> = [];
-        while (!check(TokenType.RPAREN)) {
-            arguments.push(parseExpression());
-            if (match([TokenType.COMMA])) {
-                // Consume comma
-            }
-        }
-        consume(TokenType.RPAREN, "Expected ')' after arguments");
-    
-        return new NewStatement(className, arguments);
     }
 
     private function parseDoWhileStatement():Statement {
@@ -1166,22 +1110,6 @@ class Parser {
         }
     }
 
-    private function parseNewExpression():Expression {
-        var classNameToken:Token = consume(TokenType.IDENTIFIER, "Expected class name after 'new'");
-        var className:String = classNameToken.value;
-    
-        consume(TokenType.LPAREN, "Expected '(' after class name");
-        var arguments:Array<Expression> = [];
-        while (!check(TokenType.RPAREN)) {
-            arguments.push(parseExpression());
-            if (match([TokenType.COMMA])) {
-                // Consume comma
-            }
-        }
-        consume(TokenType.RPAREN, "Expected ')' after arguments");
-        return new NewExpression(className, arguments);
-    }
-
     private function parseExpression():Expression {
         var firstTokenType:TokenType = peek().type;
         if (firstTokenType == TokenType.KEYWORD) {
@@ -1190,8 +1118,6 @@ class Parser {
                 return parseFunctionLiteral();
             } else if (keyword == "lambda") {
                 return parseLambdaExpression();
-            } else if (keyword == "new") {
-                return parseNewExpression();
             }
         } else if (firstTokenType == TokenType.LBRACKET) {
             return parseArrayLiteral();
