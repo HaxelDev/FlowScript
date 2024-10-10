@@ -1313,34 +1313,37 @@ class Parser {
     }
 
     private function parseString(): Expression {
-        var value:String = previous().value;
-        var parts:Array<Expression> = [];
-        var currentPart:String = "";
-        var i:Int = 0;
+        var value: String = previous().value;
+        var parts: Array<Expression> = [];
+        var currentPart: String = "";
+        var i: Int = 0;
 
         while (i < value.length) {
-            var char:String = value.charAt(i);
+            var char: String = value.charAt(i);
 
             if (char == '{') {
+
                 if (currentPart.length > 0) {
                     parts.push(new LiteralExpression(currentPart));
                     currentPart = "";
                 }
 
                 i++;
-                var varName:String = "";
+                var expression: String = "";
 
                 while (i < value.length && value.charAt(i) != '}') {
-                    varName += value.charAt(i);
+                    expression += value.charAt(i);
                     i++;
                 }
 
                 if (i < value.length && value.charAt(i) == '}') {
-                    if (varName.length > 0) {
-                        parts.push(new VariableExpression(varName));
-                    } else {
+                    if (expression.length == 0) {
                         parts.push(new LiteralExpression("{}"));
+                    } else {
+                        parts.push(parseEmbeddedExpression(expression));
                     }
+                } else {
+                    Flow.error.report("Unmatched '{' in string.", peek().lineNumber);
                 }
 
                 currentPart = "";
@@ -1355,7 +1358,12 @@ class Parser {
             parts.push(new LiteralExpression(currentPart));
         }
 
-        return new ConcatenationExpression(parts);
+        return new ConcatenationExpression(parts); 
+    }
+
+    private function parseEmbeddedExpression(expressionString: String): Expression {
+        var innerParser = new ExpressionParser(expressionString);
+        return innerParser.parseExpression();
     }
 
     private function parseIOExpression():Expression {
@@ -2182,5 +2190,179 @@ class Parser {
             Flow.error.report(message, peek().lineNumber);
         }
         return advance();
+    }
+}
+
+class ExpressionParser {
+    private var tokens: Array<Token>;
+    private var current: Int = 0;
+
+    public function new(source: String) {
+        this.tokens = Lexer.tokenize(source);
+    }
+
+    public function parseExpression(): Expression {
+        return parseTernaryExpression();
+    }
+
+    private function parseTernaryExpression(): Expression {
+        var expr = parseLogicalOr();
+        if (match([TokenType.QUESTION])) {
+            var trueBranch = parseExpression();
+            consume(TokenType.COLON, "Expected ':' after '?'");
+            var falseBranch = parseExpression();
+            return new TernaryExpression(expr, trueBranch, falseBranch);
+        }
+        return expr;
+    }
+
+    private function parseLogicalOr(): Expression {
+        var expr = parseLogicalAnd();
+        while (match([TokenType.OR])) {
+            var opera = previous().value;
+            var right = parseLogicalAnd();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+        return expr;
+    }
+
+    private function parseLogicalAnd(): Expression {
+        var expr = parseEquality();
+        while (match([TokenType.AND])) {
+            var opera = previous().value;
+            var right = parseEquality();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+        return expr;
+    }
+
+    private function parseEquality(): Expression {
+        var expr = parseComparison();
+        while (match([TokenType.EQUAL_EQUAL, TokenType.BANG_EQUAL])) {
+            var opera = previous().value;
+            var right = parseComparison();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+        return expr;
+    }
+
+    private function parseComparison(): Expression {
+        var expr = parseTerm();
+        while (match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])) {
+            var opera = previous().value;
+            var right = parseTerm();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+        return expr;
+    }
+
+    private function parseTerm(): Expression {
+        var expr = parseFactor();
+        while (match([TokenType.PLUS, TokenType.MINUS])) {
+            var opera = previous().value;
+            var right = parseFactor();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+        return expr;
+    }
+
+    private function parseFactor(): Expression {
+        var expr = parseUnary();
+        while (match([TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MODULO])) {
+            var opera = previous().value;
+            var right = parseUnary();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+        return expr;
+    }
+
+    private function parseUnary(): Expression {
+        if (match([TokenType.NOT])) {
+            var operand = parseUnary();
+            return new UnaryExpression(previous().value, operand, true);
+        } else if (match([TokenType.MINUS])) {
+            var operand = parseUnary();
+            return new UnaryExpression(previous().value, operand, true);
+        }
+        return parsePrimary();
+    }
+
+    private function parsePrimary(): Expression {
+        if (match([TokenType.NUMBER])) {
+            var value = previous().value;
+            return new LiteralExpression(value.indexOf(".") != -1 ? Std.parseFloat(value) : Std.parseInt(value));
+        } else if (match([TokenType.STRING])) {
+            return new LiteralExpression(previous().value);
+        } else if (match([TokenType.IDENTIFIER])) {
+            return parseIdentifierOrCall();
+        } else if (match([TokenType.TRUE])) {
+            return new LiteralExpression(true);
+        } else if (match([TokenType.FALSE])) {
+            return new LiteralExpression(false);
+        } else if (match([TokenType.LPAREN])) {
+            var expr = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return expr;
+        }
+
+        Flow.error.report("Unexpected token: " + peek().value, peek().lineNumber);
+        return null;
+    }
+
+    private function parseIdentifierOrCall(): Expression {
+        var name = previous().value;
+        if (match([TokenType.LPAREN])) {
+            return parseCallExpression(name);
+        }
+        return new VariableExpression(name);
+    }
+
+    private function parseCallExpression(name: String): Expression {
+        var args: Array<Expression> = [];
+        if (!check(TokenType.RPAREN)) {
+            do {
+                args.push(parseExpression());
+            } while (match([TokenType.COMMA]));
+        }
+        consume(TokenType.RPAREN, "Expected ')' after arguments");
+        return new CallExpression(name, args);
+    }
+
+    private function match(types: Array<TokenType>): Bool {
+        for (type in types) {
+            if (check(type)) {
+                advance();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private function check(type: TokenType): Bool {
+        if (isAtEnd()) return false;
+        return peek().type == type;
+    }
+
+    private function advance(): Token {
+        if (!isAtEnd()) current++;
+        return previous();
+    }
+
+    private function consume(type: TokenType, message: String): Token {
+        if (check(type)) return advance();
+        Flow.error.report(message, peek().lineNumber);
+        return null;
+    }
+
+    private function isAtEnd(): Bool {
+        return current >= tokens.length;
+    }
+
+    private function peek(): Token {
+        return tokens[current];
+    }
+
+    private function previous(): Token {
+        return tokens[current - 1];
     }
 }
