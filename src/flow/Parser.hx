@@ -1229,12 +1229,14 @@ class Parser {
 
     private function parseUnary(): Expression {
         if (match([TokenType.NOT])) {
-            return parseLogicalNot();
+            var operand = parseUnary();
+            return new UnaryExpression("not", operand, true);
         } else if (match([TokenType.MINUS])) {
-            return parseUnaryMinus();
+            var operand = parseUnary();
+            return new UnaryExpression("-", operand, true);
         } else if (match([TokenType.PLUS_PLUS, TokenType.MINUS_MINUS])) {
-            var opera: String = previous().value;
-            var operand: Expression = parseUnary();
+            var opera = previous().value;
+            var operand = parseUnary();
             return new UnaryExpression(opera, operand, true);
         }
         return parsePrimary();
@@ -1354,16 +1356,6 @@ class Parser {
         }
 
         return new ConcatenationExpression(parts);
-    }
-
-    private function parseLogicalNot():Expression {
-        var expr = parseLogicalAnd();
-        return new UnaryExpression("not", expr, true);
-    }
-
-    private function parseUnaryMinus():Expression {
-        var expr = parseExpression();
-        return new UnaryExpression("-", expr, true);
     }
 
     private function parseIOExpression():Expression {
