@@ -1208,25 +1208,40 @@ class Parser {
     }
 
     private function parseTerm(): Expression {
-        var expr: Expression = parseFactor();
-        while (match([TokenType.PLUS, TokenType.MINUS, TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MODULO])) {
-            var opera: String = previous().value;
-            var right: Expression = parseFactor();
+        var expr = parseFactor();
+        while (match([TokenType.PLUS, TokenType.MINUS])) {
+            var opera = previous().value;
+            var right = parseFactor();
             expr = new BinaryExpression(expr, opera, right);
         }
         return expr;
     }
 
-    private function parseFactor():Expression {
+    private function parseFactor(): Expression {
+        var expr = parseUnary();
+        while (match([TokenType.MULTIPLY, TokenType.DIVIDE, TokenType.MODULO])) {
+            var opera = previous().value;
+            var right = parseUnary();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+        return expr;
+    }
+
+    private function parseUnary(): Expression {
         if (match([TokenType.NOT])) {
             return parseLogicalNot();
         } else if (match([TokenType.MINUS])) {
             return parseUnaryMinus();
         } else if (match([TokenType.PLUS_PLUS, TokenType.MINUS_MINUS])) {
             var opera: String = previous().value;
-            var operand: Expression = parseFactor();
+            var operand: Expression = parseUnary();
             return new UnaryExpression(opera, operand, true);
-        } else if (match([TokenType.NUMBER])) {
+        }
+        return parsePrimary();
+    }
+
+    private function parsePrimary(): Expression {
+        if (match([TokenType.NUMBER])) {
             var value:String = previous().value;
             if (value.indexOf(".") != -1) {
                 return new LiteralExpression(Std.parseFloat(value));
