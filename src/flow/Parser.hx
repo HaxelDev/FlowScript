@@ -2311,21 +2311,355 @@ class ExpressionParser {
 
     private function parseIdentifierOrCall(): Expression {
         var name = previous().value;
-        if (match([TokenType.LPAREN])) {
+        if (check(TokenType.LPAREN)) {
             return parseCallExpression(name);
+        } else if (match([TokenType.DOT])) {
+            return parsePropertyAccess(new VariableExpression(name));
         }
         return new VariableExpression(name);
     }
 
+    private function parsePropertyAccess(object: Expression): Expression {
+        var obj:Expression = new VariableExpression(previous().value);
+        while (match([TokenType.DOT, TokenType.LBRACKET])) {
+            if (peek().type == TokenType.DOT) {
+                var property:Token = consume(TokenType.IDENTIFIER, "Expected property name");
+                if (property.value == "length") {
+                    obj = new PropertyAccessExpression(obj, "length");
+                } else {
+                    obj = new PropertyAccessExpression(obj, property.value);
+                }
+            } else {
+                consume(TokenType.LBRACKET, "Expected '[' after array name");
+                var index:Expression = parseExpression();
+                consume(TokenType.RBRACKET, "Expected ']' after array index");
+                obj = new ArrayAccessExpression(obj, index);
+            }
+        }
+        return obj;
+    }
+
     private function parseCallExpression(name: String): Expression {
         var args: Array<Expression> = [];
-        if (!check(TokenType.RPAREN)) {
-            do {
-                args.push(parseExpression());
-            } while (match([TokenType.COMMA]));
+
+        if (name == "chr") {
+            consume(TokenType.LPAREN, "Expected '(' after 'chr'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ChrFunctionCall(argument);
+        } else if (name == "fill") {
+            consume(TokenType.LPAREN, "Expected '(' after 'fill'");
+            var size: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after size argument in 'fill'");
+            var value: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new FillFunctionCall(size, value);
+        } else if (name == "charAt") {
+            consume(TokenType.LPAREN, "Expected '(' after 'charAt'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'charAt'");
+            var indexExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CharAtFunctionCall(stringExpr, indexExpr);
+        } else if (name == "charCodeAt") {
+            consume(TokenType.LPAREN, "Expected '(' after 'charCodeAt'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'charCodeAt'");
+            var indexExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CharCodeAtFunctionCall(stringExpr, indexExpr);
+        } else if (name == "push") {
+            consume(TokenType.LPAREN, "Expected '(' after 'push'");
+            var array: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after array argument in 'push'");
+            var value: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments in 'push'");
+            return new PushFunctionCall(array, value);
+        } else if (name == "pop") {
+            consume(TokenType.LPAREN, "Expected '(' after 'pop'");
+            var array: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after array argument in 'pop'");
+            var variableToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name after ','");
+            consume(TokenType.RPAREN, "Expected ')' after arguments in 'pop'");
+            var variable: String = variableToken.value;
+            return new PopFunctionCall(array, variable);
+        } else if (name == "remove") {
+            consume(TokenType.LPAREN, "Expected '(' after 'remove'");
+            var array: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after array argument in 'remove'");
+            var element: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after element argument in 'remove'");
+            var variableToken: Token = consume(TokenType.IDENTIFIER, "Expected variable name after ','");
+            consume(TokenType.RPAREN, "Expected ')' after arguments in 'remove'");
+            var variable: String = variableToken.value;
+            return new RemoveFunctionCall(array, element, variable);            
+        } else if (name == "str") {
+            consume(TokenType.LPAREN, "Expected '(' after 'str'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new StrFunctionCall(argument);
+        } else if (name == "substring") {
+            consume(TokenType.LPAREN, "Expected '(' after 'substring'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'substring'");
+            var startExpr: Expression = parseExpression();
+            var endExpr: Expression = null;
+            if (match([TokenType.COMMA])) {
+                endExpr = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new SubstringFunctionCall(stringExpr, startExpr, endExpr);
+        } else if (name == "toUpperCase") {
+            consume(TokenType.LPAREN, "Expected '(' after 'toUpperCase'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ToUpperCaseFunctionCall(argument);
+        } else if (name == "toLowerCase") {
+            consume(TokenType.LPAREN, "Expected '(' after 'toLowerCase'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ToLowerCaseFunctionCall(argument);
+        } else if (name == "join") {
+            consume(TokenType.LPAREN, "Expected '(' after 'join'");
+            var arrayExpr: Expression = parseExpression();
+            var delimiterExpr: Expression = null;
+            if (match([TokenType.COMMA])) {
+                delimiterExpr = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new JoinFunctionCall(arrayExpr, delimiterExpr);
+        } else if (name == "split") {
+            consume(TokenType.LPAREN, "Expected '(' after 'split'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'split'");
+            var delimiterExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new SplitFunctionCall(stringExpr, delimiterExpr);
+        } else if (name == "parseNumber") {
+            consume(TokenType.LPAREN, "Expected '(' after 'parseNumber'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ParseNumberFunctionCall(argument);
+        } else if (name == "replace") {
+            consume(TokenType.LPAREN, "Expected '(' after 'replace'");
+            var stringExpr:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'replace'");
+            var targetExpr:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after target argument in 'replace'");
+            var replacementExpr:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new ReplaceFunctionCall(stringExpr, targetExpr, replacementExpr);
+        } else if (name == "trim") {
+            consume(TokenType.LPAREN, "Expected '(' after 'trim'");
+            var argument:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new TrimFunctionCall(argument);
+        } else if (name == "concat") {
+            consume(TokenType.LPAREN, "Expected '(' after 'concat'");
+            var firstExpr:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after first string argument in 'concat'");
+            var secondExpr:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new ConcatFunctionCall(firstExpr, secondExpr);
+        } else if (name == "indexOf") {
+            consume(TokenType.LPAREN, "Expected '(' after 'indexOf'");
+            var stringExpr:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'indexOf'");
+            var searchExpr:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new IndexOfFunctionCall(stringExpr, searchExpr);
+        } else if (name == "toString") {
+            consume(TokenType.LPAREN, "Expected '(' after 'toString'");
+            var argument:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ToStringFunctionCall(argument);
+        } else if (name == "startsWith") {
+            consume(TokenType.LPAREN, "Expected '(' after 'startsWith'");
+            var stringOrArrayExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after first argument in 'startsWith'");
+            var searchExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new StartsWithFunctionCall(stringOrArrayExpr, searchExpr);
+        } else if (name == "endsWith") {
+            consume(TokenType.LPAREN, "Expected '(' after 'endsWith'");
+            var stringOrArrayExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after first argument in 'endsWith'");
+            var searchExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new EndsWithFunctionCall(stringOrArrayExpr, searchExpr);
+        } else if (name == "slice") {
+            consume(TokenType.LPAREN, "Expected '(' after 'slice'");
+            var stringOrArrayExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after first argument in 'slice'");
+            var startExpr: Expression = parseExpression();
+            var endExpr: Expression = null;
+            if (match([TokenType.COMMA])) {
+                endExpr = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new SliceFunctionCall(stringOrArrayExpr, startExpr, endExpr);
+        } else if (name == "set") {
+            consume(TokenType.LPAREN, "Expected '(' after 'set'");
+            var targetExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after target expression in 'set'");
+            var keyExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after key expression in 'set'");
+            var valueExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after value expression in 'set'");
+            return new SetFunctionCall(targetExpr, keyExpr, valueExpr);
+        } else if (name == "get") {
+            consume(TokenType.LPAREN, "Expected '(' after 'get'");
+            var targetExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after target expression in 'get'");
+            var keyExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after key expression in 'get'");
+            return new GetFunctionCall(targetExpr, keyExpr);
+        } else if (name == "exists") {
+            consume(TokenType.LPAREN, "Expected '(' after 'exists'");
+            var targetExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after target expression in 'exists'");
+            var keyExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after key expression in 'exists'");
+            return new ExistsFunctionCall(targetExpr, keyExpr);
+        } else if (name == "sort") {
+            consume(TokenType.LPAREN, "Expected '(' after 'sort'");
+            var arrayExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after array argument in 'sort'");
+            return new SortFunctionCall(arrayExpr);
+        } else if (name == "capitalize") {
+            consume(TokenType.LPAREN, "Expected '(' after 'capitalize'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new CapitalizeFunctionCall(argument);
+        } else if (name == "reverse") {
+            consume(TokenType.LPAREN, "Expected '(' after 'reverse'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ReverseFunctionCall(argument);
+        } else if (name == "isDigit") {
+            consume(TokenType.LPAREN, "Expected '(' after 'isDigit'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new IsDigitFunctionCall(argument);
+        } else if (name == "isNumeric") {
+            consume(TokenType.LPAREN, "Expected '(' after 'isNumeric'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new IsNumericFunctionCall(argument);
+        } else if (name == "center") {
+            consume(TokenType.LPAREN, "Expected '(' after 'center'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after argument");
+            var width: Expression = parseExpression();
+            var fillChar: Expression = null;
+            if (match([TokenType.COMMA])) {
+                fillChar = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CenterFunctionCall(argument, width, fillChar);
+        } else if (name == "count") {
+            consume(TokenType.LPAREN, "Expected '(' after 'count'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after first argument");
+            var target: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CountFunctionCall(argument, target);
+        } else if (name == "calculate") {
+            consume(TokenType.LPAREN, "Expected '(' after 'eval'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new CalculateFunctionCall(argument);
+        } else if (name == "repeat") {
+            consume(TokenType.LPAREN, "Expected '(' after 'repeat'");
+            var stringArgument:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument");
+            var countArgument:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new RepeatFunctionCall(stringArgument, countArgument);
+        } else if (name == "range") {
+            consume(TokenType.LPAREN, "Expected '(' after 'range'");
+            var start: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after start argument");
+            var end: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new RangeExpression(start, end);
+        } else if (name == "padStart") {
+            consume(TokenType.LPAREN, "Expected '(' after 'padStart'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'padStart'");
+            var lengthExpr: Expression = parseExpression();
+            var charExpr: Expression = null;
+            if (match([TokenType.COMMA])) {
+                charExpr = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new PadStartFunctionCall(stringExpr, lengthExpr, charExpr);
+        } else if (name == "padEnd") {
+            consume(TokenType.LPAREN, "Expected '(' after 'padEnd'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'padEnd'");
+            var lengthExpr: Expression = parseExpression();
+            var charExpr: Expression = null;
+            if (match([TokenType.COMMA])) {
+                charExpr = parseExpression();
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new PadEndFunctionCall(stringExpr, lengthExpr, charExpr);
+        } else if (name == "regex") {
+            consume(TokenType.LPAREN, "Expected '(' after 'regex'");
+            var patternExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after pattern argument in 'regex'");
+            var flagsExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new RegexFunctionCall(patternExpr, flagsExpr);
+        } else if (name == "regexMatch") {
+            consume(TokenType.LPAREN, "Expected '(' after 'regexMatch'");
+            var regexExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after regex argument in 'regexMatch'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new RegexMatchFunctionCall(regexExpr, stringExpr);
+        } else if (name == "regexReplace") {
+            consume(TokenType.LPAREN, "Expected '(' after 'regexReplace'");
+            var regexExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after regex argument in 'regexReplace'");
+            var stringExpr: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after string argument in 'regexReplace'");
+            var replacementExpr: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new RegexReplaceFunctionCall(regexExpr, stringExpr, replacementExpr);
+        } else if (name == "isEmpty") {
+            consume(TokenType.LPAREN, "Expected '(' after 'isEmpty'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new IsEmptyFunctionCall(argument);
         }
-        consume(TokenType.RPAREN, "Expected ')' after arguments");
-        return new CallExpression(name, args);
+
+        var isMethodCall: Bool = name.indexOf(".") > -1;
+        if (isMethodCall) {
+            var parts: Array<String> = name.split(".");
+            var objectName: String = parts.shift();
+            var methodName: String = parts.join(".");
+            consume(TokenType.LPAREN, "Expected '(' after method name");
+            while (!check(TokenType.RPAREN)) {
+                args.push(parseExpression());
+                if (match([TokenType.COMMA])) {
+                    // Consume comma
+                }
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new MethodCallExpression(objectName, methodName, args);
+        } else {
+            consume(TokenType.LPAREN, "Expected '(' after function name");
+            while (!check(TokenType.RPAREN)) {
+                args.push(parseExpression());
+                if (match([TokenType.COMMA])) {
+                    // Consume comma
+                }
+            }
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return new CallExpression(name, args);
+        }
     }
 
     private function match(types: Array<TokenType>): Bool {
