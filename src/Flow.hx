@@ -86,8 +86,7 @@ class Flow {
       name: projectName,
       version: "0.1.0",
       main: "main.flow",
-      src: "src",
-      dependencies: {}
+      src: "src"
     };
     var jsonData = Json.stringify(projectData, null, "  ");
     File.saveContent(projectDir + "/project.json", jsonData);
@@ -132,7 +131,6 @@ class Flow {
         Logger.log('Version: ' + projectData.version);
         Logger.log('Main Script: ' + projectData.main);
         Logger.log('Source Directory: ' + projectData.src);
-        Logger.log('Dependencies: ' + Json.stringify(projectData.dependencies));
       } else {
         printHelp();
       }

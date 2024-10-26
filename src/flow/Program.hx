@@ -1287,32 +1287,110 @@ class DefaultClause {
 }
 
 class ImportStatement extends Statement {
-    public var scriptFile:String;
+    public var name:String;
+    public var version:String;
+    public var isLibrary:Bool;
 
-    public function new(scriptFile:String) {
-        this.scriptFile = scriptFile;
+    public function new(name:String, version:String, isLibrary:Bool) {
+        this.name = name;
+        this.version = version;
+        this.isLibrary = isLibrary;
     }
 
     public override function execute():Void {
-        var scriptPath = getScriptPath();
-        if (!sys.FileSystem.exists(scriptPath)) {
-            Flow.error.report('Script file "$scriptPath" does not exist.');
+        if (isLibrary) {
+            var libraryPath = getLibraryPath();
+            if (!sys.FileSystem.exists(libraryPath)) {
+                Flow.error.report('Library "$libraryPath" does not exist.');
+                return;
+            }
+            var files = getLibrarySourceFiles(libraryPath);
+            for (file in files) {
+                importFile(file);
+            }
+        } else {
+            var scriptPath = getScriptPath();
+            if (!sys.FileSystem.exists(scriptPath)) {
+                Flow.error.report('Script file "$scriptPath" does not exist.');
+                return;
+            }
+            importFile(scriptPath);
         }
-        var code = sys.io.File.getContent(scriptPath);
-        var tokens:Array<flow.Lexer.Token> = Lexer.tokenize(code);
-        var parser:Parser = new Parser(tokens);
-        var program:Program = parser.parse();
-        program.execute();
+    }
+
+    private function getLibraryPath():String {
+        var platform = Sys.systemName().toLowerCase();
+        var flowLibPath:String;
+
+        switch (platform) {
+            case "windows":
+                flowLibPath = "C:/FlowLib";
+            case "linux":
+                flowLibPath = "/usr/local/FlowLib";
+            case "macos":
+                flowLibPath = "/usr/local/FlowLib";
+            default:
+                throw "Unsupported platform: " + platform;
+        }
+
+        return flowLibPath + "/" + name + "/" + (version != null ? version : "latest");
+    }
+
+    private function getLibrarySourceFiles(libraryPath:String):Array<String> {
+        var libraryConfig = getLibraryConfig(libraryPath);
+        if (libraryConfig == null) {
+            Flow.error.report('Library configuration file not found in "$libraryPath".');
+            return [];
+        }
+
+        var sourceFiles:Array<String> = [];
+        var srcDir = libraryPath + "/" + libraryConfig.src;
+
+        if (sys.FileSystem.exists(srcDir) && sys.FileSystem.isDirectory(srcDir)) {
+            for (file in sys.FileSystem.readDirectory(srcDir)) {
+                var filePath = srcDir + "/" + file;
+                if (!sys.FileSystem.isDirectory(filePath) && StringTools.endsWith(file, ".flow")) {
+                    sourceFiles.push(filePath);
+                }
+            }
+        } else {
+            Flow.error.report('Source directory "$srcDir" for library does not exist.');
+        }
+
+        return sourceFiles;
+    }
+
+    private function getLibraryConfig(libraryPath:String):Dynamic {
+        var configPath = libraryPath + "/library.json";
+        if (sys.FileSystem.exists(configPath)) {
+            var jsonData = sys.io.File.getContent(configPath);
+            try {
+                return haxe.Json.parse(jsonData);
+            } catch (e:Dynamic) {
+                Flow.error.report('Error parsing library configuration file: $e');
+            }
+        } else {
+            Flow.error.report('Library configuration file "$configPath" does not exist.');
+        }
+        return null;
     }
 
     private function getScriptPath():String {
         if (sys.FileSystem.exists("project.json")) {
             var jsonData = sys.io.File.getContent("project.json");
             var projectData:Dynamic = Json.parse(jsonData);
-            return projectData.src + "/" + scriptFile;
+            return projectData.src + "/" + name;
         } else {
-            return scriptFile;
+            return name;
         }
+    }
+
+    private function importFile(filePath:String):Void {
+        var code = sys.io.File.getContent(filePath);
+        var tokens:Array<flow.Lexer.Token> = Lexer.tokenize(code);
+        var parser:Parser = new Parser(tokens);
+        var program:Program = parser.parse();
+        program.execute();
     }
 }
 

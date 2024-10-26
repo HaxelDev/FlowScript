@@ -4,6 +4,8 @@ import flow.Lexer;
 import flow.Program;
 import logs.*;
 
+using StringTools;
+
 class Parser {
     private var tokens:Array<Token>;
     private var currentTokenIndex:Int;
@@ -405,9 +407,22 @@ class Parser {
         return new SwitchStatement(expression, cases, defaultClause);
     }
 
-    private function parseImportStatement():Statement {
-        var scriptFile:Token = consume(TokenType.STRING, "Expected script file name after 'import'");
-        return new ImportStatement(scriptFile.value);
+    private function parseImportStatement():Statement { 
+        var firstToken:Token = consume(TokenType.STRING, "Expected library or script identifier");
+        if (firstToken.value.startsWith("lib::")) {
+            var parts = firstToken.value.split("::");
+            var libraryName = parts[1].trim();
+            var version:String = null;
+            if (match([TokenType.COMMA])) {
+                var versionToken:Token = consume(TokenType.STRING, "Expected version after comma");
+                if (versionToken.value.startsWith("v::")) {
+                    version = versionToken.value.split("::")[1].trim();
+                }
+            }
+            return new ImportStatement(libraryName, version, true);
+        } else {
+            return new ImportStatement(firstToken.value, null, false);
+        }
     }
 
     private function parseTryStatement(): Statement {
