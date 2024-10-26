@@ -530,9 +530,6 @@ class BinaryExpression extends Expression {
                 if (leftIsString || rightIsString) {
                     Flow.error.report("Unsupported operator '/' for strings");
                     return null;
-                } else if (rightValue == 0) {
-                    Flow.error.report("Division by zero error");
-                    return null;
                 } else {
                     return leftValue / rightValue;
                 }
