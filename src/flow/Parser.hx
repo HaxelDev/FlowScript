@@ -1867,6 +1867,16 @@ class Parser {
             var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new StrFunctionCall(argument);
+        } else if (name == "int") {
+            consume(TokenType.LPAREN, "Expected '(' after 'int'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new IntFunctionCall(argument);
+        } else if (name == "float") {
+            consume(TokenType.LPAREN, "Expected '(' after 'float'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new FloatFunctionCall(argument);
         } else if (name == "substring") {
             consume(TokenType.LPAREN, "Expected '(' after 'substring'");
             var stringExpr: Expression = parseExpression();
@@ -1909,6 +1919,16 @@ class Parser {
             var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new ParseNumberFunctionCall(argument);
+        } else if (name == "parseInt") {
+            consume(TokenType.LPAREN, "Expected '(' after 'parseInt'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new IntFunctionCall(argument);
+        } else if (name == "parseFloat") {
+            consume(TokenType.LPAREN, "Expected '(' after 'parseFloat'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new FloatFunctionCall(argument);
         } else if (name == "replace") {
             consume(TokenType.LPAREN, "Expected '(' after 'replace'");
             var stringExpr:Expression = parseExpression();
@@ -2413,6 +2433,16 @@ class ExpressionParser {
             var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new StrFunctionCall(argument);
+        } else if (name == "int") {
+            consume(TokenType.LPAREN, "Expected '(' after 'int'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new IntFunctionCall(argument);
+        } else if (name == "float") {
+            consume(TokenType.LPAREN, "Expected '(' after 'float'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new FloatFunctionCall(argument);
         } else if (name == "substring") {
             consume(TokenType.LPAREN, "Expected '(' after 'substring'");
             var stringExpr: Expression = parseExpression();
@@ -2455,6 +2485,16 @@ class ExpressionParser {
             var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new ParseNumberFunctionCall(argument);
+        } else if (name == "parseInt") {
+            consume(TokenType.LPAREN, "Expected '(' after 'parseInt'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new IntFunctionCall(argument);
+        } else if (name == "parseFloat") {
+            consume(TokenType.LPAREN, "Expected '(' after 'parseFloat'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new FloatFunctionCall(argument);
         } else if (name == "replace") {
             consume(TokenType.LPAREN, "Expected '(' after 'replace'");
             var stringExpr:Expression = parseExpression();

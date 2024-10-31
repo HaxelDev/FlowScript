@@ -1889,6 +1889,34 @@ class ParseNumberFunctionCall extends Expression {
     }
 }
 
+class IntFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var argValue = argument.evaluate();
+        var str = cast(argValue, String);
+        return Std.parseInt(str);
+    }
+}
+
+class FloatFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var argValue = argument.evaluate();
+        var str = cast(argValue, String);
+        return Std.parseFloat(str);
+    }
+}
+
 class ReplaceFunctionCall extends Expression {
     public var stringExpr: Expression;
     public var targetExpr: Expression;
