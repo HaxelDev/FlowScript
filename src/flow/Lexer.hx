@@ -146,6 +146,8 @@ class Lexer {
                 return new Token(TokenType.TRUE, token, lineNumber);
             case "false":
                 return new Token(TokenType.FALSE, token, lineNumber);
+            case "null":
+                return new Token(TokenType.NULL, token, lineNumber);
             case "if":
                 return new Token(TokenType.KEYWORD, token, lineNumber);
             case "else":
@@ -372,6 +374,7 @@ enum TokenType {
     SEMICOLON;
     TRUE;
     FALSE;
+    NULL;
     AND;
     OR;
     IN;

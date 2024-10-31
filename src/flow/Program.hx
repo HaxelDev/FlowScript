@@ -3483,10 +3483,14 @@ class MathStatement extends Statement {
 class HttpExpression extends Expression {
     public var methodName:String;
     public var urlExpression:Expression;
+    public var dataExpression:Expression;
+    public var headers:Map<String, String>;
 
-    public function new(methodName:String, urlExpression:Expression) {
+    public function new(methodName:String, urlExpression:Expression, ?dataExpression:Expression = null, ?headers:Map<String, String> = null) {
         this.methodName = methodName;
         this.urlExpression = urlExpression;
+        this.dataExpression = dataExpression;
+        this.headers = headers != null ? headers : new Map<String, String>();
     }
 
     public override function evaluate():Dynamic {
@@ -3505,6 +3509,9 @@ class HttpExpression extends Expression {
     private function handleGetRequest(url:String):Dynamic {
         var result:Dynamic = null;
         var http = new haxe.Http(url);
+        for (header in headers.keys()) {
+            http.setHeader(header, headers[header]);
+        }
         http.onData = function(response:String) {
             result = response;
         };
@@ -3518,12 +3525,17 @@ class HttpExpression extends Expression {
     private function handlePostRequest(url:String):Dynamic {
         var result:Dynamic = null;
         var http = new haxe.Http(url);
+        for (header in headers.keys()) {
+            http.setHeader(header, headers[header]);
+        }
+        var data = if (dataExpression != null) dataExpression.evaluate() else null;
         http.onData = function(response:String) {
             result = response;
         };
         http.onError = function(error:String) {
             Flow.error.report("POST request failed: " + error);
         };
+        http.setPostData(data);
         http.request(true);
         return result;
     }
@@ -3532,16 +3544,23 @@ class HttpExpression extends Expression {
 class HttpStatement extends Statement {
     public var methodName:String;
     public var urlExpression:Expression;
+    public var dataExpression:Expression;
+    public var headers:Map<String, String>;
 
-    public function new(methodName:String, urlExpression:Expression) {
+    public function new(methodName:String, urlExpression:Expression, ?dataExpression:Expression = null, ?headers:Map<String, String> = null) {
         this.methodName = methodName;
         this.urlExpression = urlExpression;
+        this.dataExpression = dataExpression;
+        this.headers = headers != null ? headers : new Map<String, String>();
     }
 
     public override function execute():Void {
         var url = urlExpression.evaluate();
         if (methodName == "get") {
             var http = new haxe.Http(url);
+            for (header in headers.keys()) {
+                http.setHeader(header, headers[header]);
+            }
             http.onData = function(response:String) {
                 return response;
             };
@@ -3551,12 +3570,17 @@ class HttpStatement extends Statement {
             http.request(false);
         } else if (methodName == "post") {
             var http = new haxe.Http(url);
+            for (header in headers.keys()) {
+                http.setHeader(header, headers[header]);
+            }
+            var data = if (dataExpression != null) dataExpression.evaluate() else null;
             http.onData = function(response:String) {
                 return response;
             };
             http.onError = function(error:String) {
                 Flow.error.report("POST request failed: " + error);
             };
+            http.setPostData(data);
             http.request(true);
         }
     }
