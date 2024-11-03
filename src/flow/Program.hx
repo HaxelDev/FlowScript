@@ -1070,6 +1070,24 @@ class PropertyAccessExpression extends Expression {
     }
 }
 
+class NewExpression extends Expression {
+    public var obj:Expression;
+
+    public function new(obj:Expression) {
+        this.obj = obj;
+    }
+
+    public override function evaluate():Dynamic {
+        var objValue:Dynamic = obj.evaluate();
+        if (Reflect.hasField(objValue, "newInstance")) {
+            return Reflect.callMethod(objValue, Reflect.field(objValue, "newInstance"), []);
+        } else {
+            Flow.error.report("Object does not have a 'new' method.");
+            return null;
+        }
+    }
+}
+
 class ArrayAccessExpression extends Expression {
     public var array:Expression;
     public var index:Expression;

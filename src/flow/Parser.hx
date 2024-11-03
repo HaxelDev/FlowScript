@@ -2227,7 +2227,9 @@ class Parser {
         while (match([TokenType.DOT, TokenType.LBRACKET])) {
             if (peek().type == TokenType.DOT) {
                 var property:Token = consume(TokenType.IDENTIFIER, "Expected property name");
-                if (property.value == "length") {
+                if (property.value == "new") {
+                    obj = new NewExpression(obj);
+                } else if (property.value == "length") {
                     obj = new PropertyAccessExpression(obj, "length");
                 } else {
                     obj = new PropertyAccessExpression(obj, property.value);
@@ -2459,7 +2461,9 @@ class ExpressionParser {
         while (match([TokenType.DOT, TokenType.LBRACKET])) {
             if (peek().type == TokenType.DOT) {
                 var property:Token = consume(TokenType.IDENTIFIER, "Expected property name");
-                if (property.value == "length") {
+                if (property.value == "new") {
+                    obj = new NewExpression(obj);
+                } else if (property.value == "length") {
                     obj = new PropertyAccessExpression(obj, "length");
                 } else {
                     obj = new PropertyAccessExpression(obj, property.value);
