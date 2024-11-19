@@ -1,0 +1,67 @@
+let BrainFuck = {
+    run: func(program) {
+        let memory = []
+        for i in range(0, 30000)
+            call push(memory, 0)
+
+        let pointer = 0
+        let pc = 0
+        let output = ""
+
+        while pc < program.length {
+            switch charAt(program, pc) {
+                case '>': {
+                    pointer++
+                    if pointer >= memory.length
+                        pointer = 0
+                }
+                case '<': {
+                    pointer--
+                    if pointer < 0
+                        pointer = memory.length - 1
+                }
+                case '+': {
+                    memory[pointer] = (memory[pointer] + 1) % 256
+                }
+                case '-': {
+                    memory[pointer] = (memory[pointer] - 1 + 256) % 256
+                }
+                case '.': {
+                    output += chr(memory[pointer])
+                }
+                case ',': {}
+                case '[': {
+                    if memory[pointer] == 0 {
+                        let loop = 1
+                        while loop > 0 {
+                            pc++
+                            let a = charAt(program, pc)
+                            if charAt(program, pc) == '['
+                                loop++
+                            else if charAt(program, pc) == ']'
+                                loop--
+                        }
+                    }
+                }
+                case ']': {
+                    if memory[pointer] != 0 {
+                        let loop = 1
+                        while loop > 0 {
+                            pc--
+                            if charAt(program, pc) == '['
+                                loop--
+                            else if charAt(program, pc) == ']'
+                                loop++
+                        }
+                    }
+                }
+            }
+            pc++
+        }
+
+        return output
+    }
+}
+
+print(BrainFuck.run(">+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.>>>++++++++[<++++>-]
+<.>>>++++++++++[<+++++++++>-]<---.<<<<.+++.------.--------.>>+.>++++++++++"))
