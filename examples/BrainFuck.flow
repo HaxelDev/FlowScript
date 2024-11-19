@@ -1,5 +1,5 @@
 let BrainFuck = {
-    run: func(program) {
+    run: func(program, input = null) {
         let memory = []
         for i in range(0, 30000)
             call push(memory, 0)
@@ -7,6 +7,7 @@ let BrainFuck = {
         let pointer = 0
         let pc = 0
         let output = ""
+        let inputPointer = 0
 
         while pc < program.length {
             switch charAt(program, pc) {
@@ -29,7 +30,13 @@ let BrainFuck = {
                 case '.': {
                     output += chr(memory[pointer])
                 }
-                case ',': {}
+                case ',': {
+                    if (inputPointer < input.length) {
+                        memory[pointer] = charCodeAt(input, inputPointer++)
+                    } else {
+                        memory[pointer] = 0
+                    }
+                }
                 case '[': {
                     if memory[pointer] == 0 {
                         let loop = 1
