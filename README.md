@@ -15,10 +15,6 @@ FlowScript is a simple, lightweight scripting language designed to be easy to le
 * **Lightweight**: FlowScript is built to be lightweight and efficient, allowing it to run smoothly on a wide range of devices.
 * **Powerful features**: FlowScript provides a range of powerful features, including [list specific features, e.g. functions, loops, conditional statements, etc.].
 
-## Website
-
-FlowScript also has a dedicated website: [Flow Script Website](https://flow-script.onrender.com)
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](https://opensource.org/licenses/MIT) file for details.
