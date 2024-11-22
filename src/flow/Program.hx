@@ -1098,7 +1098,7 @@ class ArrayAccessExpression extends Expression {
     }
 
     public override function evaluate():Dynamic {
-        var arrayValue:Array<Dynamic> = array.evaluate();
+        var arrayValue:Dynamic = array.evaluate();
         var indexValue:Int = index.evaluate();
 
         if (arrayValue == null) {
@@ -1106,27 +1106,29 @@ class ArrayAccessExpression extends Expression {
             return null;
         }
 
+        var castArray = cast(arrayValue, Array<Dynamic>);
+
         if (indexValue < 0) {
-            indexValue += arrayValue.length;
+            indexValue += castArray.length;
         }
 
-        if (indexValue < 0 || indexValue >= arrayValue.length) {
+        if (indexValue < 0 || indexValue >= castArray.length) {
             Flow.error.report("Index out of bounds: " + indexValue);
             return null;
         }
 
-        return arrayValue[indexValue];
+        return castArray[indexValue];
     }
 }
 
 class ArrayAssignmentStatement extends Statement {
     public var arrayName:String;
-    public var index:Expression;
+    public var indices:Array<Expression>;
     public var value:Expression;
 
-    public function new(arrayName:String, index:Expression, value:Expression) {
+    public function new(arrayName:String, indices:Array<Expression>, value:Expression) {
         this.arrayName = arrayName;
-        this.index = index;
+        this.indices = indices;
         this.value = value;
     }
 
@@ -1137,18 +1139,32 @@ class ArrayAssignmentStatement extends Statement {
             return;
         }
 
-        var indexValue:Int = index.evaluate();
+        var evaluatedValue = value.evaluate();
+        var currentValue = arrayValue;
 
-        if (indexValue < 0) {
-            indexValue += arrayValue.length;
+        for (i in 0...indices.length) {
+            var indexValue:Int = indices[i].evaluate();
+
+            if (indexValue < 0) {
+                indexValue += currentValue.length;
+            }
+
+            if (indexValue < 0 || indexValue >= currentValue.length) {
+                Flow.error.report("Index out of bounds: " + indexValue);
+                return;
+            }
+
+            if (i == indices.length - 1) {
+                currentValue[indexValue] = evaluatedValue;
+            } else {
+                currentValue = currentValue[indexValue];
+                if (currentValue == null) {
+                    Flow.error.report("Undefined reference during assignment.");
+                    return;
+                }
+            }
         }
 
-        if (indexValue < 0 || indexValue >= arrayValue.length) {
-            Flow.error.report("Index out of bounds: " + indexValue);
-            return;
-        }
-
-        arrayValue[indexValue] = value.evaluate();
         Environment.define(arrayName, arrayValue);
     }
 }

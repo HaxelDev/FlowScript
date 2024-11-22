@@ -222,12 +222,19 @@ class Parser {
 
     private function parseArrayAssignment():Statement {
         var arrayName:String = advance().value;
-        consume(TokenType.LBRACKET, "Expected '[' after array name");
-        var index:Expression = parseExpression();
-        consume(TokenType.RBRACKET, "Expected ']' after array index");
-        consume(TokenType.EQUAL, "Expected '=' after array index");
+        var indices:Array<Expression> = [];
+        while (true) {
+            consume(TokenType.LBRACKET, "Expected '[' after array name or index");
+            var index:Expression = parseExpression();
+            indices.push(index);
+            consume(TokenType.RBRACKET, "Expected ']' after array index");
+            if (!check(TokenType.LBRACKET)) {
+                break;
+            }
+        }
+        consume(TokenType.EQUAL, "Expected '=' after array indices");
         var value:Expression = parseExpression();
-        return new ArrayAssignmentStatement(arrayName, index, value);
+        return new ArrayAssignmentStatement(arrayName, indices, value);
     }
 
     private function parsePrintStatement():Statement {
@@ -2234,7 +2241,7 @@ class Parser {
                 } else {
                     obj = new PropertyAccessExpression(obj, property.value);
                 }
-            } else {
+            } else if (peek().type == TokenType.LBRACKET) {
                 consume(TokenType.LBRACKET, "Expected '[' after array name");
                 var index:Expression = parseExpression();
                 consume(TokenType.RBRACKET, "Expected ']' after array index");
@@ -2246,10 +2253,12 @@ class Parser {
 
     private function parseArrayAccess():Expression {
         var expr:Expression = new VariableExpression(previous().value);
-        consume(TokenType.LBRACKET, "Expected '[' after array name");
-        var index:Expression = parseExpression();
-        consume(TokenType.RBRACKET, "Expected ']' after array index");
-        return new ArrayAccessExpression(expr, index);
+        while (match([TokenType.LBRACKET])) {
+            var index:Expression = parseExpression();
+            consume(TokenType.RBRACKET, "Expected ']' after array index");
+            expr = new ArrayAccessExpression(expr, index);
+        }
+        return expr;
     }
 
     private function advance():Token {
@@ -2450,6 +2459,8 @@ class ExpressionParser {
         var name = previous().value;
         if (check(TokenType.LPAREN)) {
             return parseCallExpression(name);
+        } else if (check(TokenType.LBRACKET)) {
+            return parseArrayAccess(new VariableExpression(name));
         } else if (match([TokenType.DOT])) {
             return parsePropertyAccess(new VariableExpression(name));
         }
@@ -2468,7 +2479,7 @@ class ExpressionParser {
                 } else {
                     obj = new PropertyAccessExpression(obj, property.value);
                 }
-            } else {
+            } else if (peek().type == TokenType.LBRACKET) {
                 consume(TokenType.LBRACKET, "Expected '[' after array name");
                 var index:Expression = parseExpression();
                 consume(TokenType.RBRACKET, "Expected ']' after array index");
@@ -3286,6 +3297,16 @@ class ExpressionParser {
             }
         }
         return false;
+    }
+
+    private function parseArrayAccess(object: Expression):Expression {
+        var expr:Expression = new VariableExpression(previous().value);
+        while (match([TokenType.LBRACKET])) {
+            var index:Expression = parseExpression();
+            consume(TokenType.RBRACKET, "Expected ']' after array index");
+            expr = new ArrayAccessExpression(expr, index);
+        }
+        return expr;
     }
 
     private function check(type: TokenType): Bool {
