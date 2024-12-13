@@ -2143,8 +2143,14 @@ class Parser {
             var start: Expression = parseExpression();
             consume(TokenType.COMMA, "Expected ',' after start argument");
             var end: Expression = parseExpression();
+            var step: Expression = null;
+            if (match([TokenType.COMMA])) {
+                step = parseExpression();
+            } else {
+                step = new LiteralExpression(1);
+            }
             consume(TokenType.RPAREN, "Expected ')' after arguments");
-            return new RangeExpression(start, end);
+            return new RangeExpression(start, end, step);
         } else if (name == "padStart") {
             consume(TokenType.LPAREN, "Expected '(' after 'padStart'");
             var stringExpr: Expression = parseExpression();
@@ -3208,8 +3214,14 @@ class ExpressionParser {
             var start: Expression = parseExpression();
             consume(TokenType.COMMA, "Expected ',' after start argument");
             var end: Expression = parseExpression();
+            var step: Expression = null;
+            if (match([TokenType.COMMA])) {
+                step = parseExpression();
+            } else {
+                step = new LiteralExpression(1);
+            }
             consume(TokenType.RPAREN, "Expected ')' after arguments");
-            return new RangeExpression(start, end);
+            return new RangeExpression(start, end, step);
         } else if (name == "padStart") {
             consume(TokenType.LPAREN, "Expected '(' after 'padStart'");
             var stringExpr: Expression = parseExpression();

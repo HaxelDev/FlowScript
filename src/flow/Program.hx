@@ -728,32 +728,37 @@ class ForStatement extends Statement {
 class RangeExpression extends Expression {
     public var start:Expression;
     public var end:Expression;
+    public var step:Expression;
 
-    public function new(start:Expression, end:Expression) {
+    public function new(start:Expression, end:Expression, step:Expression) {
         this.start = start;
         this.end = end;
+        this.step = step;
     }
 
     public override function evaluate():Iterable<Int> {
         var startValue:Dynamic = start.evaluate();
         var endValue:Dynamic = end.evaluate();
+        var stepValue:Dynamic = step.evaluate();
 
-        if (!Std.is(startValue, Int) || !Std.is(endValue, Int)) {
-            Flow.error.report("Range start or end value is not a valid integer");
+        if (!Std.is(startValue, Int) || !Std.is(endValue, Int) || !Std.is(stepValue, Int)) {
+            Flow.error.report("Range start, end, or step value is not a valid integer");
             return null;
         }
 
-        return new RangeIterable(cast(startValue, Int), cast(endValue, Int));
+        return new RangeIterable(cast(startValue, Int), cast(endValue, Int), cast(stepValue, Int));
     }    
 }
 
 class RangeIterable {
     public var start:Int;
     public var end:Int;
+    public var step:Int;
 
-    public function new(start:Int, end:Int) {
+    public function new(start:Int, end:Int, step:Int) {
         this.start = start;
         this.end = end;
+        this.step = step;
     }
 
     public function iterator():Iterator<Int> {
@@ -761,10 +766,12 @@ class RangeIterable {
 
         return {
             hasNext: function():Bool {
-                return current <= end;
+                return (step > 0 && current <= end) || (step < 0 && current >= end);
             },
             next: function():Int {
-                return current++;
+                var value = current;
+                current += step;
+                return value;
             }
         };
     }

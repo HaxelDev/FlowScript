@@ -1,0 +1,15 @@
+func diamond(height) {
+    let width = height * 2 - 1
+
+    for i in range(1, height + 1) {
+        let stars = repeat("*", i * 2 - 1)
+        print(center(stars, width + 2))
+    }
+
+    for i in range(height - 1, 0, -1) {
+        let stars = repeat("*", i * 2 - -1)
+        print(center(stars, width + 2))
+    }
+}
+
+call diamond(5)
