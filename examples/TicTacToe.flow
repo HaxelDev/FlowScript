@@ -28,11 +28,11 @@ func main() {
 }
 
 func printBoard() {
-    print("-----------------")
+    print("-------------")
     for row in board {
         print("| " + join(row, " | ") + " |")
     }
-    print("-----------------")
+    print("-------------")
 }
 
 func getPlayerMove() {

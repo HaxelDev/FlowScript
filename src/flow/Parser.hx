@@ -2247,11 +2247,6 @@ class Parser {
                 } else {
                     obj = new PropertyAccessExpression(obj, property.value);
                 }
-            } else if (peek().type == TokenType.LBRACKET) {
-                consume(TokenType.LBRACKET, "Expected '[' after array name");
-                var index:Expression = parseExpression();
-                consume(TokenType.RBRACKET, "Expected ']' after array index");
-                obj = new ArrayAccessExpression(obj, index);
             }
         }
         return obj;
@@ -2485,11 +2480,6 @@ class ExpressionParser {
                 } else {
                     obj = new PropertyAccessExpression(obj, property.value);
                 }
-            } else if (peek().type == TokenType.LBRACKET) {
-                consume(TokenType.LBRACKET, "Expected '[' after array name");
-                var index:Expression = parseExpression();
-                consume(TokenType.RBRACKET, "Expected ']' after array index");
-                obj = new ArrayAccessExpression(obj, index);
             }
         }
         return obj;
