@@ -176,6 +176,8 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token, lineNumber);
             case "catch":
                 return new Token(TokenType.KEYWORD, token, lineNumber);
+            case "class":
+                return new Token(TokenType.KEYWORD, token, lineNumber);
             case "enum":
                 return new Token(TokenType.KEYWORD, token, lineNumber);
             case "do":

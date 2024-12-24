@@ -1189,7 +1189,6 @@ class UnaryExpression extends Expression {
 
     public override function evaluate():Dynamic {
         var value = right.evaluate();
-        var variableName:String = null;
 
         if (opera == "-") {
             if (Std.is(value, Int) || Std.is(value, Float)) {
@@ -1200,38 +1199,28 @@ class UnaryExpression extends Expression {
             }
         }
 
-        if (Std.is(right, VariableExpression)) {
-            var variableExpr = cast right;
-            variableName = variableExpr.name;
-        } else {
-            Flow.error.report("Unary operator '" + opera + "' can only be applied to variables.");
-            return null;
-        }
-
-        var currentValue = Environment.get(variableName);
-
         switch (opera) {
-            case "++":
-                if (isPrefix) {
-                    currentValue += 1;
-                    Environment.define(variableName, currentValue);
-                    return currentValue;
+            case "++", "--":
+                if (Std.is(right, VariableExpression)) {
+                    var variableExpr = cast right;
+                    var variableName = variableExpr.name;
+                    var currentValue = Environment.get(variableName);
+                    if (Std.is(currentValue, Int) || Std.is(currentValue, Float)) {
+                        var numericValue = Std.parseFloat(Std.string(currentValue));
+                        if (opera == "++") {
+                            numericValue = if (isPrefix) numericValue + 1 else numericValue;
+                        } else if (opera == "--") {
+                            numericValue = if (isPrefix) numericValue - 1 else numericValue;
+                        }
+                        Environment.define(variableName, numericValue);
+                        return if (isPrefix) numericValue else currentValue;
+                    } else {
+                        Flow.error.report("Increment/decrement operator can only be applied to numeric values.");
+                        return null;
+                    }
                 } else {
-                    var oldValue = currentValue;
-                    currentValue += 1;
-                    Environment.define(variableName, currentValue);
-                    return oldValue;
-                }
-            case "--":
-                if (isPrefix) {
-                    currentValue -= 1;
-                    Environment.define(variableName, currentValue);
-                    return currentValue;
-                } else {
-                    var oldValue = currentValue;
-                    currentValue -= 1;
-                    Environment.define(variableName, currentValue);
-                    return oldValue;
+                    Flow.error.report("Increment/decrement operators can only be applied to variables.");
+                    return null;
                 }
             case "not":
                 if (Std.is(value, Bool)) {
