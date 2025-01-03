@@ -2201,6 +2201,20 @@ class Parser {
             var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new IsEmptyFunctionCall(argument);
+        } else if (name == "map") {
+            consume(TokenType.LPAREN, "Expected '(' after 'map'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after argument");
+            var transformer: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new MapFunctionCall(argument, transformer);
+        } else if (name == "filter") {
+            consume(TokenType.LPAREN, "Expected '(' after 'filter'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after argument");
+            var predicate: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new FilterFunctionCall(argument, predicate);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;
@@ -3262,6 +3276,20 @@ class ExpressionParser {
             var argument: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new IsEmptyFunctionCall(argument);
+        } else if (name == "map") {
+            consume(TokenType.LPAREN, "Expected '(' after 'map'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after argument");
+            var transformer: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new MapFunctionCall(argument, transformer);
+        } else if (name == "filter") {
+            consume(TokenType.LPAREN, "Expected '(' after 'filter'");
+            var argument: Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' after argument");
+            var predicate: Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new FilterFunctionCall(argument, predicate);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;

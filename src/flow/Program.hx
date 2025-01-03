@@ -2944,6 +2944,119 @@ class IsEmptyFunctionCall extends Expression {
     }
 }
 
+class MapFunctionCall extends Expression {
+    public var argument: Expression;
+    public var mapper: Expression;
+
+    public function new(argument: Expression, mapper: Expression) {
+        this.argument = argument;
+        this.mapper = mapper;
+    }
+
+    public override function evaluate(): Dynamic {
+        var value = argument.evaluate();
+
+        if (Std.is(value, Array)) {
+            var arr = cast(value, Array<Dynamic>);
+            var transformedArray = new Array<Dynamic>();
+
+            for (element in arr) {
+                transformedArray.push(evaluateMapper(element));
+            }
+
+            return transformedArray;
+        }
+
+        return [];
+    }
+
+    private function evaluateMapper(element: Dynamic): Dynamic {
+        if (Std.is(mapper, FunctionLiteralExpression)) {
+            var functionExpr = cast(mapper, FunctionLiteralExpression);
+            var functionContext = new Function(null, functionExpr.parameters, functionExpr.body);
+            return functionContext.execute([element]);
+        } else if (Std.is(mapper, Function)) {
+            return cast(mapper, Function).execute([element]);
+        } else if (Std.is(mapper, VariableExpression)) {
+            var funcName = cast(mapper, VariableExpression).name;
+            var func = Environment.get(funcName);
+            if (Std.is(func, Function)) {
+                return cast(func, Function).execute([element]);
+            } else if (func != null) {
+                return Environment.callFunction(funcName, [element]);
+            }
+        } else if (Std.is(mapper, MethodCallExpression)) {
+            var methodCall = cast(mapper, MethodCallExpression);
+            var obj = Environment.get(methodCall.objectName);
+            var method = Environment.getFunction(methodCall.methodName, obj);
+            if (method != null && Std.is(method, Function)) {
+                return cast(method, Function).execute([element]);
+            }
+        }
+        return null;
+    }
+}
+
+class FilterFunctionCall extends Expression {
+    public var argument: Expression;
+    public var predicate: Expression;
+
+    public function new(argument: Expression, predicate: Expression) {
+        this.argument = argument;
+        this.predicate = predicate;
+    }
+
+    public override function evaluate(): Dynamic {
+        var value = argument.evaluate();
+
+        if (Std.is(value, Array)) {
+            var arr = cast(value, Array<Dynamic>);
+            var filteredArray = new Array<Dynamic>();
+
+            for (i in 0...arr.length) {
+                if (evaluatePredicate(arr[i])) {
+                    filteredArray.push(arr[i]);
+                }
+            }
+
+            return filteredArray;
+        }
+
+        return [];
+    }
+
+    private function evaluatePredicate(element: Dynamic): Bool {
+        if (Std.is(predicate, FunctionLiteralExpression)) {
+            var functionExpr = cast(predicate, FunctionLiteralExpression);
+            var functionContext = new Function(null, functionExpr.parameters, functionExpr.body);
+            var result = functionContext.execute([element]);
+            return result != null && Std.is(result, Bool) ? cast(result, Bool) : false;
+        }  else if (Std.is(predicate, Function)) {
+            var result = cast(predicate, Function).execute([element]);
+            return result != null && Std.is(result, Bool) ? cast(result, Bool) : false;
+        } else if (Std.is(predicate, VariableExpression)) {
+            var funcName = cast(predicate, VariableExpression).name;
+            var func = Environment.get(funcName);
+            if (Std.is(func, Function)) {
+                var result = cast(func, Function).execute([element]);
+                return result != null && Std.is(result, Bool) ? cast(result, Bool) : false;
+            } else if (func != null) {
+                var result = Environment.callFunction(funcName, [element]);
+                return result != null && Std.is(result, Bool) ? cast(result, Bool) : false;
+            }
+        } else if (Std.is(predicate, MethodCallExpression)) {
+            var methodCall = cast(predicate, MethodCallExpression);
+            var obj = Environment.get(methodCall.objectName);
+            var method = Environment.getFunction(methodCall.methodName, obj);
+            if (method != null && Std.is(method, Function)) {
+                var result = cast(method, Function).execute([element]);
+                return Std.is(result, Bool) ? cast(result, Bool) : false;
+            }
+        }
+        return false;
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
