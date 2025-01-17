@@ -1,11 +1,10 @@
 func fibonacci(n) {
-    if n == 0 {
-        return 0
-    } else if n == 1 {
-        return 1
-    } else {
-        return fibonacci(n - 1) + fibonacci(n - 2)
+    let fibSequence = [0, 1]
+    for i in range(2, n) {
+        let nextValue = fibSequence[-1] + fibSequence[-2]
+        call push(fibSequence, nextValue)
     }
+    return fibSequence[-1]
 }
 
 print(fibonacci(10))

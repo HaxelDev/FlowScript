@@ -186,6 +186,8 @@ class Lexer {
                 return new Token(TokenType.KEYWORD, token, lineNumber);
             case "in":
                 return new Token(TokenType.IN, token, lineNumber);
+            case "as":
+                return new Token(TokenType.AS, token, lineNumber);
             case "case":
                 return new Token(TokenType.CASE, token, lineNumber);
             case "default":
@@ -380,6 +382,7 @@ enum TokenType {
     AND;
     OR;
     IN;
+    AS;
     MODULO;
     LEFT_SHIFT;
     RIGHT_SHIFT;
