@@ -1016,8 +1016,8 @@ class ReturnValue extends haxe.Exception {
     public var value:Dynamic;
 
     public function new(value:Dynamic) {
-        this.value = value;
         super('');
+        this.value = value;
     }
 }
 

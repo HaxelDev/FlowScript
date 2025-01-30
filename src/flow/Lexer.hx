@@ -1,5 +1,9 @@
 package flow;
 
+import haxe.Utf8;
+
+using UnicodeString;
+
 class Lexer {
     public static var currentLine:Int = 1;
 
@@ -327,8 +331,10 @@ class Lexer {
     }
 
     static private function isAlpha(char:String):Bool {
-        var code:Int = char.charCodeAt(0);
-        return (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+        var codePoint = Utf8.charCodeAt(char, 0);
+        return (codePoint >= 65 && codePoint <= 90) || (codePoint >= 97 && codePoint <= 122) ||
+            (codePoint >= 192 && codePoint <= 214) || (codePoint >= 216 && codePoint <= 246) ||
+            (codePoint >= 248 && codePoint <= 255);
     }
 
     static private function isNumeric(char:String):Bool {
