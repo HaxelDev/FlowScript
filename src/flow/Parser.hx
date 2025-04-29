@@ -597,6 +597,10 @@ class Parser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new IOStatement("println", [expression]);
+        } else if (methodName == ".readByte") {
+            consume(TokenType.LPAREN, "Expected '(' after 'readByte'");
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOStatement("readByte", []);
         } else if (methodName == ".writeByte") {
             consume(TokenType.LPAREN, "Expected '(' after 'writeByte'");
             var expression: Expression = parseExpression();
@@ -1444,6 +1448,10 @@ class Parser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new IOExpression("println", [expression]);
+        } else if (methodName == ".readByte") {
+            consume(TokenType.LPAREN, "Expected '(' after 'readByte'");
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOExpression("readByte", []);
         } else if (methodName == ".writeByte") {
             consume(TokenType.LPAREN, "Expected '(' after 'writeByte'");
             var expression: Expression = parseExpression();
@@ -2223,6 +2231,11 @@ class Parser {
             var predicate: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new FilterFunctionCall(argument, predicate);
+        } else if (name == "shift") {
+            consume(TokenType.LPAREN, "Expected '(' after 'shift'");
+            var argument:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ShiftFunctionCall(argument);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;
@@ -2525,6 +2538,10 @@ class ExpressionParser {
             var expression:Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
             return new IOExpression("println", [expression]);
+        } else if (methodName == ".readByte") {
+            consume(TokenType.LPAREN, "Expected '(' after 'readByte'");
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new IOExpression("readByte", []);
         } else if (methodName == ".writeByte") {
             consume(TokenType.LPAREN, "Expected '(' after 'writeByte'");
             var expression: Expression = parseExpression();
@@ -3302,6 +3319,11 @@ class ExpressionParser {
             var predicate: Expression = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after argument");
             return new FilterFunctionCall(argument, predicate);
+        } else if (name == "shift") {
+            consume(TokenType.LPAREN, "Expected '(' after 'shift'");
+            var argument:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after argument");
+            return new ShiftFunctionCall(argument);
         }
 
         var isMethodCall: Bool = name.indexOf(".") > -1;

@@ -16,6 +16,15 @@ class IO {
         Sys.stdout().writeString(value + "\n");
     }
 
+    public static function readByte():Int {
+        try {
+            return Sys.stdin().readByte();
+        } catch (e:Dynamic) {
+            Flow.error.report("Failed to read byte: " + e);
+            return -1;
+        }
+    }
+
     public static function writeByte(value:Int):Void {
         if (value < 0 || value > 255) {
             Flow.error.report("Invalid byte value: " + value);

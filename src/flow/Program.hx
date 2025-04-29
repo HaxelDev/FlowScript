@@ -3057,6 +3057,20 @@ class FilterFunctionCall extends Expression {
     }
 }
 
+class ShiftFunctionCall extends Expression {
+    public var argument: Expression;
+
+    public function new(argument: Expression) {
+        this.argument = argument;
+    }
+
+    public override function evaluate(): Dynamic {
+        var argValue = argument.evaluate();
+        var arg = cast(argValue, Array<Dynamic>);
+        return arg.shift();
+    }
+}
+
 class IOExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
@@ -3081,6 +3095,8 @@ class IOExpression extends Expression {
                 return null;
             case "readLine":
                 return IO.readLine(evaluatedArguments.join(" "));
+            case "readByte":
+                return IO.readByte();                
             case "writeByte":
                 if (evaluatedArguments.length == 1) {
                     var byteValue = evaluatedArguments[0];
@@ -3121,6 +3137,8 @@ class IOStatement extends Statement {
                 IO.println(evaluatedArguments.join(" "));
             case "readLine":
                 IO.readLine(evaluatedArguments.join(" "));
+            case "readByte":
+                IO.readByte();
             case "writeByte":
                 if (evaluatedArguments.length == 1) {
                     var byteValue = evaluatedArguments[0];
