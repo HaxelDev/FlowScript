@@ -15,8 +15,8 @@ class Json {
         }
     }
 
-    public static function stringify(data:Dynamic):String {
-        return stringifyValue(data);
+    public static function stringify(data:Dynamic, ?indent:Dynamic):String {
+        return stringifyValue(data, indent == null ? "" : indent);
     }
 
     public static function isValid(jsonString:String):Bool {
@@ -29,7 +29,10 @@ class Json {
         }
     }
 
-    private static function stringifyValue(value:Dynamic):String {
+    private static function stringifyValue(value:Dynamic, indent:String, level:Int = 0):String {
+        var spacing = indent != "" ? "\n" + StringTools.rpad("", " ", level * indent.length) : "";
+        var nextSpacing = indent != "" ? "\n" + StringTools.rpad("", " ", (level + 1) * indent.length) : "";
+
         switch (Type.typeof(value)) {
             case TNull:
                 return "null";
@@ -40,15 +43,16 @@ class Json {
             case TClass(String):
                 return quoteString(value);
             case TClass(Array):
-                return "[" + value.map(stringifyValue).join(",") + "]";
+                var arr = value.map(function(item) return stringifyValue(item, indent, level + 1));
+                return "[" + nextSpacing + arr.join("," + nextSpacing) + spacing + "]";
             case TObject:
                 var objFields:Array<String> = [];
                 for (field in Reflect.fields(value)) {
                     var key:String = field;
                     var fieldValue:Dynamic = Reflect.field(value, field);
-                    objFields.push(quoteString(key) + ":" + stringifyValue(fieldValue));
+                    objFields.push(quoteString(key) + ":" + (indent != "" ? " " : "") + stringifyValue(fieldValue, indent, level + 1));
                 }
-                return "{" + objFields.join(",") + "}";
+                return "{" + nextSpacing + objFields.join("," + nextSpacing) + spacing + "}";
             default:
                 return "null";
         }

@@ -929,9 +929,13 @@ class Parser {
             return new JsonStatement("parse", [expression]);
         } else if (methodName == ".stringify") {
             consume(TokenType.LPAREN, "Expected '(' after 'stringify'");
-            var expression:Expression = parseExpression();
+            var args:Array<Expression> = [];
+            args.push(parseExpression());
+            if (match([TokenType.COMMA])) {
+                args.push(parseExpression());
+            }
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new JsonStatement("stringify", [expression]);
+            return new JsonStatement("stringify", args);
         } else if (methodName == ".isValid") {
             consume(TokenType.LPAREN, "Expected '(' after 'isValid'");
             var expression:Expression = parseExpression();
@@ -1700,9 +1704,13 @@ class Parser {
             return new JsonExpression("parse", [expression]);
         } else if (methodName == ".stringify") {
             consume(TokenType.LPAREN, "Expected '(' after 'stringify'");
-            var expression:Expression = parseExpression();
+            var args:Array<Expression> = [];
+            args.push(parseExpression());
+            if (match([TokenType.COMMA])) {
+                args.push(parseExpression());
+            }
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new JsonExpression("stringify", [expression]);
+            return new JsonExpression("stringify", args);
         } else if (methodName == ".isValid") {
             consume(TokenType.LPAREN, "Expected '(' after 'isValid'");
             var expression:Expression = parseExpression();
@@ -2777,9 +2785,13 @@ class ExpressionParser {
             return new JsonExpression("parse", [expression]);
         } else if (methodName == ".stringify") {
             consume(TokenType.LPAREN, "Expected '(' after 'stringify'");
-            var expression:Expression = parseExpression();
+            var args:Array<Expression> = [];
+            args.push(parseExpression());
+            if (match([TokenType.COMMA])) {
+                args.push(parseExpression());
+            }
             consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new JsonExpression("stringify", [expression]);
+            return new JsonExpression("stringify", args);
         } else if (methodName == ".isValid") {
             consume(TokenType.LPAREN, "Expected '(' after 'isValid'");
             var expression:Expression = parseExpression();

@@ -3473,7 +3473,9 @@ class JsonExpression extends Expression {
             case "parse":
                 return Json.parse(evaluatedArguments[0]);
             case "stringify":
-                return Json.stringify(evaluatedArguments[0]);
+                var data = evaluatedArguments[0];
+                var indent = if (evaluatedArguments.length > 1 && evaluatedArguments[1] != null) Std.string(evaluatedArguments[1]) else null;
+                return Json.stringify(data, indent);
             case "isValid":
                 return Json.isValid(evaluatedArguments[0]);
         }
@@ -3501,7 +3503,9 @@ class JsonStatement extends Statement {
             case "parse":
                 Json.parse(evaluatedArguments[0]);
             case "stringify":
-                Json.stringify(evaluatedArguments[0]);
+                var data = evaluatedArguments[0];
+                var indent = if (evaluatedArguments.length > 1 && evaluatedArguments[1] != null) Std.string(evaluatedArguments[1]) else null;
+                Json.stringify(data, indent);
             case "isValid":
                 Json.isValid(evaluatedArguments[0]);
         }

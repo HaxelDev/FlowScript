@@ -7,9 +7,10 @@ let object = {
     ]
 }
 
-let json = Json().stringify(object)
+let json = Json().stringify(object, "\t")
+print(json)
+
 let parse = Json().parse(json)
-print(parse)
 
 print(parse.number)
 print(parse.string)
