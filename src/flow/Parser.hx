@@ -81,6 +81,8 @@ class Parser {
             return parseHttpStatement();
         } else if (firstTokenType == TokenType.DATE) {
             return parseDateStatement();
+        } else if (firstTokenType == TokenType.NDLL) {
+            return parseNdllStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
             if (peekNext().type == TokenType.LBRACKET) {
                 return parseArrayAssignment();
@@ -1158,6 +1160,43 @@ class Parser {
         }
     }
 
+    private function parseNdllStatement():Statement {
+        var ndllToken:Token = advance();
+        if (ndllToken.type != TokenType.NDLL) {
+            Flow.error.report("Expected 'Ndll' keyword", peek().lineNumber);
+            return null;
+        }
+
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('", peek().lineNumber);
+            return null;
+        }
+
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'", peek().lineNumber);
+            return null;
+        }
+
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".getFunction") {
+            consume(TokenType.LPAREN, "Expected '(' after 'getFunction'");
+            var ndll:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' ndll argument in 'getFunction'");
+            var method:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' method argument in 'getFunction'");
+            var args:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new NdllStatement("getFunction", [ndll, method, args]);
+        } else {
+            Flow.error.report("Unknown Ndll method: " + methodName, peek().lineNumber);
+            return null;
+        }
+    }
+
     private function parseBlock(): BlockStatement {
         if (match([TokenType.LBRACE])) {
             var statements:Array<Statement> = [];
@@ -1346,6 +1385,10 @@ class Parser {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
             return parseDateExpression();
+        } else if (match([TokenType.NDLL])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseNdllExpression();
         } else if (match([TokenType.IDENTIFIER])) {
             var expr: Expression = null;
             if (peek().type == TokenType.LPAREN) {
@@ -1726,6 +1769,25 @@ class Parser {
             return new JsonExpression("isValid", [expression]);
         } else {
             Flow.error.report("Unknown Json method: " + methodName, peek().lineNumber);
+            return null;
+        }
+    }
+
+    private function parseNdllExpression():Expression {
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".getFunction") {
+            consume(TokenType.LPAREN, "Expected '(' after 'getFunction'");
+            var ndll:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' ndll argument in 'getFunction'");
+            var method:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' method argument in 'getFunction'");
+            var args:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new NdllExpression("getFunction", [ndll, method, args]);
+        } else {
+            Flow.error.report("Unknown Ndll method: " + methodName, peek().lineNumber);
             return null;
         }
     }
@@ -2481,6 +2543,10 @@ class ExpressionParser {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
             return parseDateExpression();
+        } else if (match([TokenType.NDLL])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseNdllExpression();
         } else if (match([TokenType.LPAREN])) {
             var expr = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
@@ -2981,6 +3047,25 @@ class ExpressionParser {
             return new DateExpression("diffInSeconds", [expr1, expr2]);
         } else {
             Flow.error.report("Unknown Date method: " + methodName, peek().lineNumber);
+            return null;
+        }
+    }
+
+    private function parseNdllExpression():Expression {
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".getFunction") {
+            consume(TokenType.LPAREN, "Expected '(' after 'getFunction'");
+            var ndll:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' ndll argument in 'getFunction'");
+            var method:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' method argument in 'getFunction'");
+            var args:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new NdllExpression("getFunction", [ndll, method, args]);
+        } else {
+            Flow.error.report("Unknown Ndll method: " + methodName, peek().lineNumber);
             return null;
         }
     }

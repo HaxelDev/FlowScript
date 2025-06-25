@@ -3857,3 +3857,49 @@ class DateStatement extends Statement {
         }
     }
 }
+
+class NdllExpression extends Expression {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments != null ? arguments : [];
+    }
+
+    public override function evaluate():Dynamic {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "getFunction":
+                return Ndll.getFunction(evaluatedArguments[0], evaluatedArguments[1], evaluatedArguments[2]);
+        }
+
+        return null;
+    }
+}
+
+class NdllStatement extends Statement {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments != null ? arguments : [];
+    }
+
+    public override function execute():Void {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "getFunction":
+                Ndll.getFunction(evaluatedArguments[0], evaluatedArguments[1], evaluatedArguments[2]);
+        }
+    }
+}
