@@ -2,5 +2,10 @@
 -cpp bin
 -main Flow
 -D HXCPP_M64
+
 -lib console.hx
 -lib lime
+-lib hscript-improved
+
+--define CUSTOM_CLASSES
+--define hscriptPos

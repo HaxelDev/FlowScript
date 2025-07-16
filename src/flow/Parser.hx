@@ -83,6 +83,8 @@ class Parser {
             return parseDateStatement();
         } else if (firstTokenType == TokenType.NDLL) {
             return parseNdllStatement();
+        } else if (firstTokenType == TokenType.HX) {
+            return parseHXStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
             if (peekNext().type == TokenType.LBRACKET) {
                 return parseArrayAssignment();
@@ -1197,6 +1199,47 @@ class Parser {
         }
     }
 
+    private function parseHXStatement():Statement {
+        var hxToken:Token = advance();
+        if (hxToken.type != TokenType.HX) {
+            Flow.error.report("Expected 'HX' keyword", peek().lineNumber);
+            return null;
+        }
+        var lparenToken:Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('", peek().lineNumber);
+            return null;
+        }
+        var rparenToken:Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'", peek().lineNumber);
+            return null;
+        }
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+        if (methodName == ".eval") {
+            consume(TokenType.LPAREN, "Expected '(' after 'eval'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new HXStatement("eval", [expression]);
+        } else if (methodName == ".setVariable") {
+            consume(TokenType.LPAREN, "Expected '(' after 'setVariable'");
+            var name:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' name argument in 'getFunction'");
+            var value:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new HXStatement("getFunction", [name, value]);
+        } else if (methodName == ".getVariable") {
+            consume(TokenType.LPAREN, "Expected '(' after 'getVariable'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new HXStatement("getVariable", [expression]);
+        } else {
+            Flow.error.report("Unknown HX method: " + methodName, peek().lineNumber);
+            return null;
+        }
+    }
+
     private function parseBlock(): BlockStatement {
         if (match([TokenType.LBRACE])) {
             var statements:Array<Statement> = [];
@@ -1389,6 +1432,10 @@ class Parser {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
             return parseNdllExpression();
+        } else if (match([TokenType.HX])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseHXExpression();
         } else if (match([TokenType.IDENTIFIER])) {
             var expr: Expression = null;
             if (peek().type == TokenType.LPAREN) {
@@ -1773,25 +1820,6 @@ class Parser {
         }
     }
 
-    private function parseNdllExpression():Expression {
-        var methodNameToken:Token = advance();
-        var methodName:String = methodNameToken.value;
-
-        if (methodName == ".getFunction") {
-            consume(TokenType.LPAREN, "Expected '(' after 'getFunction'");
-            var ndll:Expression = parseExpression();
-            consume(TokenType.COMMA, "Expected ',' ndll argument in 'getFunction'");
-            var method:Expression = parseExpression();
-            consume(TokenType.COMMA, "Expected ',' method argument in 'getFunction'");
-            var args:Expression = parseExpression();
-            consume(TokenType.RPAREN, "Expected ')' after expression");
-            return new NdllExpression("getFunction", [ndll, method, args]);
-        } else {
-            Flow.error.report("Unknown Ndll method: " + methodName, peek().lineNumber);
-            return null;
-        }
-    }
-
     private function parseMathExpression():Expression {
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
@@ -1953,6 +1981,51 @@ class Parser {
             return new DateExpression("diffInSeconds", [expr1, expr2]);
         } else {
             Flow.error.report("Unknown Date method: " + methodName, peek().lineNumber);
+            return null;
+        }
+    }
+
+    private function parseNdllExpression():Expression {
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+
+        if (methodName == ".getFunction") {
+            consume(TokenType.LPAREN, "Expected '(' after 'getFunction'");
+            var ndll:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' ndll argument in 'getFunction'");
+            var method:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' method argument in 'getFunction'");
+            var args:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new NdllExpression("getFunction", [ndll, method, args]);
+        } else {
+            Flow.error.report("Unknown Ndll method: " + methodName, peek().lineNumber);
+            return null;
+        }
+    }
+
+    private function parseHXExpression():Expression {
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+        if (methodName == ".eval") {
+            consume(TokenType.LPAREN, "Expected '(' after 'eval'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new HXExpression("eval", [expression]);
+        } else if (methodName == ".setVariable") {
+            consume(TokenType.LPAREN, "Expected '(' after 'setVariable'");
+            var name:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' name argument in 'getFunction'");
+            var value:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new HXExpression("getFunction", [name, value]);
+        } else if (methodName == ".getVariable") {
+            consume(TokenType.LPAREN, "Expected '(' after 'getVariable'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new HXExpression("getVariable", [expression]);
+        } else {
+            Flow.error.report("Unknown HX method: " + methodName, peek().lineNumber);
             return null;
         }
     }
@@ -2547,6 +2620,10 @@ class ExpressionParser {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
             return parseNdllExpression();
+        } else if (match([TokenType.HX])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseHXExpression();
         } else if (match([TokenType.LPAREN])) {
             var expr = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
@@ -3066,6 +3143,32 @@ class ExpressionParser {
             return new NdllExpression("getFunction", [ndll, method, args]);
         } else {
             Flow.error.report("Unknown Ndll method: " + methodName, peek().lineNumber);
+            return null;
+        }
+    }
+
+    private function parseHXExpression():Expression {
+        var methodNameToken:Token = advance();
+        var methodName:String = methodNameToken.value;
+        if (methodName == ".eval") {
+            consume(TokenType.LPAREN, "Expected '(' after 'eval'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new HXExpression("eval", [expression]);
+        } else if (methodName == ".setVariable") {
+            consume(TokenType.LPAREN, "Expected '(' after 'setVariable'");
+            var name:Expression = parseExpression();
+            consume(TokenType.COMMA, "Expected ',' name argument in 'getFunction'");
+            var value:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new HXExpression("getFunction", [name, value]);
+        } else if (methodName == ".getVariable") {
+            consume(TokenType.LPAREN, "Expected '(' after 'getVariable'");
+            var expression:Expression = parseExpression();
+            consume(TokenType.RPAREN, "Expected ')' after expression");
+            return new HXExpression("getVariable", [expression]);
+        } else {
+            Flow.error.report("Unknown HX method: " + methodName, peek().lineNumber);
             return null;
         }
     }
