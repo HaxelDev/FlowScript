@@ -3958,3 +3958,177 @@ class HXStatement extends Statement {
         }
     }
 }
+
+class SocketExpression extends Expression {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments != null ? arguments : [];
+    }
+
+    public override function evaluate():Dynamic {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "connect":
+                var host = new sys.net.Host(evaluatedArguments[0]);
+                var port = evaluatedArguments[1];
+                return connect(host, port);
+            case "read":
+                return read();
+            case "write":
+                var data = evaluatedArguments[0];
+                write(data);
+                return null;
+            case "readLine":
+                return readLine();
+            case "close":
+                close();
+                return null;
+            case "accept":
+                return accept();
+            case "bind":
+                var host = new sys.net.Host(evaluatedArguments[0]);
+                var port = evaluatedArguments[1];
+                bind(host, port);
+                return null;
+            case "listen":
+                var backlog = evaluatedArguments[0];
+                listen(backlog);
+                return null;
+            default:
+                Flow.error.report("Unknown socket method: " + methodName);
+                return null;
+        }
+    }
+
+    private function connect(host:sys.net.Host, port:Int):sys.net.Socket {
+        var socket = new sys.net.Socket();
+        socket.connect(host, port);
+        return socket;
+    }
+
+    private function read():String {
+        var socket = arguments[0].evaluate();
+        return socket.read();
+    }
+
+    private function write(data:String):Void {
+        var socket = arguments[0].evaluate();
+        socket.write(data);
+    }
+
+    private function readLine():String {
+        var socket = arguments[0].evaluate();
+        return socket.input.readLine();
+    }
+
+    private function close():Void {
+        var socket = arguments[0].evaluate();
+        socket.close();
+    }
+
+    private function accept():sys.net.Socket {
+        var socket = arguments[0].evaluate();
+        return socket.accept();
+    }
+
+    private function bind(host:sys.net.Host, port:Int):Void {
+        var socket = arguments[0].evaluate();
+        socket.bind(host, port);
+    }
+
+    private function listen(backlog:Int):Void {
+        var socket = arguments[0].evaluate();
+        socket.listen(backlog);
+    }
+}
+
+class SocketStatement extends Statement {
+    public var methodName:String;
+    public var arguments:Array<Expression>;
+
+    public function new(methodName:String, arguments:Array<Expression>) {
+        this.methodName = methodName;
+        this.arguments = arguments != null ? arguments : [];
+    }
+
+    public override function execute():Void {
+        var evaluatedArguments:Array<Dynamic> = [];
+        for (argument in arguments) {
+            evaluatedArguments.push(argument.evaluate());
+        }
+
+        switch (methodName) {
+            case "connect":
+                var host = new sys.net.Host(evaluatedArguments[0]);
+                var port = evaluatedArguments[1];
+                connect(host, port);
+            case "read":
+                read();
+            case "write":
+                var data = evaluatedArguments[0];
+                write(data);
+            case "readLine":
+                readLine();
+            case "close":
+                close();
+            case "accept":
+                accept();
+            case "bind":
+                var host = new sys.net.Host(evaluatedArguments[0]);
+                var port = evaluatedArguments[1];
+                bind(host, port);
+            case "listen":
+                var backlog = evaluatedArguments[0];
+                listen(backlog);
+            default:
+                Flow.error.report("Unknown socket method: " + methodName);
+        }
+    }
+
+    private function connect(host:sys.net.Host, port:Int):Void {
+        var socket = new sys.net.Socket();
+        socket.connect(host, port);
+    }
+
+    private function read():Void {
+        var socket = arguments[0].evaluate();
+        socket.read();
+    }
+
+    private function write(data:String):Void {
+        var socket = arguments[0].evaluate();
+        socket.write(data);
+    }
+
+    private function readLine():Void {
+        var socket = arguments[0].evaluate();
+        socket.input.readLine();
+    }
+
+    private function close():Void {
+        var socket = arguments[0].evaluate();
+        socket.close();
+    }
+
+    private function accept():Void {
+        var socket = arguments[0].evaluate();
+        socket.accept();
+    }
+
+    private function bind(host:sys.net.Host, port:Int):Void {
+        var socket = arguments[0].evaluate();
+        socket.bind(host, port);
+    }
+
+    private function listen(backlog:Int):Void {
+        var socket = arguments[0].evaluate();
+        socket.listen(backlog);
+    }
+}

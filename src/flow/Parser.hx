@@ -85,6 +85,8 @@ class Parser {
             return parseNdllStatement();
         } else if (firstTokenType == TokenType.HX) {
             return parseHXStatement();
+        } else if (firstTokenType == TokenType.SOCKET) {
+            return parseSocketStatement();
         } else if (firstTokenType == TokenType.IDENTIFIER) {
             if (peekNext().type == TokenType.LBRACKET) {
                 return parseArrayAssignment();
@@ -1240,6 +1242,85 @@ class Parser {
         }
     }
 
+    private function parseSocketStatement(): Statement {
+        var socketToken: Token = advance();
+        if (socketToken.type != TokenType.SOCKET) {
+            Flow.error.report("Expected 'Socket' keyword", peek().lineNumber);
+            return null;
+        }
+    
+        var lparenToken: Token = advance();
+        if (lparenToken.type != TokenType.LPAREN) {
+            Flow.error.report("Expected '('", peek().lineNumber);
+            return null;
+        }
+    
+        var rparenToken: Token = advance();
+        if (rparenToken.type != TokenType.RPAREN) {
+            Flow.error.report("Expected ')'", peek().lineNumber);
+            return null;
+        }
+    
+        var methodNameToken: Token = advance();
+        var methodName: String = methodNameToken.value;
+    
+        switch (methodName) {
+            case ".connect":
+                consume(TokenType.LPAREN, "Expected '(' after '.connect'");
+                var hostExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after host expression");
+                var portExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after port expression");
+                return new SocketStatement("connect", [hostExpression, portExpression]);
+            case ".read":
+                consume(TokenType.LPAREN, "Expected '(' after '.read'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketStatement("read", [socketExpression]);
+            case ".write":
+                consume(TokenType.LPAREN, "Expected '(' after '.write'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after socket expression");
+                var dataExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after data expression");
+                return new SocketStatement("write", [socketExpression, dataExpression]);
+            case ".readLine":
+                consume(TokenType.LPAREN, "Expected '(' after '.readLine'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketStatement("readLine", [socketExpression]);
+            case ".close":
+                consume(TokenType.LPAREN, "Expected '(' after '.close'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketStatement("close", [socketExpression]);
+            case ".accept":
+                consume(TokenType.LPAREN, "Expected '(' after '.accept'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketStatement("accept", [socketExpression]);
+            case ".bind":
+                consume(TokenType.LPAREN, "Expected '(' after '.bind'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after socket expression");
+                var hostExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after host expression");
+                var portExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after port expression");
+                return new SocketStatement("bind", [socketExpression, hostExpression, portExpression]);
+            case ".listen":
+                consume(TokenType.LPAREN, "Expected '(' after '.listen'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after socket expression");
+                var backlogExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after backlog expression");
+                return new SocketStatement("listen", [socketExpression, backlogExpression]);
+            default:
+                Flow.error.report("Unknown socket method: " + methodName, peek().lineNumber);
+                return null;
+        }
+    }
+
     private function parseBlock(): BlockStatement {
         if (match([TokenType.LBRACE])) {
             var statements:Array<Statement> = [];
@@ -1436,6 +1517,10 @@ class Parser {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
             return parseHXExpression();
+        } else if (match([TokenType.SOCKET])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseSocketExpression();
         } else if (match([TokenType.IDENTIFIER])) {
             var expr: Expression = null;
             if (peek().type == TokenType.LPAREN) {
@@ -2027,6 +2112,67 @@ class Parser {
         } else {
             Flow.error.report("Unknown HX method: " + methodName, peek().lineNumber);
             return null;
+        }
+    }
+
+    private function parseSocketExpression(): Expression {
+        var methodNameToken: Token = advance();
+        var methodName: String = methodNameToken.value;
+
+        switch (methodName) {
+            case ".connect":
+                consume(TokenType.LPAREN, "Expected '(' after '.connect'");
+                var hostExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after host expression");
+                var portExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after port expression");
+                return new SocketExpression("connect", [hostExpression, portExpression]);
+            case ".read":
+                consume(TokenType.LPAREN, "Expected '(' after '.read'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketExpression("read", [socketExpression]);
+            case ".write":
+                consume(TokenType.LPAREN, "Expected '(' after '.write'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after socket expression");
+                var dataExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after data expression");
+                return new SocketExpression("write", [socketExpression, dataExpression]);
+            case ".readLine":
+                consume(TokenType.LPAREN, "Expected '(' after '.readLine'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketExpression("readLine", [socketExpression]);
+            case ".close":
+                consume(TokenType.LPAREN, "Expected '(' after '.close'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketExpression("close", [socketExpression]);
+            case ".accept":
+                consume(TokenType.LPAREN, "Expected '(' after '.accept'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketExpression("accept", [socketExpression]);
+            case ".bind":
+                consume(TokenType.LPAREN, "Expected '(' after '.bind'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after socket expression");
+                var hostExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after host expression");
+                var portExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after port expression");
+                return new SocketExpression("bind", [socketExpression, hostExpression, portExpression]);
+            case ".listen":
+                consume(TokenType.LPAREN, "Expected '(' after '.listen'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after socket expression");
+                var backlogExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after backlog expression");
+                return new SocketExpression("listen", [socketExpression, backlogExpression]);
+            default:
+                Flow.error.report("Unknown socket method: " + methodName, peek().lineNumber);
+                return null;
         }
     }
 
@@ -2624,6 +2770,10 @@ class ExpressionParser {
             consume(TokenType.LPAREN, "Expected '('");
             consume(TokenType.RPAREN, "Expected ')'");
             return parseHXExpression();
+        } else if (match([TokenType.SOCKET])) {
+            consume(TokenType.LPAREN, "Expected '('");
+            consume(TokenType.RPAREN, "Expected ')'");
+            return parseSocketExpression();
         } else if (match([TokenType.LPAREN])) {
             var expr = parseExpression();
             consume(TokenType.RPAREN, "Expected ')' after expression");
@@ -3170,6 +3320,67 @@ class ExpressionParser {
         } else {
             Flow.error.report("Unknown HX method: " + methodName, peek().lineNumber);
             return null;
+        }
+    }
+
+    private function parseSocketExpression(): Expression {
+        var methodNameToken: Token = advance();
+        var methodName: String = methodNameToken.value;
+
+        switch (methodName) {
+            case ".connect":
+                consume(TokenType.LPAREN, "Expected '(' after '.connect'");
+                var hostExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after host expression");
+                var portExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after port expression");
+                return new SocketExpression("connect", [hostExpression, portExpression]);
+            case ".read":
+                consume(TokenType.LPAREN, "Expected '(' after '.read'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketExpression("read", [socketExpression]);
+            case ".write":
+                consume(TokenType.LPAREN, "Expected '(' after '.write'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after socket expression");
+                var dataExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after data expression");
+                return new SocketExpression("write", [socketExpression, dataExpression]);
+            case ".readLine":
+                consume(TokenType.LPAREN, "Expected '(' after '.readLine'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketExpression("readLine", [socketExpression]);
+            case ".close":
+                consume(TokenType.LPAREN, "Expected '(' after '.close'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketExpression("close", [socketExpression]);
+            case ".accept":
+                consume(TokenType.LPAREN, "Expected '(' after '.accept'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after socket expression");
+                return new SocketExpression("accept", [socketExpression]);
+            case ".bind":
+                consume(TokenType.LPAREN, "Expected '(' after '.bind'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after socket expression");
+                var hostExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after host expression");
+                var portExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after port expression");
+                return new SocketExpression("bind", [socketExpression, hostExpression, portExpression]);
+            case ".listen":
+                consume(TokenType.LPAREN, "Expected '(' after '.listen'");
+                var socketExpression: Expression = parseExpression();
+                consume(TokenType.COMMA, "Expected ',' after socket expression");
+                var backlogExpression: Expression = parseExpression();
+                consume(TokenType.RPAREN, "Expected ')' after backlog expression");
+                return new SocketExpression("listen", [socketExpression, backlogExpression]);
+            default:
+                Flow.error.report("Unknown socket method: " + methodName, peek().lineNumber);
+                return null;
         }
     }
 

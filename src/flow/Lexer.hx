@@ -216,6 +216,8 @@ class Lexer {
                 return new Token(TokenType.NDLL, token, lineNumber);
             case "HX":
                 return new Token(TokenType.HX, token, lineNumber);
+            case "Socket":
+                return new Token(TokenType.SOCKET, token, lineNumber);
             case "and":
                 return new Token(TokenType.AND, token, lineNumber);
             case "or":
@@ -406,6 +408,7 @@ enum TokenType {
     DATE;
     NDLL;
     HX;
+    SOCKET;
     DEFAULT;
     CASE;
     NOT;
