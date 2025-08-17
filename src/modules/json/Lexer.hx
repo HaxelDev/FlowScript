@@ -81,6 +81,18 @@ class Lexer {
                             result += '\t';
                         case 'r':
                             result += '\r';
+                        case 'u':
+                            var hex = "";
+                            var hexReg = ~/^[0-9a-fA-F]$/;
+                            for (i in 0...4) {
+                                this.readNextChar();
+                                if (this.currentChar == null || !hexReg.match(this.currentChar)) {
+                                    Flow.error.report("Invalid Unicode escape sequence");
+                                    return new Token(TokenType.EOF, "");
+                                }
+                                hex += this.currentChar;
+                            }
+                            result += String.fromCharCode(Std.parseInt("0x" + hex));
                         case '"':
                             result += '"';
                         case '\\':
