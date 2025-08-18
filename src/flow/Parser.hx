@@ -344,6 +344,8 @@ class Parser {
             return parseSortStatement();
         } else if (name == "splice") {
             return parseSpliceStatement();
+        } else if (name == "delay") {
+            return parseDelayStatement();
         }
         var isMethodCall: Bool = name.indexOf(".") > -1;
         if (isMethodCall) {
@@ -568,6 +570,15 @@ class Parser {
         var deleteCountExpr: Expression = parseExpression();
         consume(TokenType.RPAREN, "Expected ')' after arguments in 'splice'");
         return new SpliceStatement(arrayExpr, startIndexExpr, deleteCountExpr);
+    }
+
+    private function parseDelayStatement(): Statement {
+        consume(TokenType.LPAREN, "Expected '(' after 'delay'");
+        var delayTime: Expression = parseExpression();
+        consume(TokenType.COMMA, "Expected ',' after delay time");
+        var callbackExpr: Expression = parseExpression();
+        consume(TokenType.RPAREN, "Expected ')' after arguments");
+        return new DelayFunctionCall(delayTime, callbackExpr);
     }
 
     private function parseIOStatement():Statement {

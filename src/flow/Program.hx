@@ -2552,6 +2552,84 @@ class SpliceStatement extends Statement {
     }
 }
 
+class DelayFunctionCall extends Statement {
+    public var delayTime: Expression;
+    public var callbackExpr: Expression;
+
+    public function new(delayTime: Expression, callbackExpr: Expression) {
+        this.delayTime = delayTime;
+        this.callbackExpr = callbackExpr;
+    }
+
+    public override function execute(): Void {
+        var timeValue = delayTime.evaluate();
+        var ms = Std.is(timeValue, Int) ? cast(timeValue, Int) : 0;
+
+        var callback = resolveCallback();
+        if (callback != null) {
+            DelayScheduler.schedule(ms, callback);
+        }
+
+        while (DelayScheduler.queue.length > 0) {
+            DelayScheduler.update();
+        }
+    }
+
+    private function resolveCallback(): Void->Void {
+        if (Std.is(callbackExpr, FunctionLiteralExpression)) {
+            var functionExpr = cast(callbackExpr, FunctionLiteralExpression);
+            var functionContext = new Function(null, functionExpr.parameters, functionExpr.body);
+            return () -> functionContext.execute([]);
+        } else if (Std.is(callbackExpr, Function)) {
+            var func = cast(callbackExpr, Function);
+            return () -> func.execute([]);
+        } else if (Std.is(callbackExpr, VariableExpression)) {
+            var funcName = cast(callbackExpr, VariableExpression).name;
+            var func = Environment.get(funcName);
+            if (Std.is(func, Function)) {
+                var f = cast(func, Function);
+                return () -> f.execute([]);
+            } else if (func != null) {
+                return () -> Environment.callFunction(funcName, []);
+            }
+        } else if (Std.is(callbackExpr, MethodCallExpression)) {
+            var methodCall = cast(callbackExpr, MethodCallExpression);
+            var obj = Environment.get(methodCall.objectName);
+            var method = Environment.getFunction(methodCall.methodName, obj);
+            if (method != null && Std.is(method, Function)) {
+                var f = cast(method, Function);
+                return () -> f.execute([]);
+            }
+        }
+        return null;
+    }
+}
+
+class DelayScheduler {
+    public static var queue = new Array<{time:Int, callback:Void->Void}>();
+
+    public static function schedule(ms:Int, callback:Void->Void) {
+        var t = Std.int(Sys.time() * 1000) + ms;
+        var inserted = false;
+        for (i in 0...queue.length) {
+            if (queue[i].time > t) {
+                queue.insert(i, {time: t, callback: callback});
+                inserted = true;
+                break;
+            }
+        }
+        if (!inserted) queue.push({time: t, callback: callback});
+    }
+
+    public static function update():Void {
+        var now = Std.int(Sys.time() * 1000);
+        while (queue.length > 0 && queue[0].time <= now) {
+            queue[0].callback();
+            queue.shift();
+        }
+    }
+}
+
 class ReverseFunctionCall extends Expression {
     public var argument: Expression;
 
