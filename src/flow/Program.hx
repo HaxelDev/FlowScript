@@ -2630,6 +2630,91 @@ class DelayScheduler {
     }
 }
 
+class IntervalFunctionCall extends Statement {
+    public var intervalTime: Expression;
+    public var callbackExpr: Expression;
+
+    public function new(intervalTime:Expression, callbackExpr:Expression) {
+        this.intervalTime = intervalTime;
+        this.callbackExpr = callbackExpr;
+    }
+
+    public override function execute():Void {
+        var timeValue = intervalTime.evaluate();
+        var ms = Std.is(timeValue, Int) ? cast timeValue : 0;
+
+        var callback = resolveCallback();
+        if (callback == null) return;
+
+        IntervalScheduler.create(ms, callback);
+        IntervalScheduler.update();
+    }
+
+    private function resolveCallback():Void->Void {
+        if (Std.is(callbackExpr, FunctionLiteralExpression)) {
+            var fnExpr = cast(callbackExpr, FunctionLiteralExpression);
+            var ctx = new Function(null, fnExpr.parameters, fnExpr.body);
+            return () -> ctx.execute([]);
+        } else if (Std.is(callbackExpr, Function)) {
+            var fn = cast(callbackExpr, Function);
+            return () -> fn.execute([]);
+        } else if (Std.is(callbackExpr, VariableExpression)) {
+            var name = cast(callbackExpr, VariableExpression).name;
+            var fn = Environment.get(name);
+            if (Std.is(fn, Function)) return () -> cast(fn, Function).execute([]);
+        }
+        return null;
+    }
+}
+
+class ClearIntervalCall extends Statement {
+    public var idExpr: Expression;
+
+    public function new(idExpr:Expression) {
+        this.idExpr = idExpr;
+    }
+
+    public override function execute():Void {
+        var idVal = idExpr.evaluate();
+        if (Std.is(idVal, Int)) {
+            IntervalScheduler.clear(cast idVal);
+        }
+    }
+}
+
+class IntervalScheduler {
+    public static var intervals = new Map<Int, { next:Int, every:Int, callback:Void->Void }>();
+    static var _id = 0;
+
+    public static function create(ms:Int, callback:Void->Void): Int {
+        var id = ++_id;
+        var now = Std.int(Sys.time() * 1000);
+
+        intervals.set(id, {
+            next: now + ms,
+            every: ms,
+            callback: callback
+        });
+
+        return id;
+    }
+
+    public static function clear(id:Int):Void {
+        intervals.remove(id);
+    }
+
+    public static function update():Void {
+        var now = Std.int(Sys.time() * 1000);
+
+        for (id => entry in intervals) {
+            if (entry.next <= now) {
+                entry.callback();
+                entry.next = now + entry.every;
+            }
+        }
+    }
+}
+
 class ReverseFunctionCall extends Expression {
     public var argument: Expression;
 
@@ -4037,176 +4122,190 @@ class HXStatement extends Statement {
     }
 }
 
-class SocketExpression extends Expression {
+class WebSocketExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
 
     public function new(methodName:String, arguments:Array<Expression>) {
         this.methodName = methodName;
-        this.arguments = arguments != null ? arguments : [];
+        this.arguments = arguments;
     }
 
     public override function evaluate():Dynamic {
-        var evaluatedArguments:Array<Dynamic> = [];
-        for (argument in arguments) {
-            evaluatedArguments.push(argument.evaluate());
-        }
-
         switch (methodName) {
             case "connect":
-                var host = new sys.net.Host(evaluatedArguments[0]);
-                var port = evaluatedArguments[1];
-                return connect(host, port);
-            case "read":
-                return read();
-            case "write":
-                var data = evaluatedArguments[0];
-                write(data);
+                var url:String = arguments[0].evaluate();
+                var ws = new modules.WebSocket(url);
+                if (arguments.length >= 2) {
+                    var handlers = arguments[1].evaluate();
+                    attachHandlers(ws, handlers);
+                }
+                return ws;
+            case "start":
+                var wsStart = arguments[0].evaluate();
+                if (wsStart != null) {
+                    wsStart.start();
+                    return wsStart;
+                }
                 return null;
-            case "readLine":
-                return readLine();
-            case "close":
-                close();
-                return null;
-            case "accept":
-                return accept();
-            case "bind":
-                var host = new sys.net.Host(evaluatedArguments[0]);
-                var port = evaluatedArguments[1];
-                bind(host, port);
-                return null;
-            case "listen":
-                var backlog = evaluatedArguments[0];
-                listen(backlog);
+            case "send":
+                if (arguments.length >= 2) {
+                    var wsSend = arguments[0].evaluate();
+                    var message = arguments[1].evaluate();
+                    if (wsSend != null) {
+                        wsSend.sendString(message);
+                        return wsSend;
+                    }
+                }
                 return null;
             default:
-                Flow.error.report("Unknown socket method: " + methodName);
+                Flow.error.report("Unknown WebSocket method: " + methodName, 0);
                 return null;
         }
     }
 
-    private function connect(host:sys.net.Host, port:Int):sys.net.Socket {
-        var socket = new sys.net.Socket();
-        socket.connect(host, port);
-        return socket;
+    private function attachHandlers(ws:modules.WebSocket, handlers:Dynamic):Void {
+        if (handlers == null) return;
+
+        if (Reflect.hasField(handlers, "onOpen")) {
+            var fn = Reflect.field(handlers, "onOpen");
+            ws.onOpen = function() {
+                callUserFunction(fn, []);
+            };
+        }
+
+        if (Reflect.hasField(handlers, "onMessage")) {
+            var fn = Reflect.field(handlers, "onMessage");
+            ws.onStringData = function(msg:String) {
+                callUserFunction(fn, [msg]);
+            };
+        }
+
+        if (Reflect.hasField(handlers, "onClose")) {
+            var fn = Reflect.field(handlers, "onClose");
+            ws.onClose = function(code:Int) {
+                callUserFunction(fn, [code]);
+            };
+        }
+
+        if (Reflect.hasField(handlers, "onError")) {
+            var fn = Reflect.field(handlers, "onError");
+            ws.onError = function(err:Dynamic) {
+                callUserFunction(fn, [err]);
+            };
+        }
     }
 
-    private function read():String {
-        var socket = arguments[0].evaluate();
-        return socket.read();
-    }
+    private function callUserFunction(fn:Dynamic, params:Array<Dynamic>):Void {
+        if (Std.is(fn, Function)) {
+            var f:Function = cast fn;
+            f.execute(params);
+            return;
+        }
 
-    private function write(data:String):Void {
-        var socket = arguments[0].evaluate();
-        socket.write(data);
-    }
+        if (Std.is(fn, FunctionLiteralExpression)) {
+            var fl = cast fn;
+            var ctx = new Function(null, fl.parameters, fl.body);
+            ctx.execute(params);
+            return;
+        }
 
-    private function readLine():String {
-        var socket = arguments[0].evaluate();
-        return socket.input.readLine();
-    }
+        if (Std.is(fn, String)) {
+            Environment.callFunction(cast fn, params);
+            return;
+        }
 
-    private function close():Void {
-        var socket = arguments[0].evaluate();
-        socket.close();
-    }
-
-    private function accept():sys.net.Socket {
-        var socket = arguments[0].evaluate();
-        return socket.accept();
-    }
-
-    private function bind(host:sys.net.Host, port:Int):Void {
-        var socket = arguments[0].evaluate();
-        socket.bind(host, port);
-    }
-
-    private function listen(backlog:Int):Void {
-        var socket = arguments[0].evaluate();
-        socket.listen(backlog);
+        Flow.error.report("Invalid handler function", 0);
     }
 }
 
-class SocketStatement extends Statement {
+class WebSocketStatement extends Statement {
     public var methodName:String;
     public var arguments:Array<Expression>;
 
     public function new(methodName:String, arguments:Array<Expression>) {
         this.methodName = methodName;
-        this.arguments = arguments != null ? arguments : [];
+        this.arguments = arguments;
     }
 
     public override function execute():Void {
-        var evaluatedArguments:Array<Dynamic> = [];
-        for (argument in arguments) {
-            evaluatedArguments.push(argument.evaluate());
-        }
-
         switch (methodName) {
             case "connect":
-                var host = new sys.net.Host(evaluatedArguments[0]);
-                var port = evaluatedArguments[1];
-                connect(host, port);
-            case "read":
-                read();
-            case "write":
-                var data = evaluatedArguments[0];
-                write(data);
-            case "readLine":
-                readLine();
-            case "close":
-                close();
-            case "accept":
-                accept();
-            case "bind":
-                var host = new sys.net.Host(evaluatedArguments[0]);
-                var port = evaluatedArguments[1];
-                bind(host, port);
-            case "listen":
-                var backlog = evaluatedArguments[0];
-                listen(backlog);
+                var url:String = arguments[0].evaluate();
+                var ws = new modules.WebSocket(url);
+                if (arguments.length >= 2) {
+                    var handlers = arguments[1].evaluate();
+                    attachHandlers(ws, handlers);
+                }
+            case "start":
+                var wsStart = arguments[0].evaluate();
+                if (wsStart != null) {
+                    wsStart.start();
+                }
+            case "send":
+                if (arguments.length >= 2) {
+                    var wsSend = arguments[0].evaluate();
+                    var message = arguments[1].evaluate();
+                    if (wsSend != null) {
+                        wsSend.sendString(message);
+                    }
+                }
             default:
-                Flow.error.report("Unknown socket method: " + methodName);
+                Flow.error.report("Unknown WebSocket method: " + methodName, 0);
         }
     }
 
-    private function connect(host:sys.net.Host, port:Int):Void {
-        var socket = new sys.net.Socket();
-        socket.connect(host, port);
+    private function attachHandlers(ws:modules.WebSocket, handlers:Dynamic):Void {
+        if (handlers == null) return;
+
+        if (Reflect.hasField(handlers, "onOpen")) {
+            var fn = Reflect.field(handlers, "onOpen");
+            ws.onOpen = function() {
+                callUserFunction(fn, []);
+            };
+        }
+
+        if (Reflect.hasField(handlers, "onMessage")) {
+            var fn = Reflect.field(handlers, "onMessage");
+            ws.onStringData = function(msg:String) {
+                callUserFunction(fn, [msg]);
+            };
+        }
+
+        if (Reflect.hasField(handlers, "onClose")) {
+            var fn = Reflect.field(handlers, "onClose");
+            ws.onClose = function(code:Int) {
+                callUserFunction(fn, [code]);
+            };
+        }
+
+        if (Reflect.hasField(handlers, "onError")) {
+            var fn = Reflect.field(handlers, "onError");
+            ws.onError = function(err:Dynamic) {
+                callUserFunction(fn, [err]);
+            };
+        }
     }
 
-    private function read():Void {
-        var socket = arguments[0].evaluate();
-        socket.read();
-    }
+    private function callUserFunction(fn:Dynamic, params:Array<Dynamic>):Void {
+        if (Std.is(fn, Function)) {
+            var f:Function = cast fn;
+            f.execute(params);
+            return;
+        }
 
-    private function write(data:String):Void {
-        var socket = arguments[0].evaluate();
-        socket.write(data);
-    }
+        if (Std.is(fn, FunctionLiteralExpression)) {
+            var fl = cast fn;
+            var ctx = new Function(null, fl.parameters, fl.body);
+            ctx.execute(params);
+            return;
+        }
 
-    private function readLine():Void {
-        var socket = arguments[0].evaluate();
-        socket.input.readLine();
-    }
+        if (Std.is(fn, String)) {
+            Environment.callFunction(cast fn, params);
+            return;
+        }
 
-    private function close():Void {
-        var socket = arguments[0].evaluate();
-        socket.close();
-    }
-
-    private function accept():Void {
-        var socket = arguments[0].evaluate();
-        socket.accept();
-    }
-
-    private function bind(host:sys.net.Host, port:Int):Void {
-        var socket = arguments[0].evaluate();
-        socket.bind(host, port);
-    }
-
-    private function listen(backlog:Int):Void {
-        var socket = arguments[0].evaluate();
-        socket.listen(backlog);
+        Flow.error.report("Invalid handler function", 0);
     }
 }

@@ -1,0 +1,82 @@
+let ws = null
+
+let wsHandlers = {
+    onOpen: func() {
+        print("Connected to Discord gateway!")
+    },
+
+    onMessage: func(msg) {
+        let data = Json().parse(msg)
+
+        let op = data.op
+        let t = data.t
+
+        let d = data.d
+        let s = data.s
+
+        if op == 10 {
+            let heartbeatInterval = d.heartbeat_interval
+
+            call interval(heartbeatInterval, func() {
+                let hb = { op: 1, d: s }
+                WebSocket().send(ws, Json().stringify(hb))
+            })
+
+            let identify = {
+                op: 2,
+                d: {
+                    token: "Bot <token>",
+                    intents: 33285,
+                    properties: {
+                        $os: "linux",
+                        $browser: "mybot",
+                        $device: "mybot"
+                    }
+                }
+            }
+            WebSocket().send(ws, Json().stringify(identify))
+        } else if op == 0 {
+            if t == "MESSAGE_CREATE" {
+                let content = d.content
+                let author = d.author.username
+                print("{author}: {content}")
+
+                if content == "!ping" {
+                    let channelId = d.channel_id
+                    let message = { content: "Pong!", tts: false }
+                    Http().post(
+                        "https://discord.com/api/v10/channels/{channelId}/messages",
+                        Json().stringify(message), {
+                            "Authorization": "Bot <token>",
+                            "Content-Type": "application/json"
+                        }
+                    )
+                }
+            } else if t == "READY" {
+                print("Bot is ready!")
+            }
+        } else if op == 1 {
+            let hb = { op: 1, d: s }
+            WebSocket().send(ws, Json().stringify(hb))
+        }
+    },
+
+    onClose: func(code) {
+        print("Disconnected: {code}")
+    },
+
+    onError: func(err) {
+        print("Error: {err}")
+    }
+}
+
+let url = "https://discord.com/api/v10/gateway/bot"
+let response = Http().get(url, { "Authorization": "Bot <token>" })
+
+try {
+    let js = Json().parse(response)
+    let wsUrl = js.url
+    ws = WebSocket().connect("{wsUrl}/?v=10&encoding=json", wsHandlers)
+} catch e {
+    print("Parsing gateway info failed: {e}")
+}
