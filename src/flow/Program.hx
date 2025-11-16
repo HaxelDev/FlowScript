@@ -1360,7 +1360,12 @@ class ImportStatement extends Statement {
                 throw "Unsupported platform: " + platform;
         }
 
-        return flowLibPath + "/" + name + "/" + (version != null ? version : "latest");
+        var ver = version;
+        if (ver == null) {
+            ver = getVersionFromConfig(name);
+        }
+
+        return flowLibPath + "/" + name + "/" + ver;
     }
 
     private function getLibrarySourceFiles(libraryPath:String):Array<String> {
@@ -1400,6 +1405,45 @@ class ImportStatement extends Statement {
             Flow.error.report('Library configuration file "$configPath" does not exist.');
         }
         return null;
+    }
+
+    private function getVersionFromConfig(libName:String):String {
+        var configPath = getFlowlibJsonPath();
+        if (!sys.FileSystem.exists(configPath)) {
+            Flow.error.report("flowlib.json not found at: " + configPath);
+            return "latest";
+        }
+
+        var jsonText = sys.io.File.getContent(configPath);
+        var config:Dynamic;
+        try {
+            config = haxe.Json.parse(jsonText);
+        } catch (e:Dynamic) {
+            Flow.error.report("Error parsing flowlib.json: " + e);
+            return "latest";
+        }
+
+        for (lib in (cast config.libraries:Array<Dynamic>)) {
+            if (lib.name == libName) {
+                return lib.version;
+            }
+        }
+
+        return "latest";
+    }
+
+    private function getFlowlibJsonPath():String {
+        var platform = Sys.systemName().toLowerCase();
+        switch (platform) {
+            case "windows":
+                return "C:/FlowLib/flowlib.json";
+            case "linux":
+                return "/usr/local/FlowLib/flowlib.json";
+            case "macos":
+                return "/usr/local/FlowLib/flowlib.json";
+            default:
+                throw "Unsupported platform for flowlib.json path: " + platform;
+        }
     }
 
     private function getScriptPath():String {
@@ -4141,10 +4185,10 @@ class WebSocketExpression extends Expression {
                     attachHandlers(ws, handlers);
                 }
                 return ws;
-            case "start":
+            case "close":
                 var wsStart = arguments[0].evaluate();
                 if (wsStart != null) {
-                    wsStart.start();
+                    wsStart.close();
                     return wsStart;
                 }
                 return null;
@@ -4237,10 +4281,10 @@ class WebSocketStatement extends Statement {
                     var handlers = arguments[1].evaluate();
                     attachHandlers(ws, handlers);
                 }
-            case "start":
+            case "close":
                 var wsStart = arguments[0].evaluate();
                 if (wsStart != null) {
-                    wsStart.start();
+                    wsStart.close();
                 }
             case "send":
                 if (arguments.length >= 2) {

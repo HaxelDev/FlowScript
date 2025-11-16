@@ -428,19 +428,28 @@ class Parser {
 
     private function parseImportStatement():Statement { 
         var firstToken:Token = consume(TokenType.STRING, "Expected library or script identifier");
+        var libraryName:String;
+        var version:String = null;
+        var isLibrary:Bool;
+
         if (firstToken.value.startsWith("lib::")) {
+            isLibrary = true;
             var parts = firstToken.value.split("::");
-            var libraryName = parts[1].trim();
-            var version:String = null;
+            libraryName = parts[1].trim();
             if (match([TokenType.COMMA])) {
                 var versionToken:Token = consume(TokenType.STRING, "Expected version after comma");
-                if (versionToken.value.startsWith("v::")) {
-                    version = versionToken.value.split("::")[1].trim();
+                var v = versionToken.value;
+                if (v.startsWith("v::")) {
+                    version = v.substring(3).trim();
+                } else {
+                    version = v.trim();
                 }
             }
             return new ImportStatement(libraryName, version, true);
         } else {
-            return new ImportStatement(firstToken.value, null, false);
+            isLibrary = false;
+            libraryName = firstToken.value;
+            return new ImportStatement(libraryName, null, false);
         }
     }
 
@@ -1306,11 +1315,11 @@ class Parser {
                 }
                 consume(TokenType.RPAREN, "Expected ')' after arguments to .connect");
                 return new WebSocketStatement("connect", args);
-            case ".start":
-                consume(TokenType.LPAREN, "Expected '(' after '.start'");
+            case ".close":
+                consume(TokenType.LPAREN, "Expected '(' after '.close'");
                 var socketExpr = parseExpression();
                 consume(TokenType.RPAREN, "Expected ')' after argument");
-                return new WebSocketStatement("start", [socketExpr]);
+                return new WebSocketStatement("close", [socketExpr]);
             case ".send":
                 consume(TokenType.LPAREN, "Expected '(' after '.send'");
                 var wsExpr = parseExpression();
@@ -2133,11 +2142,11 @@ class Parser {
                 }
                 consume(TokenType.RPAREN, "Expected ')' after arguments to .connect");
                 return new WebSocketExpression("connect", args);
-            case ".start":
-                consume(TokenType.LPAREN, "Expected '(' after '.start'");
+            case ".close":
+                consume(TokenType.LPAREN, "Expected '(' after '.close'");
                 var socketExpr:Expression = parseExpression();
                 consume(TokenType.RPAREN, "Expected ')' after argument");
-                return new WebSocketExpression("start", [socketExpr]);
+                return new WebSocketExpression("close", [socketExpr]);
             case ".send":
                 consume(TokenType.LPAREN, "Expected '(' after '.send'");
                 var wsExpr:Expression = parseExpression();
@@ -3313,11 +3322,11 @@ class ExpressionParser {
                 }
                 consume(TokenType.RPAREN, "Expected ')' after arguments to .connect");
                 return new WebSocketExpression("connect", args);
-            case ".start":
-                consume(TokenType.LPAREN, "Expected '(' after '.start'");
+            case ".close":
+                consume(TokenType.LPAREN, "Expected '(' after '.close'");
                 var socketExpr:Expression = parseExpression();
                 consume(TokenType.RPAREN, "Expected ')' after argument");
-                return new WebSocketExpression("start", [socketExpr]);
+                return new WebSocketExpression("close", [socketExpr]);
             case ".send":
                 consume(TokenType.LPAREN, "Expected '(' after '.send'");
                 var wsExpr:Expression = parseExpression();
