@@ -214,8 +214,6 @@ class Lexer {
                 return new Token(TokenType.DATE, token, lineNumber);
             case "Ndll":
                 return new Token(TokenType.NDLL, token, lineNumber);
-            case "HX":
-                return new Token(TokenType.HX, token, lineNumber);
             case "WebSocket":
                 return new Token(TokenType.WEBSOCKET, token, lineNumber);
             case "and":
@@ -407,7 +405,6 @@ enum TokenType {
     HTTP;
     DATE;
     NDLL;
-    HX;
     WEBSOCKET;
     DEFAULT;
     CASE;

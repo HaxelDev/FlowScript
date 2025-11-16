@@ -4111,61 +4111,6 @@ class NdllStatement extends Statement {
     }
 }
 
-class HXExpression extends Expression {
-    public var methodName:String;
-    public var arguments:Array<Expression>;
-
-    public function new(methodName:String, arguments:Array<Expression> = null) {
-        this.methodName = methodName;
-        this.arguments = arguments != null ? arguments : [];
-    }
-
-    public override function evaluate():Dynamic {
-        var evaluatedArguments:Array<Dynamic> = [];
-        for (argument in arguments) {
-            evaluatedArguments.push(argument.evaluate());
-        }
-
-        switch (methodName) {
-            case "eval":
-                return HX.eval(evaluatedArguments.join(" "));
-            case "setVariable":
-                HX.setVariable(evaluatedArguments[0], evaluatedArguments[1]);
-                return null;
-            case "getVariable":
-                return HX.getVariable(evaluatedArguments.join(" "));
-        }
-
-        return null;
-    }
-}
-
-class HXStatement extends Statement {
-    public var methodName:String;
-    public var arguments:Array<Expression>;
-
-    public function new(methodName:String, arguments:Array<Expression> = null) {
-        this.methodName = methodName;
-        this.arguments = arguments != null ? arguments : [];
-    }
-
-    public override function execute():Void {
-        var evaluatedArguments:Array<Dynamic> = [];
-        for (argument in arguments) {
-            evaluatedArguments.push(argument.evaluate());
-        }
-
-        switch (methodName) {
-            case "eval":
-                HX.eval(evaluatedArguments.join(" "));
-            case "setVariable":
-                HX.setVariable(evaluatedArguments[0], evaluatedArguments[1]);
-            case "getVariable":
-                HX.getVariable(evaluatedArguments.join(" "));
-        }
-    }
-}
-
 class WebSocketExpression extends Expression {
     public var methodName:String;
     public var arguments:Array<Expression>;
