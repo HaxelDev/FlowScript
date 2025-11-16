@@ -1,7 +1,0 @@
--cp src
--js flow.js
--main Flow
--D js-es=6
--lib console.hx
--lib hxnodejs
--lib lime
