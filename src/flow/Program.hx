@@ -3856,13 +3856,13 @@ class HttpExpression extends Expression {
     public var methodName:String;
     public var urlExpression:Expression;
     public var dataExpression:Expression;
-    public var headers:Map<String, String>;
+    public var headers:Map<String, Expression>;
 
-    public function new(methodName:String, urlExpression:Expression, ?dataExpression:Expression = null, ?headers:Map<String, String> = null) {
+    public function new(methodName:String, urlExpression:Expression, ?dataExpression:Expression = null, ?headers:Map<String, Expression> = null) {
         this.methodName = methodName;
         this.urlExpression = urlExpression;
         this.dataExpression = dataExpression;
-        this.headers = headers != null ? headers : new Map<String, String>();
+        this.headers = headers != null ? headers : new Map<String, Expression>();
     }
 
     public override function evaluate():Dynamic {
@@ -3882,7 +3882,7 @@ class HttpExpression extends Expression {
         var result:Dynamic = null;
         var http = new haxe.Http(url);
         for (header in headers.keys()) {
-            http.setHeader(header, headers[header]);
+            http.setHeader(header, Std.string(headers[header].evaluate()));
         }
         http.onData = function(response:String) {
             result = response;
@@ -3898,7 +3898,7 @@ class HttpExpression extends Expression {
         var result:Dynamic = null;
         var http = new haxe.Http(url);
         for (header in headers.keys()) {
-            http.setHeader(header, headers[header]);
+            http.setHeader(header, Std.string(headers[header].evaluate()));
         }
         var data = if (dataExpression != null) dataExpression.evaluate() else null;
         http.onData = function(response:String) {
@@ -3917,13 +3917,13 @@ class HttpStatement extends Statement {
     public var methodName:String;
     public var urlExpression:Expression;
     public var dataExpression:Expression;
-    public var headers:Map<String, String>;
+    public var headers:Map<String, Expression>;
 
-    public function new(methodName:String, urlExpression:Expression, ?dataExpression:Expression = null, ?headers:Map<String, String> = null) {
+    public function new(methodName:String, urlExpression:Expression, ?dataExpression:Expression = null, ?headers:Map<String, Expression> = null) {
         this.methodName = methodName;
         this.urlExpression = urlExpression;
         this.dataExpression = dataExpression;
-        this.headers = headers != null ? headers : new Map<String, String>();
+        this.headers = headers != null ? headers : new Map<String, Expression>();
     }
 
     public override function execute():Void {
@@ -3931,7 +3931,7 @@ class HttpStatement extends Statement {
         if (methodName == "get") {
             var http = new haxe.Http(url);
             for (header in headers.keys()) {
-                http.setHeader(header, headers[header]);
+                http.setHeader(header, Std.string(headers[header].evaluate()));
             }
             http.onData = function(response:String) {
                 return response;
@@ -3943,7 +3943,7 @@ class HttpStatement extends Statement {
         } else if (methodName == "post") {
             var http = new haxe.Http(url);
             for (header in headers.keys()) {
-                http.setHeader(header, headers[header]);
+                http.setHeader(header, Std.string(headers[header].evaluate()));
             }
             var data = if (dataExpression != null) dataExpression.evaluate() else null;
             http.onData = function(response:String) {

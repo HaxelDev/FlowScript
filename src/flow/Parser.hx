@@ -1088,14 +1088,14 @@ class Parser {
         if (methodName == ".get") {
             consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            var headers:Map<String, String> = new Map<String, String>();
+            var headers:Map<String, Expression> = new Map<String, Expression>();
             if (match([TokenType.COMMA])) {
                 consume(TokenType.LBRACE, "Expected '{' for headers");
                 while (!check(TokenType.RBRACE)) {
                     var headerKey:Token = advance();
                     consume(TokenType.COLON, "Expected ':' after header key");
                     var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue.evaluate());
+                    headers.set(headerKey.value, headerValue);
                     if (!match([TokenType.COMMA])) {
                         break;
                     }
@@ -1111,14 +1111,14 @@ class Parser {
             if (match([TokenType.COMMA])) {
                 dataExpression = parseExpression();
             }
-            var headers:Map<String, String> = new Map<String, String>();
+            var headers:Map<String, Expression> = new Map<String, Expression>();
             if (match([TokenType.COMMA])) {
                 consume(TokenType.LBRACE, "Expected '{' for headers");
                 while (!check(TokenType.RBRACE)) {
                     var headerKey:Token = advance();
                     consume(TokenType.COLON, "Expected ':' after header key");
                     var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue.evaluate());
+                    headers.set(headerKey.value, headerValue);
                     if (!match([TokenType.COMMA])) {
                         break;
                     }
@@ -1977,14 +1977,14 @@ class Parser {
         if (methodName == ".get") {
             consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            var headers:Map<String, String> = new Map<String, String>();
+            var headers:Map<String, Expression> = new Map<String, Expression>();
             if (match([TokenType.COMMA])) {
                 consume(TokenType.LBRACE, "Expected '{' for headers");
                 while (!check(TokenType.RBRACE)) {
                     var headerKey:Token = advance();
                     consume(TokenType.COLON, "Expected ':' after header key");
                     var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue.evaluate());
+                    headers.set(headerKey.value, headerValue);
                     if (!match([TokenType.COMMA])) {
                         break;
                     }
@@ -2000,14 +2000,14 @@ class Parser {
             if (match([TokenType.COMMA])) {
                 dataExpression = parseExpression();
             }
-            var headers:Map<String, String> = new Map<String, String>();
+            var headers:Map<String, Expression> = new Map<String, Expression>();
             if (match([TokenType.COMMA])) {
                 consume(TokenType.LBRACE, "Expected '{' for headers");
                 while (!check(TokenType.RBRACE)) {
                     var headerKey:Token = advance();
                     consume(TokenType.COLON, "Expected ':' after header key");
                     var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue.evaluate());
+                    headers.set(headerKey.value, headerValue);
                     if (!match([TokenType.COMMA])) {
                         break;
                     }
@@ -3157,14 +3157,14 @@ class ExpressionParser {
         if (methodName == ".get") {
             consume(TokenType.LPAREN, "Expected '(' after 'get'");
             var urlExpression:Expression = parseExpression();
-            var headers:Map<String, String> = new Map<String, String>();
+            var headers:Map<String, Expression> = new Map<String, Expression>();
             if (match([TokenType.COMMA])) {
                 consume(TokenType.LBRACE, "Expected '{' for headers");
                 while (!check(TokenType.RBRACE)) {
                     var headerKey:Token = advance();
                     consume(TokenType.COLON, "Expected ':' after header key");
                     var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue.evaluate());
+                    headers.set(headerKey.value, headerValue);
                     if (!match([TokenType.COMMA])) {
                         break;
                     }
@@ -3180,14 +3180,14 @@ class ExpressionParser {
             if (match([TokenType.COMMA])) {
                 dataExpression = parseExpression();
             }
-            var headers:Map<String, String> = new Map<String, String>();
+            var headers:Map<String, Expression> = new Map<String, Expression>();
             if (match([TokenType.COMMA])) {
                 consume(TokenType.LBRACE, "Expected '{' for headers");
                 while (!check(TokenType.RBRACE)) {
                     var headerKey:Token = advance();
                     consume(TokenType.COLON, "Expected ':' after header key");
                     var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue.evaluate());
+                    headers.set(headerKey.value, headerValue);
                     if (!match([TokenType.COMMA])) {
                         break;
                     }

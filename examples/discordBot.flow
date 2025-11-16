@@ -1,4 +1,5 @@
 let ws = null
+let token = "<TOKEN HERE>"
 
 let wsHandlers = {
     onOpen: func() {
@@ -25,7 +26,7 @@ let wsHandlers = {
             let identify = {
                 op: 2,
                 d: {
-                    token: "Bot <token>",
+                    token: "Bot {token}",
                     intents: 33285,
                     properties: {
                         $os: "linux",
@@ -47,7 +48,7 @@ let wsHandlers = {
                     Http().post(
                         "https://discord.com/api/v10/channels/{channelId}/messages",
                         Json().stringify(message), {
-                            "Authorization": "Bot <token>",
+                            "Authorization": "Bot {token}",
                             "Content-Type": "application/json"
                         }
                     )
@@ -71,7 +72,7 @@ let wsHandlers = {
 }
 
 let url = "https://discord.com/api/v10/gateway/bot"
-let response = Http().get(url, { "Authorization": "Bot <token>" })
+let response = Http().get(url, { "Authorization": "Bot {token}" })
 
 try {
     let js = Json().parse(response)
