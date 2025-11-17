@@ -104,6 +104,24 @@ class Lexer {
                 } else if (char == "<" && i + 1 < code.length && code.charAt(i + 1) == "=") {
                     symbol += "=";
                     i++;
+                } else if (char == "<" && i + 1 < code.length) {
+                    var nextChar = code.charAt(i + 1);
+                    if (nextChar == "=") {
+                        symbol += "=";
+                        i++;
+                    } else if (nextChar == "<") {
+                        symbol += "<";
+                        i++;
+                    }
+                } else if (char == ">" && i + 1 < code.length) {
+                    var nextChar = code.charAt(i + 1);
+                    if (nextChar == "=") {
+                        symbol += "=";
+                        i++;
+                    } else if (nextChar == ">") {
+                        symbol += ">";
+                        i++;
+                    }
                 } else if (char == "+" && i + 1 < code.length) {
                     var nextChar:String = code.charAt(i + 1);
                     if (nextChar == "=") {
@@ -307,10 +325,14 @@ class Lexer {
                 return TokenType.BANG_EQUAL;
             case ">":
                 return TokenType.GREATER;
+            case ">>":
+                return TokenType.RIGHT_SHIFT;
             case ">=":
                 return TokenType.GREATER_EQUAL;
             case "<":
                 return TokenType.LESS;
+            case "<<":
+                return TokenType.LEFT_SHIFT;
             case "<=":
                 return TokenType.LESS_EQUAL;
             case "+=":

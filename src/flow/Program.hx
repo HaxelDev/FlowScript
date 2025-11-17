@@ -554,6 +554,13 @@ class BinaryExpression extends Expression {
                 } else {
                     return leftValue < rightValue;
                 }
+            case "<<":
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported '<<' for non-integers");
+                    return null;
+                } else {
+                    return leftValue << rightValue;
+                }
             case "<=":
                 if (leftIsString || rightIsString) {
                     Flow.error.report("Unsupported operator '<=' for strings");
@@ -567,6 +574,13 @@ class BinaryExpression extends Expression {
                     return null;
                 } else {
                     return leftValue > rightValue;
+                }
+            case ">>":
+                if (leftIsString || rightIsString) {
+                    Flow.error.report("Unsupported '>>' for non-integers");
+                    return null;
+                } else {
+                    return leftValue >> rightValue;
                 }
             case ">=":
                 if (leftIsString || rightIsString) {
@@ -857,8 +871,7 @@ class Function {
             } else if (parameters[i].defaultValue != null) {
                 Environment.define(parameters[i].name, parameters[i].defaultValue.evaluate());
             } else {
-                Flow.error.report("Missing argument for parameter '" + parameters[i].name + "'");
-                return null;
+                Environment.define(parameters[i].name, null);
             }
         }
 

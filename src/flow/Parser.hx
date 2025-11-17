@@ -1390,12 +1390,22 @@ class Parser {
         }
         return expr;
     }
-    
-    private function parseComparison(): Expression {
-        var expr: Expression = parseTerm();
-        while (match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])) {
+
+    private function parseShift(): Expression {
+        var expr = parseTerm();
+        while (match([TokenType.LEFT_SHIFT, TokenType.RIGHT_SHIFT])) {
             var opera: String = previous().value;
             var right: Expression = parseTerm();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+        return expr;
+    }
+
+    private function parseComparison(): Expression {
+        var expr: Expression = parseShift();
+        while (match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])) {
+            var opera: String = previous().value;
+            var right: Expression = parseShift();
             expr = new BinaryExpression(expr, opera, right);
         }
         return expr;
@@ -2586,11 +2596,21 @@ class ExpressionParser {
         return expr;
     }
 
-    private function parseComparison(): Expression {
+    private function parseShift(): Expression {
         var expr = parseTerm();
+        while (match([TokenType.LEFT_SHIFT, TokenType.RIGHT_SHIFT])) {
+            var opera: String = previous().value;
+            var right: Expression = parseTerm();
+            expr = new BinaryExpression(expr, opera, right);
+        }
+        return expr;
+    }
+
+    private function parseComparison(): Expression {
+        var expr = parseShift();
         while (match([TokenType.GREATER, TokenType.GREATER_EQUAL, TokenType.LESS, TokenType.LESS_EQUAL])) {
             var opera = previous().value;
-            var right = parseTerm();
+            var right = parseShift();
             expr = new BinaryExpression(expr, opera, right);
         }
         return expr;
