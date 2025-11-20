@@ -1083,51 +1083,52 @@ class Parser {
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
 
-        if (methodName == ".get") {
-            consume(TokenType.LPAREN, "Expected '(' after 'get'");
-            var urlExpression:Expression = parseExpression();
-            var headers:Map<String, Expression> = new Map<String, Expression>();
-            if (match([TokenType.COMMA])) {
-                consume(TokenType.LBRACE, "Expected '{' for headers");
-                while (!check(TokenType.RBRACE)) {
-                    var headerKey:Token = advance();
-                    consume(TokenType.COLON, "Expected ':' after header key");
-                    var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue);
-                    if (!match([TokenType.COMMA])) {
-                        break;
-                    }
-                }
-                consume(TokenType.RBRACE, "Expected '}' after headers");
-            }
-            consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpStatement("get", urlExpression, null, headers);
-        } else if (methodName == ".post") {
-            consume(TokenType.LPAREN, "Expected '(' after 'post'");
+        inline function parseArgs(expectData:Bool):{url:Expression, data:Expression, headers:Map<String,Expression>} {
+            consume(TokenType.LPAREN, "Expected '(' after method");
+
             var urlExpression:Expression = parseExpression();
             var dataExpression:Expression = null;
-            if (match([TokenType.COMMA])) {
+
+            if (expectData && match([TokenType.COMMA])) {
                 dataExpression = parseExpression();
             }
-            var headers:Map<String, Expression> = new Map<String, Expression>();
+
+            var headers:Map<String, Expression> = new Map();
             if (match([TokenType.COMMA])) {
                 consume(TokenType.LBRACE, "Expected '{' for headers");
                 while (!check(TokenType.RBRACE)) {
-                    var headerKey:Token = advance();
+                    var key = advance();
                     consume(TokenType.COLON, "Expected ':' after header key");
-                    var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue);
-                    if (!match([TokenType.COMMA])) {
-                        break;
-                    }
+                    var val = parseExpression();
+                    headers.set(key.value, val);
+                    if (!match([TokenType.COMMA])) break;
                 }
                 consume(TokenType.RBRACE, "Expected '}' after headers");
             }
-            consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpStatement("post", urlExpression, dataExpression, headers);
-        } else {
-            Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
-            return null;
+
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return {url:urlExpression, data:dataExpression, headers:headers};
+        }
+
+        switch (methodName) {
+            case ".get":
+                var args = parseArgs(false);
+                return new HttpStatement("get", args.url, null, args.headers);
+            case ".post":
+                var args = parseArgs(true);
+                return new HttpStatement("post", args.url, args.data, args.headers);
+            case ".put":
+                var args = parseArgs(true);
+                return new HttpStatement("put", args.url, args.data, args.headers);
+            case ".delete":
+                var args = parseArgs(false);
+                return new HttpStatement("delete", args.url, null, args.headers);
+            case ".patch":
+                var args = parseArgs(true);
+                return new HttpStatement("patch", args.url, args.data, args.headers);
+            default:
+                Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
+                return null;
         }
     }
 
@@ -1937,51 +1938,52 @@ class Parser {
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
 
-        if (methodName == ".get") {
-            consume(TokenType.LPAREN, "Expected '(' after 'get'");
-            var urlExpression:Expression = parseExpression();
-            var headers:Map<String, Expression> = new Map<String, Expression>();
-            if (match([TokenType.COMMA])) {
-                consume(TokenType.LBRACE, "Expected '{' for headers");
-                while (!check(TokenType.RBRACE)) {
-                    var headerKey:Token = advance();
-                    consume(TokenType.COLON, "Expected ':' after header key");
-                    var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue);
-                    if (!match([TokenType.COMMA])) {
-                        break;
-                    }
-                }
-                consume(TokenType.RBRACE, "Expected '}' after headers");
-            }
-            consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpExpression("get", urlExpression, null, headers);
-        } else if (methodName == ".post") {
-            consume(TokenType.LPAREN, "Expected '(' after 'post'");
+        inline function parseArgs(expectData:Bool):{url:Expression, data:Expression, headers:Map<String,Expression>} {
+            consume(TokenType.LPAREN, "Expected '(' after method");
+
             var urlExpression:Expression = parseExpression();
             var dataExpression:Expression = null;
-            if (match([TokenType.COMMA])) {
+
+            if (expectData && match([TokenType.COMMA])) {
                 dataExpression = parseExpression();
             }
-            var headers:Map<String, Expression> = new Map<String, Expression>();
+
+            var headers:Map<String, Expression> = new Map();
             if (match([TokenType.COMMA])) {
                 consume(TokenType.LBRACE, "Expected '{' for headers");
                 while (!check(TokenType.RBRACE)) {
-                    var headerKey:Token = advance();
+                    var key = advance();
                     consume(TokenType.COLON, "Expected ':' after header key");
-                    var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue);
-                    if (!match([TokenType.COMMA])) {
-                        break;
-                    }
+                    var val = parseExpression();
+                    headers.set(key.value, val);
+                    if (!match([TokenType.COMMA])) break;
                 }
                 consume(TokenType.RBRACE, "Expected '}' after headers");
             }
-            consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpExpression("post", urlExpression, dataExpression, headers);
-        } else {
-            Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
-            return null;
+
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return {url:urlExpression, data:dataExpression, headers:headers};
+        }
+
+        switch (methodName) {
+            case ".get":
+                var args = parseArgs(false);
+                return new HttpExpression("get", args.url, null, args.headers);
+            case ".post":
+                var args = parseArgs(true);
+                return new HttpExpression("post", args.url, args.data, args.headers);
+            case ".put":
+                var args = parseArgs(true);
+                return new HttpExpression("put", args.url, args.data, args.headers);
+            case ".delete":
+                var args = parseArgs(false);
+                return new HttpExpression("delete", args.url, null, args.headers);
+            case ".patch":
+                var args = parseArgs(true);
+                return new HttpExpression("patch", args.url, args.data, args.headers);
+            default:
+                Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
+                return null;
         }
     }
 
@@ -3097,51 +3099,52 @@ class ExpressionParser {
         var methodNameToken:Token = advance();
         var methodName:String = methodNameToken.value;
 
-        if (methodName == ".get") {
-            consume(TokenType.LPAREN, "Expected '(' after 'get'");
-            var urlExpression:Expression = parseExpression();
-            var headers:Map<String, Expression> = new Map<String, Expression>();
-            if (match([TokenType.COMMA])) {
-                consume(TokenType.LBRACE, "Expected '{' for headers");
-                while (!check(TokenType.RBRACE)) {
-                    var headerKey:Token = advance();
-                    consume(TokenType.COLON, "Expected ':' after header key");
-                    var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue);
-                    if (!match([TokenType.COMMA])) {
-                        break;
-                    }
-                }
-                consume(TokenType.RBRACE, "Expected '}' after headers");
-            }
-            consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpExpression("get", urlExpression, null, headers);
-        } else if (methodName == ".post") {
-            consume(TokenType.LPAREN, "Expected '(' after 'post'");
+        inline function parseArgs(expectData:Bool):{url:Expression, data:Expression, headers:Map<String,Expression>} {
+            consume(TokenType.LPAREN, "Expected '(' after method");
+
             var urlExpression:Expression = parseExpression();
             var dataExpression:Expression = null;
-            if (match([TokenType.COMMA])) {
+
+            if (expectData && match([TokenType.COMMA])) {
                 dataExpression = parseExpression();
             }
-            var headers:Map<String, Expression> = new Map<String, Expression>();
+
+            var headers:Map<String, Expression> = new Map();
             if (match([TokenType.COMMA])) {
                 consume(TokenType.LBRACE, "Expected '{' for headers");
                 while (!check(TokenType.RBRACE)) {
-                    var headerKey:Token = advance();
+                    var key = advance();
                     consume(TokenType.COLON, "Expected ':' after header key");
-                    var headerValue:Expression = parseExpression();
-                    headers.set(headerKey.value, headerValue);
-                    if (!match([TokenType.COMMA])) {
-                        break;
-                    }
+                    var val = parseExpression();
+                    headers.set(key.value, val);
+                    if (!match([TokenType.COMMA])) break;
                 }
                 consume(TokenType.RBRACE, "Expected '}' after headers");
             }
-            consume(TokenType.RPAREN, "Expected ')' after expression(s)");
-            return new HttpExpression("post", urlExpression, dataExpression, headers);
-        } else {
-            Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
-            return null;
+
+            consume(TokenType.RPAREN, "Expected ')' after arguments");
+            return {url:urlExpression, data:dataExpression, headers:headers};
+        }
+
+        switch (methodName) {
+            case ".get":
+                var args = parseArgs(false);
+                return new HttpExpression("get", args.url, null, args.headers);
+            case ".post":
+                var args = parseArgs(true);
+                return new HttpExpression("post", args.url, args.data, args.headers);
+            case ".put":
+                var args = parseArgs(true);
+                return new HttpExpression("put", args.url, args.data, args.headers);
+            case ".delete":
+                var args = parseArgs(false);
+                return new HttpExpression("delete", args.url, null, args.headers);
+            case ".patch":
+                var args = parseArgs(true);
+                return new HttpExpression("patch", args.url, args.data, args.headers);
+            default:
+                Flow.error.report("Unknown HTTP method: " + methodName, peek().lineNumber);
+                return null;
         }
     }
 

@@ -3881,47 +3881,53 @@ class HttpExpression extends Expression {
     public override function evaluate():Dynamic {
         var url:String = urlExpression.evaluate();
         switch (methodName) {
-            case "get":
-                return handleGetRequest(url);
-            case "post":
-                return handlePostRequest(url);
+            case "get":    return handleStandard(url, false);
+            case "post":   return handleStandard(url, true);
+            case "put":    return handleCustom(url, true, "PUT");
+            case "delete": return handleCustom(url, false, "DELETE");
+            case "patch":  return handleCustom(url, true, "PATCH");
             default:
                 Flow.error.report("Unknown HTTP method: " + methodName);
                 return null;
         }
     }
 
-    private function handleGetRequest(url:String):Dynamic {
+    private function handleStandard(url:String, post:Bool):Dynamic {
         var result:Dynamic = null;
         var http = new haxe.Http(url);
+
         for (header in headers.keys()) {
             http.setHeader(header, Std.string(headers[header].evaluate()));
         }
-        http.onData = function(response:String) {
-            result = response;
-        };
-        http.onError = function(error:String) {
-            Flow.error.report("GET request failed: " + error);
-        };
-        http.request(false);
+
+        var data = (post && dataExpression != null) ? dataExpression.evaluate() : null;
+
+        http.onData = function(r:String) result = r;
+        http.onError = function(e:String) Flow.error.report("HTTP request failed: " + e);
+
+        if (post) http.setPostData(data);
+        http.request(post);
+
         return result;
     }
 
-    private function handlePostRequest(url:String):Dynamic {
+    private function handleCustom(url:String, post:Bool, method:String):Dynamic {
         var result:Dynamic = null;
         var http = new haxe.Http(url);
+
         for (header in headers.keys()) {
             http.setHeader(header, Std.string(headers[header].evaluate()));
         }
-        var data = if (dataExpression != null) dataExpression.evaluate() else null;
-        http.onData = function(response:String) {
-            result = response;
-        };
-        http.onError = function(error:String) {
-            Flow.error.report("POST request failed: " + error);
-        };
-        http.setPostData(data);
-        http.request(true);
+
+        var data = (post && dataExpression != null) ? dataExpression.evaluate() : null;
+
+        http.onData = function(r:String) result = r;
+        http.onError = function(e:String) Flow.error.report(method + " request failed: " + e);
+
+        var responseBytes = new haxe.io.BytesOutput();
+        if (post) http.setPostData(data);
+        http.customRequest(post, responseBytes, null, method);
+
         return result;
     }
 }
@@ -3941,33 +3947,45 @@ class HttpStatement extends Statement {
 
     public override function execute():Void {
         var url = urlExpression.evaluate();
-        if (methodName == "get") {
-            var http = new haxe.Http(url);
-            for (header in headers.keys()) {
-                http.setHeader(header, Std.string(headers[header].evaluate()));
-            }
-            http.onData = function(response:String) {
-                return response;
-            };
-            http.onError = function(error:String) {
-                Flow.error.report("GET request failed: " + error);
-            };
-            http.request(false);
-        } else if (methodName == "post") {
-            var http = new haxe.Http(url);
-            for (header in headers.keys()) {
-                http.setHeader(header, Std.string(headers[header].evaluate()));
-            }
-            var data = if (dataExpression != null) dataExpression.evaluate() else null;
-            http.onData = function(response:String) {
-                return response;
-            };
-            http.onError = function(error:String) {
-                Flow.error.report("POST request failed: " + error);
-            };
-            http.setPostData(data);
-            http.request(true);
+        switch (methodName) {
+            case "get":      doStandard(url, false);
+            case "post":     doStandard(url, true);
+            case "put":      doCustom(url, true, "PUT");
+            case "delete":   doCustom(url, false, "DELETE");
+            case "patch":    doCustom(url, true, "PATCH");
+            default:
         }
+    }
+
+    private function doStandard(url:String, post:Bool):Void {
+        var http = new haxe.Http(url);
+
+        for (header in headers.keys())
+            http.setHeader(header, Std.string(headers[header].evaluate()));
+
+        var data = (post && dataExpression != null) ? dataExpression.evaluate() : null;
+
+        http.onError = function(e:String) Flow.error.report("HTTP request failed: " + e);
+        http.onData = function(r:String) {};
+
+        if (post) http.setPostData(data);
+        http.request(post);
+    }
+
+    private function doCustom(url:String, post:Bool, method:String):Void {
+        var http = new haxe.Http(url);
+
+        for (header in headers.keys())
+            http.setHeader(header, Std.string(headers[header].evaluate()));
+
+        var data = (post && dataExpression != null) ? dataExpression.evaluate() : null;
+
+        http.onError = function(e:String) Flow.error.report(method + " request failed: " + e);
+        http.onData = function(_) {};
+
+        var responseBytes = new haxe.io.BytesOutput();
+        if (post) http.setPostData(data);
+        http.customRequest(post, responseBytes, null, method);
     }
 }
 
